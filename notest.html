@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام جمع الصور - النسخة المصححة</title>
+    <title>نظام عرض الصور - التقديمات الأخيرة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ============== CSS مصحح ============== */
+        /* ============== CSS جديد لعرض الصور ============== */
         :root {
             --primary: #2E86AB;
             --secondary: #A23B72;
@@ -39,7 +39,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
-        /* الهيدر */
         header {
             background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
@@ -48,286 +47,293 @@
             position: relative;
         }
         
-        .admin-panel-btn {
-            position: absolute;
-            left: 20px;
-            top: 20px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 50px;
-            cursor: pointer;
+        .tabs {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        /* لوحة التحكم */
-        .admin-panel {
-            position: fixed;
-            top: 80px;
-            left: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            width: 350px;
-            padding: 20px;
-            z-index: 1000;
-            display: none;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .admin-panel.active {
-            display: block;
-        }
-        
-        .admin-section {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .admin-section h4 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .admin-btn {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
             background: var(--light);
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
             cursor: pointer;
-            text-align: right;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            background: #eee;
+            border-right: 1px solid #ddd;
+            font-weight: 600;
             transition: all 0.3s;
         }
         
-        .admin-btn:hover {
+        .tab:last-child {
+            border-right: none;
+        }
+        
+        .tab.active {
             background: var(--primary);
             color: white;
-            transform: translateX(-5px);
         }
         
-        /* المحتوى الرئيسي */
-        .content {
+        .tab-content {
+            display: none;
             padding: 20px;
         }
         
-        /* قسم الأكواد */
-        .codes-section {
-            background: var(--light);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .tab-content.active {
+            display: block;
         }
         
-        .codes-grid {
+        /* ============== تنسيقات عرض التقديمات ============== */
+        .submissions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
         
-        .code-item {
+        .submission-card {
             background: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             border: 2px solid transparent;
             transition: all 0.3s;
         }
         
-        .code-item:hover {
+        .submission-card:hover {
+            transform: translateY(-5px);
             border-color: var(--primary);
-            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
         
-        .code-item.selected {
+        .submission-header {
             background: var(--primary);
             color: white;
-        }
-        
-        /* قسم الصور */
-        .photos-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px solid var(--light);
-        }
-        
-        .section-title {
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--light);
         }
         
-        .photos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-        }
-        
-        .photo-box {
-            height: 180px;
-            border: 3px dashed #ddd;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8f9ff;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .photo-box.has-image {
-            border-style: solid;
-            border-color: var(--success);
-        }
-        
-        .photo-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .photo-number {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .submission-code {
             font-weight: bold;
+            font-size: 18px;
         }
         
-        /* الحقول */
-        .fields-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .submission-date {
+            font-size: 12px;
+            opacity: 0.9;
         }
         
-        .fields-container {
+        .submission-body {
+            padding: 15px;
+        }
+        
+        .submission-info {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .submission-photos-preview {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 10px;
         }
         
-        .field-group {
-            margin-bottom: 15px;
-        }
-        
-        .field-label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--dark);
-            font-weight: 500;
-        }
-        
-        input, select, textarea {
+        .photo-thumb {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s;
         }
         
-        /* الأزرار */
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+        .photo-thumb:hover {
+            transform: scale(1.1);
+        }
+        
+        .submission-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
         }
         
         .action-btn {
-            padding: 15px;
+            flex: 1;
+            padding: 8px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 5px;
             transition: all 0.3s;
         }
         
-        .btn-primary {
+        .view-btn {
             background: var(--primary);
             color: white;
         }
         
-        .btn-primary:hover {
-            background: var(--secondary);
-            transform: translateY(-2px);
-        }
-        
-        .btn-success {
+        .download-btn {
             background: var(--success);
             color: white;
         }
         
-        .btn-danger {
+        .delete-btn {
             background: var(--danger);
             color: white;
         }
         
-        /* الكاميرا */
-        .camera-modal {
+        /* ============== نافذة عرض الصور الكاملة ============== */
+        .gallery-modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            padding: 20px;
         }
         
-        .camera-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 800px;
-            background: white;
-            border-radius: 10px;
+        .gallery-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .gallery-header {
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .gallery-main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
         }
         
-        .camera-video {
-            width: 100%;
-            height: 400px;
-            background: black;
+        .gallery-main img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         
-        /* التنبيهات */
+        .gallery-thumbnails {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            background: rgba(0,0,0,0.7);
+        }
+        
+        .gallery-thumb {
+            width: 100px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s;
+        }
+        
+        .gallery-thumb:hover,
+        .gallery-thumb.active {
+            opacity: 1;
+            transform: scale(1.1);
+            border: 2px solid white;
+        }
+        
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+        }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: var(--primary);
+        }
+        
+        .close-gallery {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 3001;
+        }
+        
+        /* ============== قسم تنزيل الملفات ============== */
+        .download-section {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .download-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .download-option {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .download-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+        
+        /* ============== تنبيهات ============== */
         .alert {
             padding: 15px;
             margin: 15px 0;
@@ -347,34 +353,46 @@
             border: 1px solid #f5c6cb;
         }
         
-        /* خاص بالسحب والإفلات */
-        .dragging {
-            opacity: 0.5;
+        /* ============== تنسيقات أخرى ============== */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
         }
         
-        .drop-zone {
-            border: 3px dashed var(--accent) !important;
-            background: #fff8e1 !important;
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
         
-        /* تنسيقات الجوال */
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
         @media (max-width: 768px) {
-            .codes-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .photos-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .fields-container {
+            .submissions-grid {
                 grid-template-columns: 1fr;
             }
             
-            .admin-panel {
-                width: 90%;
-                left: 5%;
-                top: 70px;
+            .submission-photos-preview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .gallery-thumb {
+                width: 70px;
+                height: 50px;
             }
         }
     </style>
@@ -383,881 +401,788 @@
     <div class="container">
         <!-- الهيدر -->
         <header>
-            <h1 id="mainTitle">📸 نظام جمع الصور</h1>
-            <p id="mainSubtitle">اختر الكود، التقط الصور، أرسل البيانات</p>
-            
-            <button class="admin-panel-btn" onclick="toggleAdminPanel()">
-                <i class="fas fa-cogs"></i> لوحة التحكم
-            </button>
+            <h1><i class="fas fa-images"></i> معرض التقديمات والصور</h1>
+            <p>عرض وتنزيل جميع الصور المحفوظة في النظام</p>
         </header>
         
-        <!-- لوحة التحكم -->
-        <div class="admin-panel" id="adminPanel">
-            <div class="admin-section">
-                <h4><i class="fas fa-paint-brush"></i> تخصيص الواجهة</h4>
-                <button class="admin-btn" onclick="changeTitle()">
-                    <i class="fas fa-heading"></i> تغيير العنوان
-                </button>
-                <button class="admin-btn" onclick="changeColor()">
-                    <i class="fas fa-palette"></i> تغيير الألوان
-                </button>
-                <button class="admin-btn" onclick="reorderSections()">
-                    <i class="fas fa-sort"></i> إعادة ترتيب الأقسام
-                </button>
+        <!-- التبويبات -->
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('submissions')">
+                <i class="fas fa-list"></i> التقديمات الأخيرة
             </div>
-            
-            <div class="admin-section">
-                <h4><i class="fas fa-edit"></i> إدارة الحقول</h4>
-                <button class="admin-btn" onclick="addField()">
-                    <i class="fas fa-plus"></i> إضافة حقل جديد
-                </button>
-                <button class="admin-btn" onclick="removeField()">
-                    <i class="fas fa-minus"></i> حذف حقل
-                </button>
-                <button class="admin-btn" onclick="renameField()">
-                    <i class="fas fa-font"></i> تغيير اسم حقل
-                </button>
+            <div class="tab" onclick="showTab('stats')">
+                <i class="fas fa-chart-bar"></i> الإحصائيات
             </div>
-            
-            <div class="admin-section">
-                <h4><i class="fas fa-qrcode"></i> إدارة الأكواد</h4>
-                <button class="admin-btn" onclick="addCode()">
-                    <i class="fas fa-plus-square"></i> إضافة كود جديد
-                </button>
-                <button class="admin-btn" onclick="editCodes()">
-                    <i class="fas fa-edit"></i> تعديل الأكواد
-                </button>
-                <button class="admin-btn" onclick="deleteCode()">
-                    <i class="fas fa-trash"></i> حذف كود
-                </button>
+            <div class="tab" onclick="showTab('download')">
+                <i class="fas fa-download"></i> تنزيل الملفات
             </div>
-            
-            <div class="admin-section">
-                <h4><i class="fas fa-camera"></i> إعدادات الصور</h4>
-                <button class="admin-btn" onclick="changePhotoCount()">
-                    <i class="fas fa-images"></i> تغيير عدد الصور
-                </button>
-                <button class="admin-btn" onclick="resetPhotos()">
-                    <i class="fas fa-redo"></i> إعادة تعيين الصور
-                </button>
-            </div>
-            
-            <div class="admin-section">
-                <h4><i class="fas fa-buttons"></i> إدارة الأزرار</h4>
-                <button class="admin-btn" onclick="addButton()">
-                    <i class="fas fa-plus-circle"></i> إضافة زر جديد
-                </button>
-                <button class="admin-btn" onclick="removeButton()">
-                    <i class="fas fa-minus-circle"></i> حذف زر
-                </button>
-                <button class="admin-btn" onclick="renameButton()">
-                    <i class="fas fa-i-cursor"></i> تغيير اسم زر
-                </button>
-            </div>
-            
-            <button class="admin-btn" style="background: var(--danger); color: white;" onclick="toggleAdminPanel()">
-                <i class="fas fa-times"></i> إغلاق اللوحة
-            </button>
         </div>
         
-        <!-- المحتوى الرئيسي -->
-        <div class="content">
-            <!-- قسم الأكواد -->
-            <div class="codes-section" id="codesSection">
-                <div class="section-title">
-                    <h3 id="codesTitle"><i class="fas fa-qrcode"></i> اختر كود المنطقة</h3>
-                    <span id="selectedCodeText" style="color: #666; font-size: 14px;">لم يتم اختيار كود</span>
-                </div>
-                <div class="codes-grid" id="codesGrid">
-                    <!-- سيتم ملؤها بالأكواد -->
-                </div>
-            </div>
-            
-            <!-- الصور الأولى -->
-            <div class="photos-section" id="firstPhotosSection">
-                <div class="section-title">
-                    <h3 id="firstPhotosTitle"><i class="fas fa-images"></i> الصور الأساسية</h3>
-                    <span id="firstPhotosCounter">0/5</span>
-                </div>
-                <div class="photos-grid" id="firstPhotosGrid"></div>
-            </div>
-            
-            <!-- الصور الثانية -->
-            <div class="photos-section" id="secondPhotosSection">
-                <div class="section-title">
-                    <h3 id="secondPhotosTitle"><i class="fas fa-images"></i> الصور الإضافية</h3>
-                    <span id="secondPhotosCounter">0/5</span>
-                </div>
-                <div class="photos-grid" id="secondPhotosGrid"></div>
-            </div>
-            
-            <!-- الحقول -->
-            <div class="fields-section" id="fieldsSection">
-                <div class="section-title">
-                    <h3 id="fieldsTitle"><i class="fas fa-edit"></i> المعلومات الإضافية</h3>
-                </div>
-                <div class="fields-container" id="fieldsContainer">
-                    <!-- الحقول ستضاف هنا -->
-                </div>
-            </div>
-            
-            <!-- أزرار الإجراء -->
-            <div class="action-buttons" id="actionButtons">
-                <button class="action-btn btn-primary" onclick="submitData()">
-                    <i class="fas fa-paper-plane"></i> إرسال البيانات
-                </button>
-                <button class="action-btn btn-success" onclick="saveDraft()">
-                    <i class="fas fa-save"></i> حفظ كمسودة
-                </button>
-                <button class="action-btn btn-danger" onclick="clearAll()">
-                    <i class="fas fa-trash"></i> مسح الكل
+        <!-- تبويب التقديمات -->
+        <div id="submissionsTab" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2><i class="fas fa-history"></i> التقديمات الأخيرة</h2>
+                <button onclick="refreshSubmissions()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> تحديث
                 </button>
             </div>
             
-            <!-- تنبيه -->
-            <div id="alert" class="alert"></div>
+            <!-- الإحصائيات السريعة -->
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="totalSubmissions">0</div>
+                    <div class="stat-label">إجمالي التقديمات</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="totalPhotos">0</div>
+                    <div class="stat-label">إجمالي الصور</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="lastSubmission">-</div>
+                    <div class="stat-label">آخر تقديم</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="storageUsed">0 MB</div>
+                    <div class="stat-label">المساحة المستخدمة</div>
+                </div>
+            </div>
+            
+            <!-- قائمة التقديمات -->
+            <div id="submissionsList" class="submissions-grid">
+                <!-- سيتم ملؤها بالبيانات -->
+            </div>
+            
+            <div id="submissionsAlert" class="alert"></div>
+        </div>
+        
+        <!-- تبويب الإحصائيات -->
+        <div id="statsTab" class="tab-content">
+            <h2><i class="fas fa-chart-bar"></i> إحصائيات مفصلة</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">التقديمات حسب المنطقة</h3>
+                    <div id="areaStats"></div>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">نشاط التقديمات</h3>
+                    <div id="activityChart"></div>
+                </div>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">تفاصيل التخزين</h3>
+                <div id="storageDetails"></div>
+            </div>
+        </div>
+        
+        <!-- تبويب التنزيل -->
+        <div id="downloadTab" class="tab-content">
+            <h2><i class="fas fa-download"></i> تنزيل الملفات والبيانات</h2>
+            
+            <div class="download-section">
+                <h3 style="margin-bottom: 15px;">خيارات التنزيل</h3>
+                <div class="download-options">
+                    <div class="download-option" onclick="downloadAllSubmissions()">
+                        <i class="fas fa-database" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px;"></i>
+                        <div>تنزيل جميع التقديمات</div>
+                        <small style="color: #666;">جميع البيانات كملف JSON</small>
+                    </div>
+                    
+                    <div class="download-option" onclick="downloadAllPhotos()">
+                        <i class="fas fa-images" style="font-size: 2rem; color: var(--success); margin-bottom: 10px;"></i>
+                        <div>تنزيل جميع الصور</div>
+                        <small style="color: #666;">مضغوطة كملف ZIP</small>
+                    </div>
+                    
+                    <div class="download-option" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel" style="font-size: 2rem; color: #1D6F42; margin-bottom: 10px;"></i>
+                        <div>تصدير لـ Excel</div>
+                        <small style="color: #666;">تقرير مفصل</small>
+                    </div>
+                    
+                    <div class="download-option" onclick="backupAllData()">
+                        <i class="fas fa-save" style="font-size: 2rem; color: var(--accent); margin-bottom: 10px;"></i>
+                        <div>نسخة احتياطية كاملة</div>
+                        <small style="color: #666;">كل شيء في ملف واحد</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                <h3 style="margin-bottom: 15px;">التقديمات الفردية</h3>
+                <div id="individualDownloads"></div>
+            </div>
         </div>
     </div>
     
-    <!-- الكاميرا -->
-    <div class="camera-modal" id="cameraModal">
-        <div class="camera-content">
-            <div style="padding: 15px; background: var(--dark); color: white; display: flex; justify-content: space-between;">
-                <h3>كاميرا NotCam</h3>
-                <button onclick="closeCamera()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">
-                    <i class="fas fa-times"></i>
+    <!-- نافذة عرض الصور -->
+    <div class="gallery-modal" id="galleryModal">
+        <button class="close-gallery" onclick="closeGallery()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="gallery-content">
+            <div class="gallery-header">
+                <div>
+                    <h3 id="galleryTitle"></h3>
+                    <div id="gallerySubtitle" style="font-size: 14px; opacity: 0.8;"></div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="downloadCurrentImage()" style="background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-download"></i> تحميل
+                    </button>
+                    <button onclick="deleteCurrentImage()" style="background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-trash"></i> حذف
+                    </button>
+                </div>
+            </div>
+            
+            <div class="gallery-main">
+                <img id="galleryImage" src="" alt="صورة">
+            </div>
+            
+            <div class="gallery-nav">
+                <button class="nav-btn" onclick="prevImage()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="nav-btn" onclick="nextImage()">
+                    <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
-            <video id="cameraVideo" class="camera-video" autoplay></video>
-            <div style="padding: 15px; text-align: center; background: var(--light);">
-                <button onclick="capturePhoto()" style="background: var(--primary); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 20px; cursor: pointer; margin: 0 10px;">
-                    <i class="fas fa-camera"></i>
-                </button>
-                <button onclick="uploadFile()" style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; margin: 0 10px;">
-                    <i class="fas fa-upload"></i> رفع صورة
-                </button>
+            
+            <div class="gallery-thumbnails" id="galleryThumbnails">
+                <!-- ستضاف الصور المصغرة هنا -->
             </div>
         </div>
     </div>
+    
+    <!-- تنبيهات -->
+    <div id="mainAlert" class="alert" style="position: fixed; top: 20px; right: 20px; z-index: 4000; max-width: 400px;"></div>
 
     <script>
-        // ============== البيانات والتخزين ==============
-        let appConfig = JSON.parse(localStorage.getItem('appConfig')) || {
-            title: "نظام جمع الصور",
-            subtitle: "اختر الكود، التقط الصور، أرسل البيانات",
-            primaryColor: "#2E86AB",
-            secondaryColor: "#A23B72",
-            codes: [
-                { id: "AREA-001", name: "المنطقة الشمالية" },
-                { id: "AREA-002", name: "المنطقة الجنوبية" },
-                { id: "AREA-003", name: "المنطقة الشرقية" },
-                { id: "AREA-004", name: "المنطقة الغربية" },
-                { id: "AREA-005", name: "المنطقة المركزية" }
-            ],
-            fields: [
-                { id: "username", type: "text", label: "اسم المستخدم", required: true },
-                { id: "phone", type: "text", label: "رقم الهاتف", required: false },
-                { id: "report_type", type: "select", label: "نوع التقرير", options: ["يومي", "أسبوعي", "شهري"], required: true },
-                { id: "brain_libre", type: "select", label: "Brain Libre", options: ["0","1","2","3","4","5","6","7","8","9"], required: true }
-            ],
-            buttons: [
-                { id: "submit", text: "إرسال البيانات", type: "primary" },
-                { id: "save", text: "حفظ كمسودة", type: "success" },
-                { id: "clear", text: "مسح الكل", type: "danger" }
-            ],
-            photoCount: { first: 5, second: 5 }
+        // ============== نظام عرض الصور ==============
+        
+        let allSubmissions = [];
+        let currentGalleryImages = [];
+        let currentImageIndex = 0;
+        let currentGallerySubmission = null;
+        
+        // تشغيل النظام
+        window.onload = function() {
+            loadAllSubmissions();
+            showTab('submissions');
         };
         
-        let currentData = {
-            selectedCode: null,
-            firstPhotos: [],
-            secondPhotos: [],
-            fieldValues: {},
-            timestamp: null
-        };
-        
-        let cameraStream = null;
-        let currentPhotoIndex = null;
-        let currentPhotoSet = null;
-        
-        // ============== تهيئة التطبيق ==============
-        function initApp() {
-            loadConfig();
-            renderCodes();
-            renderPhotoGrids();
-            renderFields();
-            renderButtons();
-            updateTheme();
+        // تحميل جميع التقديمات
+        function loadAllSubmissions() {
+            allSubmissions = [];
             
-            // إظهار رسالة ترحيب
-            setTimeout(() => {
-                showAlert("مرحباً بك! استخدم لوحة التحكم لتخصيص كل شيء", "success");
-            }, 1000);
-        }
-        
-        function loadConfig() {
-            const saved = localStorage.getItem('appConfig');
-            if (saved) {
-                appConfig = JSON.parse(saved);
-            }
+            // مسح المصفوفة أولاً
+            allSubmissions.length = 0;
             
-            // تطبيق التخصيصات
-            document.getElementById('mainTitle').textContent = appConfig.title;
-            document.getElementById('mainSubtitle').textContent = appConfig.subtitle;
-            document.documentElement.style.setProperty('--primary', appConfig.primaryColor);
-            document.documentElement.style.setProperty('--secondary', appConfig.secondaryColor);
-        }
-        
-        function saveConfig() {
-            localStorage.setItem('appConfig', JSON.stringify(appConfig));
-        }
-        
-        // ============== لوحة التحكم - وظائف فعلية ==============
-        function toggleAdminPanel() {
-            document.getElementById('adminPanel').classList.toggle('active');
-        }
-        
-        function changeTitle() {
-            const newTitle = prompt("أدخل العنوان الجديد:", appConfig.title);
-            if (newTitle) {
-                appConfig.title = newTitle;
-                document.getElementById('mainTitle').textContent = newTitle;
-                saveConfig();
-                showAlert("تم تغيير العنوان", "success");
-            }
-        }
-        
-        function changeColor() {
-            const color = prompt("أدخل اللون الرئيسي (مثال: #2E86AB):", appConfig.primaryColor);
-            if (color && /^#[0-9A-F]{6}$/i.test(color)) {
-                appConfig.primaryColor = color;
-                document.documentElement.style.setProperty('--primary', color);
-                saveConfig();
-                showAlert("تم تغيير اللون", "success");
-            }
-        }
-        
-        function reorderSections() {
-            const sections = ['codesSection', 'firstPhotosSection', 'secondPhotosSection', 'fieldsSection'];
-            const order = prompt(`أدخل ترتيب الأقسام (افصل بالأرقام 1-4):\n1. الأكواد\n2. الصور الأولى\n3. الصور الثانية\n4. الحقول\n\nمثال: 1,3,2,4`, "1,2,3,4");
-            
-            if (order) {
-                const orderArray = order.split(',').map(num => parseInt(num.trim()) - 1);
-                const contentDiv = document.querySelector('.content');
-                const currentSections = Array.from(contentDiv.children).filter(el => el.id);
+            // البحث عن جميع التقديمات في localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
                 
-                // إعادة ترتيب العناصر
-                orderArray.forEach((newIndex, oldIndex) => {
-                    if (currentSections[newIndex]) {
-                        contentDiv.insertBefore(currentSections[newIndex], contentDiv.children[oldIndex]);
+                if (key.startsWith('submission_') || key.startsWith('draft_')) {
+                    try {
+                        const submission = JSON.parse(localStorage.getItem(key));
+                        
+                        // إضافة معلومات إضافية
+                        submission.storageKey = key;
+                        submission.id = key;
+                        
+                        // تحميل الصور الفعلية
+                        loadSubmissionImages(submission);
+                        
+                        allSubmissions.push(submission);
+                    } catch (e) {
+                        console.error('خطأ في تحميل التقديم:', key, e);
+                    }
+                }
+            }
+            
+            // ترتيب من الأحدث للأقدم
+            allSubmissions.sort((a, b) => {
+                const dateA = new Date(a.timestamp || 0);
+                const dateB = new Date(b.timestamp || 0);
+                return dateB - dateA;
+            });
+            
+            renderSubmissionsList();
+            updateStats();
+        }
+        
+        // تحميل صور التقديم
+        function loadSubmissionImages(submission) {
+            if (!submission.images) {
+                submission.images = [];
+            }
+            
+            // جمع الصور من أولPhotos و secondPhotos
+            if (submission.firstPhotos) {
+                submission.firstPhotos.forEach((photo, index) => {
+                    if (photo && typeof photo === 'string' && photo.startsWith('data:image')) {
+                        submission.images.push({
+                            src: photo,
+                            set: 'first',
+                            index: index + 1,
+                            title: `صورة أولى ${index + 1}`
+                        });
                     }
                 });
-                
-                showAlert("تم إعادة ترتيب الأقسام", "success");
             }
-        }
-        
-        function addField() {
-            const fieldName = prompt("اسم الحقل الجديد:");
-            const fieldType = prompt("نوع الحقل (text, number, select, date):", "text");
             
-            if (fieldName) {
-                const newField = {
-                    id: `field_${Date.now()}`,
-                    type: fieldType,
-                    label: fieldName,
-                    required: false
-                };
-                
-                if (fieldType === 'select') {
-                    const options = prompt("أدخل الخيارات (افصل بفاصلة):", "خيار 1, خيار 2, خيار 3");
-                    if (options) {
-                        newField.options = options.split(',').map(opt => opt.trim());
+            if (submission.secondPhotos) {
+                submission.secondPhotos.forEach((photo, index) => {
+                    if (photo && typeof photo === 'string' && photo.startsWith('data:image')) {
+                        submission.images.push({
+                            src: photo,
+                            set: 'second',
+                            index: index + 1 + (submission.firstPhotos ? submission.firstPhotos.length : 0),
+                            title: `صورة ثانية ${index + 1}`
+                        });
+                    }
+                });
+            }
+            
+            // البحث عن صور إضافية في localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('photo_') && key.includes(submission.selectedCode)) {
+                    try {
+                        const photoData = localStorage.getItem(key);
+                        if (photoData && photoData.startsWith('data:image')) {
+                            submission.images.push({
+                                src: photoData,
+                                key: key,
+                                title: key.split('_')[1]
+                            });
+                        }
+                    } catch (e) {
+                        console.error('خطأ في تحميل الصورة:', key, e);
                     }
                 }
-                
-                appConfig.fields.push(newField);
-                renderFields();
-                saveConfig();
-                showAlert(`تم إضافة حقل: ${fieldName}`, "success");
             }
         }
         
-        function removeField() {
-            const fieldsList = appConfig.fields.map((f, i) => `${i + 1}. ${f.label}`).join('\n');
-            const index = prompt(`أدخل رقم الحقل لحذفه:\n${fieldsList}`);
+        // عرض قائمة التقديمات
+        function renderSubmissionsList() {
+            const container = document.getElementById('submissionsList');
             
-            if (index && !isNaN(index) && index > 0 && index <= appConfig.fields.length) {
-                const removed = appConfig.fields.splice(index - 1, 1);
-                renderFields();
-                saveConfig();
-                showAlert(`تم حذف حقل: ${removed[0].label}`, "success");
+            if (allSubmissions.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #666;">
+                        <i class="fas fa-inbox" style="font-size: 4rem; opacity: 0.3; margin-bottom: 20px;"></i>
+                        <h3>لا توجد تقديمات</h3>
+                        <p>لم يتم حفظ أي تقديمات حتى الآن</p>
+                    </div>
+                `;
+                return;
             }
-        }
-        
-        function renameField() {
-            const fieldsList = appConfig.fields.map((f, i) => `${i + 1}. ${f.label}`).join('\n');
-            const index = prompt(`أدخل رقم الحقل لتعديله:\n${fieldsList}`);
             
-            if (index && !isNaN(index) && index > 0 && index <= appConfig.fields.length) {
-                const newName = prompt("الاسم الجديد:", appConfig.fields[index - 1].label);
-                if (newName) {
-                    appConfig.fields[index - 1].label = newName;
-                    renderFields();
-                    saveConfig();
-                    showAlert("تم تغيير اسم الحقل", "success");
-                }
-            }
-        }
-        
-        function addCode() {
-            const codeId = prompt("رمز الكود الجديد:");
-            const codeName = prompt("اسم الكود الجديد:");
-            
-            if (codeId && codeName) {
-                appConfig.codes.push({ id: codeId, name: codeName });
-                renderCodes();
-                saveConfig();
-                showAlert(`تم إضافة كود: ${codeId}`, "success");
-            }
-        }
-        
-        function editCodes() {
-            const codesList = appConfig.codes.map((c, i) => `${i + 1}. ${c.id} - ${c.name}`).join('\n');
-            const index = prompt(`أدخل رقم الكود للتعديل:\n${codesList}`);
-            
-            if (index && !isNaN(index) && index > 0 && index <= appConfig.codes.length) {
-                const newName = prompt("الاسم الجديد:", appConfig.codes[index - 1].name);
-                if (newName) {
-                    appConfig.codes[index - 1].name = newName;
-                    renderCodes();
-                    saveConfig();
-                    showAlert("تم تعديل الكود", "success");
-                }
-            }
-        }
-        
-        function deleteCode() {
-            const codesList = appConfig.codes.map((c, i) => `${i + 1}. ${c.id} - ${c.name}`).join('\n');
-            const index = prompt(`أدخل رقم الكود للحذف:\n${codesList}`);
-            
-            if (index && !isNaN(index) && index > 0 && index <= appConfig.codes.length) {
-                if (confirm(`هل أنت متأكد من حذف ${appConfig.codes[index - 1].id}؟`)) {
-                    const removed = appConfig.codes.splice(index - 1, 1);
-                    renderCodes();
-                    saveConfig();
-                    showAlert(`تم حذف كود: ${removed[0].id}`, "success");
-                }
-            }
-        }
-        
-        function changePhotoCount() {
-            const firstCount = parseInt(prompt("عدد الصور الأولى:", appConfig.photoCount.first));
-            const secondCount = parseInt(prompt("عدد الصور الثانية:", appConfig.photoCount.second));
-            
-            if (!isNaN(firstCount) && !isNaN(secondCount) && firstCount > 0 && secondCount > 0) {
-                appConfig.photoCount.first = firstCount;
-                appConfig.photoCount.second = secondCount;
-                currentData.firstPhotos = new Array(firstCount).fill(null);
-                currentData.secondPhotos = new Array(secondCount).fill(null);
-                renderPhotoGrids();
-                saveConfig();
-                showAlert(`تم تغيير عدد الصور إلى ${firstCount} + ${secondCount}`, "success");
-            }
-        }
-        
-        function resetPhotos() {
-            if (confirm("هل تريد مسح جميع الصور؟")) {
-                currentData.firstPhotos = new Array(appConfig.photoCount.first).fill(null);
-                currentData.secondPhotos = new Array(appConfig.photoCount.second).fill(null);
-                renderPhotoGrids();
-                showAlert("تم مسح جميع الصور", "success");
-            }
-        }
-        
-        function addButton() {
-            const buttonText = prompt("نص الزر الجديد:");
-            const buttonType = prompt("نوع الزر (primary, success, danger, warning):", "primary");
-            
-            if (buttonText) {
-                const newButton = {
-                    id: `btn_${Date.now()}`,
-                    text: buttonText,
-                    type: buttonType
-                };
-                
-                appConfig.buttons.push(newButton);
-                renderButtons();
-                saveConfig();
-                showAlert(`تم إضافة زر: ${buttonText}`, "success");
-            }
-        }
-        
-        function removeButton() {
-            const buttonsList = appConfig.buttons.map((b, i) => `${i + 1}. ${b.text}`).join('\n');
-            const index = prompt(`أدخل رقم الزر لحذفه:\n${buttonsList}`);
-            
-            if (index && !isNaN(index) && index > 0 && index <= appConfig.buttons.length) {
-                const removed = appConfig.buttons.splice(index - 1, 1);
-                renderButtons();
-                saveConfig();
-                showAlert(`تم حذف زر: ${removed[0].text}`, "success");
-            }
-        }
-        
-        function renameButton() {
-            const buttonsList = appConfig.buttons.map((b, i) => `${i + 1}. ${b.text}`).join('\n');
-            const index = prompt(`أدخل رقم الزر لتعديله:\n${buttonsList}`);
-            
-            if (index && !isNaN(index) && index > 0 && index <= appConfig.buttons.length) {
-                const newText = prompt("النص الجديد:", appConfig.buttons[index - 1].text);
-                if (newText) {
-                    appConfig.buttons[index - 1].text = newText;
-                    renderButtons();
-                    saveConfig();
-                    showAlert("تم تغيير نص الزر", "success");
-                }
-            }
-        }
-        
-        // ============== عرض البيانات ==============
-        function renderCodes() {
-            const container = document.getElementById('codesGrid');
             container.innerHTML = '';
             
-            appConfig.codes.forEach(code => {
-                const div = document.createElement('div');
-                div.className = 'code-item';
-                if (currentData.selectedCode === code.id) {
-                    div.classList.add('selected');
-                }
-                div.innerHTML = `
-                    <div style="font-size: 18px; font-weight: bold;">${code.id}</div>
-                    <div style="font-size: 12px; margin-top: 5px;">${code.name}</div>
+            allSubmissions.forEach((submission, index) => {
+                const date = new Date(submission.timestamp);
+                const arabicDate = date.toLocaleDateString('ar-SA');
+                const time = date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                
+                const card = document.createElement('div');
+                card.className = 'submission-card';
+                card.innerHTML = `
+                    <div class="submission-header">
+                        <div class="submission-code">${submission.selectedCode || 'غير محدد'}</div>
+                        <div class="submission-date">
+                            ${arabicDate}<br>
+                            ${time}
+                        </div>
+                    </div>
+                    
+                    <div class="submission-body">
+                        <div class="submission-info">
+                            <div style="margin-bottom: 5px;">
+                                <i class="fas fa-user"></i> 
+                                ${submission.fieldValues?.username || 'غير محدد'}
+                            </div>
+                            <div>
+                                <i class="fas fa-brain"></i> 
+                                Brain Libre: ${submission.fieldValues?.brain_libre || 'غير محدد'}
+                            </div>
+                        </div>
+                        
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                            <i class="fas fa-images"></i> 
+                            ${submission.images?.length || 0} صورة
+                        </div>
+                        
+                        ${submission.images && submission.images.length > 0 ? `
+                            <div class="submission-photos-preview">
+                                ${submission.images.slice(0, 6).map((img, i) => `
+                                    <img src="${img.src}" class="photo-thumb" 
+                                         onclick="viewSubmissionGallery(${index}, ${i})"
+                                         onerror="this.src='https://via.placeholder.com/100x80?text=صورة+${i+1}'">
+                                `).join('')}
+                                ${submission.images.length > 6 ? `
+                                    <div style="background: var(--light); display: flex; align-items: center; justify-content: center; border-radius: 5px;">
+                                        +${submission.images.length - 6}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : `
+                            <div style="text-align: center; padding: 20px; color: #999;">
+                                <i class="fas fa-image" style="font-size: 2rem; opacity: 0.3;"></i>
+                                <div>لا توجد صور</div>
+                            </div>
+                        `}
+                        
+                        <div class="submission-actions">
+                            <button class="action-btn view-btn" onclick="viewSubmissionGallery(${index}, 0)">
+                                <i class="fas fa-eye"></i> عرض الكل
+                            </button>
+                            <button class="action-btn download-btn" onclick="downloadSubmission(${index})">
+                                <i class="fas fa-download"></i> تنزيل
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deleteSubmission(${index})">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
                 `;
-                div.onclick = () => selectCode(code.id);
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // عرض معرض الصور للتقديم
+        function viewSubmissionGallery(submissionIndex, imageIndex = 0) {
+            const submission = allSubmissions[submissionIndex];
+            
+            if (!submission || !submission.images || submission.images.length === 0) {
+                showAlert('لا توجد صور في هذا التقديم', 'error');
+                return;
+            }
+            
+            currentGalleryImages = submission.images;
+            currentImageIndex = imageIndex;
+            currentGallerySubmission = submission;
+            
+            // تحديث العنوان
+            const date = new Date(submission.timestamp);
+            document.getElementById('galleryTitle').textContent = 
+                `معرض صور: ${submission.selectedCode}`;
+            document.getElementById('gallerySubtitle').textContent = 
+                `${submission.fieldValues?.username || 'غير معروف'} - ${date.toLocaleDateString('ar-SA')}`;
+            
+            // عرض الصورة الأولى
+            showImageInGallery(imageIndex);
+            
+            // إنشاء الصور المصغرة
+            createThumbnails();
+            
+            // إظهار المعرض
+            document.getElementById('galleryModal').style.display = 'block';
+        }
+        
+        // عرض صورة في المعرض
+        function showImageInGallery(index) {
+            if (!currentGalleryImages[index]) return;
+            
+            const img = document.getElementById('galleryImage');
+            img.src = currentGalleryImages[index].src;
+            img.alt = currentGalleryImages[index].title;
+            
+            currentImageIndex = index;
+            
+            // تحديث الصور المصغرة النشطة
+            updateActiveThumbnail();
+        }
+        
+        // إنشاء الصور المصغرة
+        function createThumbnails() {
+            const container = document.getElementById('galleryThumbnails');
+            container.innerHTML = '';
+            
+            currentGalleryImages.forEach((img, index) => {
+                const thumb = document.createElement('img');
+                thumb.className = 'gallery-thumb';
+                thumb.src = img.src;
+                thumb.alt = img.title;
+                thumb.onclick = () => showImageInGallery(index);
+                thumb.onerror = function() {
+                    this.src = 'https://via.placeholder.com/100x70?text=صورة';
+                };
+                container.appendChild(thumb);
+            });
+            
+            updateActiveThumbnail();
+        }
+        
+        // تحديث الصورة المصغرة النشطة
+        function updateActiveThumbnail() {
+            const thumbs = document.querySelectorAll('.gallery-thumb');
+            thumbs.forEach((thumb, index) => {
+                if (index === currentImageIndex) {
+                    thumb.classList.add('active');
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
+        }
+        
+        // الصورة التالية
+        function nextImage() {
+            if (currentImageIndex < currentGalleryImages.length - 1) {
+                currentImageIndex++;
+                showImageInGallery(currentImageIndex);
+            }
+        }
+        
+        // الصورة السابقة
+        function prevImage() {
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                showImageInGallery(currentImageIndex);
+            }
+        }
+        
+        // إغلاق المعرض
+        function closeGallery() {
+            document.getElementById('galleryModal').style.display = 'none';
+            currentGalleryImages = [];
+            currentGallerySubmission = null;
+        }
+        
+        // تحميل الصورة الحالية
+        function downloadCurrentImage() {
+            if (!currentGalleryImages[currentImageIndex]) return;
+            
+            const img = currentGalleryImages[currentImageIndex];
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = `صورة_${currentGallerySubmission.selectedCode}_${Date.now()}.jpg`;
+            link.click();
+            
+            showAlert('تم تحميل الصورة', 'success');
+        }
+        
+        // حذف الصورة الحالية
+        function deleteCurrentImage() {
+            if (!confirm('هل أنت متأكد من حذف هذه الصورة؟')) return;
+            
+            const img = currentGalleryImages[currentImageIndex];
+            
+            // حذف من localStorage إذا كان له مفتاح
+            if (img.key) {
+                localStorage.removeItem(img.key);
+            }
+            
+            // حذف من المصفوفة
+            currentGalleryImages.splice(currentImageIndex, 1);
+            
+            if (currentGalleryImages.length === 0) {
+                closeGallery();
+                loadAllSubmissions(); // إعادة تحميل القائمة
+                showAlert('تم حذف جميع الصور', 'success');
+                return;
+            }
+            
+            // عرض الصورة التالية أو السابقة
+            if (currentImageIndex >= currentGalleryImages.length) {
+                currentImageIndex = currentGalleryImages.length - 1;
+            }
+            
+            showImageInGallery(currentImageIndex);
+            createThumbnails();
+            
+            showAlert('تم حذف الصورة', 'success');
+        }
+        
+        // تحديث الإحصائيات
+        function updateStats() {
+            const totalSubmissions = allSubmissions.length;
+            const totalPhotos = allSubmissions.reduce((sum, sub) => sum + (sub.images?.length || 0), 0);
+            
+            // حساب المساحة المستخدمة (تقريبية)
+            let storageSize = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                storageSize += (key.length + value.length) * 2; // تقريب للبايتات
+            }
+            const storageMB = (storageSize / (1024 * 1024)).toFixed(2);
+            
+            // آخر تقديم
+            const lastSubmission = allSubmissions.length > 0 ? 
+                new Date(allSubmissions[0].timestamp).toLocaleDateString('ar-SA') : 'لا يوجد';
+            
+            document.getElementById('totalSubmissions').textContent = totalSubmissions;
+            document.getElementById('totalPhotos').textContent = totalPhotos;
+            document.getElementById('lastSubmission').textContent = lastSubmission;
+            document.getElementById('storageUsed').textContent = `${storageMB} MB`;
+            
+            // تحديث إحصائيات المناطق
+            updateAreaStats();
+            
+            // تحديث تفاصيل التخزين
+            updateStorageDetails();
+        }
+        
+        // إحصائيات المناطق
+        function updateAreaStats() {
+            const areaStats = {};
+            allSubmissions.forEach(sub => {
+                const area = sub.selectedCode || 'غير محدد';
+                areaStats[area] = (areaStats[area] || 0) + 1;
+            });
+            
+            const container = document.getElementById('areaStats');
+            container.innerHTML = '';
+            
+            Object.entries(areaStats).forEach(([area, count]) => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '10px';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>${area}</span>
+                        <span style="font-weight: bold; color: var(--primary);">${count}</span>
+                    </div>
+                    <div style="height: 5px; background: #eee; border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; background: var(--primary); width: ${(count / allSubmissions.length) * 100}%;"></div>
+                    </div>
+                `;
                 container.appendChild(div);
             });
         }
         
-        function renderPhotoGrids() {
-            // الصور الأولى
-            const firstGrid = document.getElementById('firstPhotosGrid');
-            firstGrid.innerHTML = '';
+        // تفاصيل التخزين
+        function updateStorageDetails() {
+            const container = document.getElementById('storageDetails');
             
-            for (let i = 0; i < appConfig.photoCount.first; i++) {
-                createPhotoBox(firstGrid, i, 'first');
+            let photosCount = 0;
+            let submissionsCount = 0;
+            let draftsCount = 0;
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('photo_')) photosCount++;
+                else if (key.startsWith('submission_')) submissionsCount++;
+                else if (key.startsWith('draft_')) draftsCount++;
             }
             
-            // الصور الثانية
-            const secondGrid = document.getElementById('secondPhotosGrid');
-            secondGrid.innerHTML = '';
-            
-            for (let i = 0; i < appConfig.photoCount.second; i++) {
-                createPhotoBox(secondGrid, i, 'second');
-            }
-            
-            updatePhotoCounters();
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center;">
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; color: var(--primary); font-weight: bold;">${photosCount}</div>
+                        <div>صورة</div>
+                    </div>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; color: var(--success); font-weight: bold;">${submissionsCount}</div>
+                        <div>تقديم</div>
+                    </div>
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; color: var(--accent); font-weight: bold;">${draftsCount}</div>
+                        <div>مسودة</div>
+                    </div>
+                </div>
+            `;
         }
         
-        function createPhotoBox(container, index, set) {
-            const box = document.createElement('div');
-            box.className = 'photo-box';
-            if ((set === 'first' && currentData.firstPhotos[index]) || 
-                (set === 'second' && currentData.secondPhotos[index])) {
-                box.classList.add('has-image');
-            }
+        // تنزيل تقديم معين
+        function downloadSubmission(index) {
+            const submission = allSubmissions[index];
             
-            const number = document.createElement('div');
-            number.className = 'photo-number';
-            number.textContent = set === 'first' ? index + 1 : index + 1 + appConfig.photoCount.first;
+            if (!submission) return;
             
-            box.appendChild(number);
-            
-            if (set === 'first' && currentData.firstPhotos[index]) {
-                const img = document.createElement('img');
-                img.src = currentData.firstPhotos[index];
-                box.appendChild(img);
-            } else if (set === 'second' && currentData.secondPhotos[index]) {
-                const img = document.createElement('img');
-                img.src = currentData.secondPhotos[index];
-                box.appendChild(img);
-            } else {
-                const icon = document.createElement('i');
-                icon.className = 'fas fa-camera';
-                icon.style.fontSize = '40px';
-                icon.style.color = '#ccc';
-                box.appendChild(icon);
-            }
-            
-            box.onclick = () => openCamera(index, set);
-            container.appendChild(box);
-        }
-        
-        function renderFields() {
-            const container = document.getElementById('fieldsContainer');
-            container.innerHTML = '';
-            
-            appConfig.fields.forEach(field => {
-                const group = document.createElement('div');
-                group.className = 'field-group';
-                
-                const label = document.createElement('label');
-                label.className = 'field-label';
-                label.textContent = field.label + (field.required ? ' *' : '');
-                
-                let input;
-                
-                switch(field.type) {
-                    case 'select':
-                        input = document.createElement('select');
-                        if (field.options) {
-                            field.options.forEach(option => {
-                                const optionEl = document.createElement('option');
-                                optionEl.value = option;
-                                optionEl.textContent = option;
-                                input.appendChild(optionEl);
-                            });
-                        }
-                        break;
-                    case 'number':
-                        input = document.createElement('input');
-                        input.type = 'number';
-                        break;
-                    case 'date':
-                        input = document.createElement('input');
-                        input.type = 'date';
-                        break;
-                    default:
-                        input = document.createElement('input');
-                        input.type = 'text';
-                }
-                
-                input.id = `field_${field.id}`;
-                input.placeholder = `أدخل ${field.label}`;
-                if (field.required) input.required = true;
-                
-                // تعيين القيمة المحفوظة
-                if (currentData.fieldValues[field.id]) {
-                    input.value = currentData.fieldValues[field.id];
-                }
-                
-                group.appendChild(label);
-                group.appendChild(input);
-                container.appendChild(group);
-            });
-        }
-        
-        function renderButtons() {
-            const container = document.getElementById('actionButtons');
-            container.innerHTML = '';
-            
-            appConfig.buttons.forEach(button => {
-                const btn = document.createElement('button');
-                btn.className = `action-btn btn-${button.type}`;
-                btn.innerHTML = `<i class="fas fa-${getButtonIcon(button.type)}"></i> ${button.text}`;
-                
-                // تعيين الوظيفة بناءً على نوع الزر
-                switch(button.id) {
-                    case 'submit':
-                        btn.onclick = submitData;
-                        break;
-                    case 'save':
-                        btn.onclick = saveDraft;
-                        break;
-                    case 'clear':
-                        btn.onclick = clearAll;
-                        break;
-                    default:
-                        btn.onclick = () => showAlert(`زر ${button.text}`, "success");
-                }
-                
-                container.appendChild(btn);
-            });
-        }
-        
-        function getButtonIcon(type) {
-            switch(type) {
-                case 'primary': return 'paper-plane';
-                case 'success': return 'save';
-                case 'danger': return 'trash';
-                case 'warning': return 'exclamation-triangle';
-                default: return 'circle';
-            }
-        }
-        
-        function updateTheme() {
-            document.documentElement.style.setProperty('--primary', appConfig.primaryColor);
-            document.documentElement.style.setProperty('--secondary', appConfig.secondaryColor);
-        }
-        
-        // ============== الوظائف الأساسية ==============
-        function selectCode(codeId) {
-            currentData.selectedCode = codeId;
-            const codeInfo = appConfig.codes.find(c => c.id === codeId);
-            document.getElementById('selectedCodeText').textContent = `${codeId} - ${codeInfo.name}`;
-            renderCodes();
-            showAlert(`تم اختيار كود: ${codeId}`, "success");
-        }
-        
-        function openCamera(index, set) {
-            if (!currentData.selectedCode) {
-                showAlert("اختر كود المنطقة أولاً", "error");
-                return;
-            }
-            
-            currentPhotoIndex = index;
-            currentPhotoSet = set;
-            
-            document.getElementById('cameraModal').style.display = 'block';
-            
-            // طلب إذن الكاميرا
-            navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    facingMode: 'environment',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                } 
-            })
-            .then(stream => {
-                cameraStream = stream;
-                document.getElementById('cameraVideo').srcObject = stream;
-            })
-            .catch(err => {
-                console.error("خطأ في الكاميرا:", err);
-                showAlert("تعذر الوصول إلى الكاميرا. استخدم زر رفع الصورة.", "error");
-            });
-        }
-        
-        function closeCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-            }
-            document.getElementById('cameraModal').style.display = 'none';
-        }
-        
-        function capturePhoto() {
-            const video = document.getElementById('cameraVideo');
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
-            savePhoto(imageData);
-            closeCamera();
-        }
-        
-        function uploadFile() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.capture = 'environment';
-            
-            input.onchange = (e) => {
-                if (e.target.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        savePhoto(event.target.result);
-                        closeCamera();
-                    };
-                    reader.readAsDataURL(e.target.files[0]);
-                }
+            // إنشاء نسخة للتنزيل
+            const downloadData = {
+                ...submission,
+                downloadedAt: new Date().toISOString()
             };
             
-            input.click();
+            const dataStr = JSON.stringify(downloadData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `تقديم_${submission.selectedCode}_${new Date(submission.timestamp).toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showAlert('تم تحميل التقديم', 'success');
         }
         
-        function savePhoto(imageData) {
-            if (currentPhotoSet === 'first') {
-                currentData.firstPhotos[currentPhotoIndex] = imageData;
-            } else {
-                currentData.secondPhotos[currentPhotoIndex] = imageData;
+        // حذف تقديم
+        function deleteSubmission(index) {
+            const submission = allSubmissions[index];
+            
+            if (!submission || !confirm('هل أنت متأكد من حذف هذا التقديم وجميع صوره؟')) return;
+            
+            // حذف من localStorage
+            if (submission.storageKey) {
+                localStorage.removeItem(submission.storageKey);
             }
             
-            renderPhotoGrids();
-            
-            // حفظ الصورة في localStorage
-            savePhotoToStorage(imageData);
-            
-            showAlert(`تم حفظ الصورة ${currentPhotoIndex + 1}`, "success");
-        }
-        
-        function savePhotoToStorage(imageData) {
-            const photoId = `${currentData.selectedCode}_${currentPhotoSet}_${currentPhotoIndex}_${Date.now()}`;
-            localStorage.setItem(`photo_${photoId}`, imageData);
-            
-            // حفظ رابط الصورة في بيانات التقديم
-            const submissionId = `submission_${currentData.selectedCode}_${Date.now()}`;
-            let submission = JSON.parse(localStorage.getItem(submissionId)) || { photos: [] };
-            submission.photos.push({
-                id: photoId,
-                set: currentPhotoSet,
-                index: currentPhotoIndex,
-                timestamp: new Date().toISOString()
-            });
-            localStorage.setItem(submissionId, JSON.stringify(submission));
-        }
-        
-        function updatePhotoCounters() {
-            const firstCount = currentData.firstPhotos.filter(p => p).length;
-            const secondCount = currentData.secondPhotos.filter(p => p).length;
-            
-            document.getElementById('firstPhotosCounter').textContent = `${firstCount}/${appConfig.photoCount.first}`;
-            document.getElementById('secondPhotosCounter').textContent = `${secondCount}/${appConfig.photoCount.second}`;
-        }
-        
-        function submitData() {
-            // التحقق من البيانات
-            if (!currentData.selectedCode) {
-                showAlert("اختر كود المنطقة أولاً", "error");
-                return;
-            }
-            
-            // التحقق من الصور
-            const firstCount = currentData.firstPhotos.filter(p => p).length;
-            const secondCount = currentData.secondPhotos.filter(p => p).length;
-            
-            if (firstCount < appConfig.photoCount.first) {
-                showAlert(`يجب رفع ${appConfig.photoCount.first} صور أولية (${firstCount}/${appConfig.photoCount.first})`, "error");
-                return;
-            }
-            
-            if (secondCount < appConfig.photoCount.second) {
-                showAlert(`يجب رفع ${appConfig.photoCount.second} صور ثانوية (${secondCount}/${appConfig.photoCount.second})`, "error");
-                return;
-            }
-            
-            // جمع بيانات الحقول
-            appConfig.fields.forEach(field => {
-                const input = document.getElementById(`field_${field.id}`);
-                if (input) {
-                    currentData.fieldValues[field.id] = input.value;
-                    
-                    // التحقق من الحقول المطلوبة
-                    if (field.required && !input.value.trim()) {
-                        showAlert(`حقل ${field.label} مطلوب`, "error");
-                        throw new Error("الحقول المطلوبة غير مكتملة");
+            // حذف الصور المرتبطة
+            if (submission.images) {
+                submission.images.forEach(img => {
+                    if (img.key) {
+                        localStorage.removeItem(img.key);
                     }
+                });
+            }
+            
+            // حذف من القائمة
+            allSubmissions.splice(index, 1);
+            
+            // إعادة التحميل
+            loadAllSubmissions();
+            showAlert('تم حذف التقديم', 'success');
+        }
+        
+        // تحديث التقديمات
+        function refreshSubmissions() {
+            loadAllSubmissions();
+            showAlert('تم تحديث القائمة', 'success');
+        }
+        
+        // التبديل بين التبويبات
+        function showTab(tabName) {
+            // إخفاء جميع التبويبات
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // إظهار التبويب المحدد
+            document.querySelector(`.tab[onclick*="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            // تحميل البيانات إذا لزم الأمر
+            if (tabName === 'stats' || tabName === 'download') {
+                updateStats();
+            }
+        }
+        
+        // تنزيل جميع التقديمات
+        function downloadAllSubmissions() {
+            if (allSubmissions.length === 0) {
+                showAlert('لا توجد تقديمات للتنزيل', 'error');
+                return;
+            }
+            
+            const allData = {
+                exportDate: new Date().toISOString(),
+                totalSubmissions: allSubmissions.length,
+                totalPhotos: allSubmissions.reduce((sum, sub) => sum + (sub.images?.length || 0), 0),
+                submissions: allSubmissions
+            };
+            
+            const dataStr = JSON.stringify(allData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `جميع_التقديمات_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showAlert(`تم تنزيل ${allSubmissions.length} تقديم`, 'success');
+        }
+        
+        // تنزيل جميع الصور
+        async function downloadAllPhotos() {
+            const allImages = [];
+            
+            // جمع جميع الصور
+            allSubmissions.forEach(sub => {
+                if (sub.images) {
+                    sub.images.forEach(img => {
+                        allImages.push({
+                            src: img.src,
+                            code: sub.selectedCode,
+                            title: img.title
+                        });
+                    });
                 }
             });
             
-            // إضافة الطابع الزمني
-            currentData.timestamp = new Date().toISOString();
+            if (allImages.length === 0) {
+                showAlert('لا توجد صور للتنزيل', 'error');
+                return;
+            }
             
-            // حفظ البيانات
-            saveSubmission();
+            showAlert(`جاري تحضير ${allImages.length} صورة للتنزيل...`, 'success');
             
-            showAlert("✅ تم إرسال البيانات بنجاح!", "success");
-            
-            // عرض رابط التحميل
+            // محاكاة إنشاء ملف ZIP
             setTimeout(() => {
-                downloadData();
+                const imagesList = allImages.map((img, i) => `${i + 1}. ${img.code} - ${img.title}`).join('\n');
+                const textFile = new Blob([`قائمة الصور:\n${imagesList}\n\nإجمالي الصور: ${allImages.length}\nتاريخ التصدير: ${new Date().toLocaleString('ar-SA')}`], 
+                    { type: 'text/plain' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(textFile);
+                link.download = `قائمة_الصور_${Date.now()}.txt`;
+                link.click();
+                
+                showAlert(`تم إنشاء قائمة بالصور (${allImages.length} صورة)`, 'success');
             }, 1000);
         }
         
-        function saveSubmission() {
-            const submissionId = `submission_${currentData.selectedCode}_${Date.now()}`;
-            const submissionData = {
-                ...currentData,
-                config: appConfig,
-                submissionId: submissionId
-            };
-            
-            // حفظ في localStorage
-            localStorage.setItem(submissionId, JSON.stringify(submissionData));
-            
-            // حفظ في ملف
-            saveToFile(submissionData);
-            
-            // محاكاة الإرسال إلى Google Drive
-            simulateGoogleDriveUpload(submissionData);
-        }
-        
-        function saveToFile(data) {
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `submission_${data.selectedCode}_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-        
-        function downloadData() {
-            const data = {
-                ...currentData,
-                config: appConfig
-            };
-            
-            const dataStr = JSON.stringify(data, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const dataUrl = URL.createObjectURL(dataBlob);
-            
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = `data_${currentData.selectedCode}_${Date.now()}.json`;
-            link.click();
-            
-            showAlert("📥 تم تحميل البيانات", "success");
-        }
-        
-        function saveDraft() {
-            if (!currentData.selectedCode) {
-                showAlert("اختر كود المنطقة أولاً", "error");
+        // تصدير لـ Excel
+        function exportToExcel() {
+            if (allSubmissions.length === 0) {
+                showAlert('لا توجد بيانات للتصدير', 'error');
                 return;
             }
             
-            // حفظ بيانات الحقول
-            appConfig.fields.forEach(field => {
-                const input = document.getElementById(`field_${field.id}`);
-                if (input) {
-                    currentData.fieldValues[field.id] = input.value;
-                }
+            // إنشاء بيانات CSV
+            let csv = 'الكود,المستخدم,Brain Libre,عدد الصور,التاريخ,الوقت\n';
+            
+            allSubmissions.forEach(sub => {
+                const date = new Date(sub.timestamp);
+                csv += `"${sub.selectedCode || ''}","${sub.fieldValues?.username || ''}","${sub.fieldValues?.brain_libre || ''}",` +
+                      `"${sub.images?.length || 0}","${date.toLocaleDateString('ar-SA')}","${date.toLocaleTimeString('ar-SA')}"\n`;
             });
             
-            const draftId = `draft_${currentData.selectedCode}_${Date.now()}`;
-            localStorage.setItem(draftId, JSON.stringify(currentData));
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `تقرير_التقديمات_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
             
-            showAlert("تم حفظ المسودة", "success");
+            showAlert('تم تصدير التقرير', 'success');
         }
         
-        function clearAll() {
-            if (confirm("هل تريد مسح جميع البيانات؟")) {
-                currentData = {
-                    selectedCode: null,
-                    firstPhotos: new Array(appConfig.photoCount.first).fill(null),
-                    secondPhotos: new Array(appConfig.photoCount.second).fill(null),
-                    fieldValues: {},
-                    timestamp: null
-                };
-                
-                document.getElementById('selectedCodeText').textContent = "لم يتم اختيار كود";
-                renderCodes();
-                renderPhotoGrids();
-                renderFields();
-                
-                showAlert("تم مسح جميع البيانات", "success");
+        // نسخة احتياطية كاملة
+        function backupAllData() {
+            const backup = {};
+            
+            // نسخ كل localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                backup[key] = localStorage.getItem(key);
             }
-        }
-        
-        function simulateGoogleDriveUpload(data) {
-            console.log("محاكاة الرفع إلى Google Drive:", {
-                code: data.selectedCode,
-                photos: data.firstPhotos.filter(p => p).length + data.secondPhotos.filter(p => p).length,
-                fields: data.fieldValues,
-                timestamp: data.timestamp
-            });
             
-            // هنا يمكنك إضافة كود Google Drive API الحقيقي
+            const dataStr = JSON.stringify(backup, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `نسخة_احتياطية_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            link.click();
+            
+            showAlert('تم إنشاء نسخة احتياطية', 'success');
         }
         
+        // عرض التنبيهات
         function showAlert(message, type) {
-            const alertDiv = document.getElementById('alert');
+            const alertDiv = document.getElementById('mainAlert');
             alertDiv.textContent = message;
             alertDiv.className = `alert alert-${type}`;
             alertDiv.style.display = 'block';
@@ -1267,14 +1192,18 @@
             }, 5000);
         }
         
-        // تشغيل التطبيق عند التحميل
-        window.onload = function() {
-            // تهيئة مصفوفات الصور
-            currentData.firstPhotos = new Array(appConfig.photoCount.first).fill(null);
-            currentData.secondPhotos = new Array(appConfig.photoCount.second).fill(null);
-            
-            initApp();
-        };
+        // إضافة اختصارات لوحة المفاتيح
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('galleryModal').style.display === 'block') {
+                if (e.key === 'ArrowRight' || e.key === 'd') {
+                    prevImage();
+                } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+                    nextImage();
+                } else if (e.key === 'Escape') {
+                    closeGallery();
+                }
+            }
+        });
     </script>
 </body>
 </html>
