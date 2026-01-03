@@ -1242,8 +1242,8 @@
                 };
                 
                 const response = await emailjs.send(
-                    'service_ut8ln4l', // استبدل بمعرف الخدمة
-                    'template_pc94202', // استبدل بمعرف القالب
+                    'YOUR_SERVICE_ID', // استبدل بمعرف الخدمة
+                    'YOUR_TEMPLATE_ID', // استبدل بمعرف القالب
                     templateParams
                 );
                 
@@ -1297,7 +1297,7 @@
         }
         
         function testEmailFunction() {
-            const testEmail = prompt('أدخل بريدك Gmail للاختبار:', 'hichamverne@gmail.com');
+            const testEmail = prompt('أدخل بريدك Gmail للاختبار:', 'example@gmail.com');
             
             if (testEmail && validateEmail(testEmail)) {
                 document.getElementById('recipientEmail').value = testEmail;
