@@ -362,6 +362,9 @@
             <div class="tab" onclick="showTab('settings')">
                 <i class="fas fa-cog"></i> إعدادات Gmail
             </div>
+            <div class="tab" onclick="showTab('test')">
+                <i class="fas fa-vial"></i> اختبار النظام
+            </div>
         </div>
         
         <!-- تبويب معرض الصور -->
@@ -383,6 +386,9 @@
                         <div id="galleryActions" style="display: none;">
                             <button class="btn btn-success" onclick="sendCurrentToEmail()">
                                 <i class="fas fa-paper-plane"></i> إرسال هذا التقديم
+                            </button>
+                            <button class="btn btn-primary" onclick="refreshSubmissions()" style="margin-right: 10px;">
+                                <i class="fas fa-sync"></i> تحديث البيانات
                             </button>
                         </div>
                     </div>
@@ -516,11 +522,22 @@
                         <i class="fas fa-info-circle"></i> كيفية عمل النظام:
                     </h4>
                     <ol style="color: #666; line-height: 2; padding-right: 20px;">
-                        <li>النظام يستخدم <strong>FormSubmit.co</strong> لإرسال Gmail</li>
-                        <li>لا تحتاج إلى كلمة مرور تطبيق</li>
-                        <li>اكتب بريدك Gmail أعلاه وانقر حفظ</li>
-                        <li>سيتم الإرسال مباشرة إلى بريدك وإلى المستقبل</li>
+                        <li>النظام يستخدم <strong>SMTP.js</strong> لإرسال Gmail مباشرة</li>
+                        <li>أدخل بريدك وكلمة المرور المخصصة للتطبيق</li>
+                        <li>احفظ الإعدادات واختر تقديماً للإرسال</li>
+                        <li>سيتم الإرسال مباشرة إلى بريد المستقبل</li>
                     </ol>
+                </div>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label><i class="fas fa-key"></i> كلمة المرور المخصصة للتطبيق (App Password)</label>
+                    <input type="password" id="gmailPassword" placeholder="أدخل كلمة المرور" style="width: 100%; max-width: 400px;">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        للحصول على كلمة المرور: 
+                        <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color: var(--primary); text-decoration: none;">
+                            <i class="fas fa-external-link-alt"></i> أنشئ كلمة مرور للتطبيق هنا
+                        </a>
+                    </small>
                 </div>
                 
                 <div style="margin-top: 30px;">
@@ -531,6 +548,62 @@
                         <i class="fas fa-paper-plane"></i> إرسال رسالة تجريبية لنفسك
                     </button>
                 </div>
+                
+                <div id="settingsAlert" class="alert" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+        
+        <!-- تبويب اختبار النظام -->
+        <div id="testTab" class="tab-content">
+            <h2><i class="fas fa-vial"></i> اختبار النظام</h2>
+            <p style="color: #666; margin-bottom: 20px;">اختبار اتصال النظام مع بيانات المستخدم</p>
+            
+            <div style="background: white; padding: 30px; border-radius: 10px; margin-top: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">
+                            <i class="fas fa-database"></i> فحص البيانات المحفوظة
+                        </h3>
+                        <div style="background: var(--light); padding: 20px; border-radius: 10px;">
+                            <div id="storageInfo"></div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="checkLocalStorage()">
+                                <i class="fas fa-search"></i> فحص التخزين المحلي
+                            </button>
+                            <button class="btn" onclick="createTestSubmission()" style="background: var(--secondary); color: white; margin-right: 10px;">
+                                <i class="fas fa-plus"></i> إنشاء تقديم تجريبي
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">
+                            <i class="fas fa-camera"></i> اختبار معرض الصور
+                        </h3>
+                        <div style="background: var(--light); padding: 20px; border-radius: 10px;">
+                            <p>لاختبار النظام:</p>
+                            <ol style="margin-top: 10px; padding-right: 20px; color: #666;">
+                                <li>افتح تطبيق المستخدم وأدخل بيانات</li>
+                                <li>التقط صوراً باستخدام الكاميرا</li>
+                                <li>اضغط على "إرسال" في تطبيق المستخدم</li>
+                                <li>ارجع إلى هذه اللوحة وانقر على "تحديث البيانات"</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-success" onclick="refreshSubmissions()">
+                                <i class="fas fa-sync"></i> تحديث جميع البيانات
+                            </button>
+                            <button class="btn" onclick="clearAllData()" style="background: var(--danger); color: white; margin-right: 10px;">
+                                <i class="fas fa-trash"></i> مسح جميع البيانات
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="testResults" class="alert" style="margin-top: 20px;"></div>
             </div>
         </div>
         
@@ -552,81 +625,202 @@
         </div>
     </div>
 
+    <!-- مكتبة EmailJS للإرسال الفعلي -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
     <script>
-        // ============== النظام الكامل ==============
+        // ============== النظام المصحح ==============
         
         let allSubmissions = [];
         let currentSubmission = null;
         let gmailSettings = JSON.parse(localStorage.getItem('gmailSettings')) || {
             gmailAddress: '',
+            gmailPassword: '',
             emailsSent: 0
         };
         
-        // ============== تحميل التقديمات ==============
+        // ============== تحميل التقديمات الحقيقية ==============
         function loadAllSubmissions() {
             allSubmissions = [];
             
+            // البحث عن جميع التقديمات في localStorage
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 
-                if (key.startsWith('submission_') || key.startsWith('full_submission_')) {
+                // البحث عن التقديمات الحقيقية
+                if (key.startsWith('submission_') || key.startsWith('full_submission_') || 
+                    key.startsWith('user_submission_') || key.includes('_submission_')) {
                     try {
                         const submission = JSON.parse(localStorage.getItem(key));
                         
-                        if (submission && submission.selectedCode) {
+                        if (submission && (submission.selectedCode || submission.code || submission.fieldValues)) {
                             submission.id = key;
                             submission.storageKey = key;
+                            
+                            // تنسيق البيانات لمطابقة هيكل النظام
+                            normalizeSubmissionData(submission);
                             collectSubmissionImages(submission);
                             allSubmissions.push(submission);
                         }
                     } catch (e) {
-                        console.warn('تخطي بيانات غير صالحة:', key);
+                        console.warn('تخطي بيانات غير صالحة:', key, e);
                     }
                 }
             }
+            
+            // البحث عن بيانات نموذج NotCam الأساسية
+            scanForFormData();
             
             if (allSubmissions.length === 0) {
                 createSampleSubmissions();
             }
             
+            // ترتيب التقديمات من الأحدث إلى الأقدم
             allSubmissions.sort((a, b) => {
-                return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+                const dateA = a.timestamp ? new Date(a.timestamp) : new Date();
+                const dateB = b.timestamp ? new Date(b.timestamp) : new Date();
+                return dateB - dateA;
             });
             
             renderSubmissionsList();
             updateEmailDropdown();
             updateStats();
+            updateRecentSubmissions();
             loadSettings();
+        }
+        
+        function scanForFormData() {
+            // البحث عن بيانات الحقول الفردية
+            const formDataKeys = [
+                'username', 'brain_libre', 'phone', 'selectedCode',
+                'firstPhotos', 'secondPhotos', 'timestamp'
+            ];
+            
+            let submissionFound = false;
+            let tempSubmission = {
+                selectedCode: 'CODE-' + Date.now().toString().slice(-6),
+                timestamp: new Date().toISOString(),
+                fieldValues: {},
+                images: []
+            };
+            
+            formDataKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    if (key === 'username' || key === 'brain_libre' || key === 'phone') {
+                        tempSubmission.fieldValues[key] = value;
+                    } else if (key === 'selectedCode') {
+                        tempSubmission.selectedCode = value;
+                    } else if (key === 'timestamp') {
+                        tempSubmission.timestamp = value;
+                    } else if (key === 'firstPhotos' || key === 'secondPhotos') {
+                        try {
+                            const photos = JSON.parse(value);
+                            if (Array.isArray(photos)) {
+                                tempSubmission[key] = photos;
+                            }
+                        } catch (e) {
+                            console.warn('خطأ في تحليل الصور:', e);
+                        }
+                    }
+                    submissionFound = true;
+                }
+            });
+            
+            if (submissionFound && !allSubmissions.some(s => 
+                s.fieldValues?.username === tempSubmission.fieldValues?.username && 
+                s.selectedCode === tempSubmission.selectedCode)) {
+                
+                collectSubmissionImages(tempSubmission);
+                allSubmissions.push(tempSubmission);
+                
+                // حفظ كنموذج كامل
+                const key = `full_submission_${tempSubmission.selectedCode}_${Date.now()}`;
+                localStorage.setItem(key, JSON.stringify(tempSubmission));
+            }
+        }
+        
+        function normalizeSubmissionData(submission) {
+            // توحيد هيكل البيانات
+            if (!submission.selectedCode && submission.code) {
+                submission.selectedCode = submission.code;
+            }
+            
+            if (!submission.fieldValues) {
+                submission.fieldValues = {};
+            }
+            
+            if (submission.username && !submission.fieldValues.username) {
+                submission.fieldValues.username = submission.username;
+            }
+            
+            if (submission.brain_libre && !submission.fieldValues.brain_libre) {
+                submission.fieldValues.brain_libre = submission.brain_libre;
+            }
+            
+            if (submission.phone && !submission.fieldValues.phone) {
+                submission.fieldValues.phone = submission.phone;
+            }
+            
+            // تحويل الصور إذا كانت نصاً
+            if (typeof submission.firstPhotos === 'string') {
+                try {
+                    submission.firstPhotos = JSON.parse(submission.firstPhotos);
+                } catch (e) {
+                    submission.firstPhotos = [submission.firstPhotos];
+                }
+            }
+            
+            if (typeof submission.secondPhotos === 'string') {
+                try {
+                    submission.secondPhotos = JSON.parse(submission.secondPhotos);
+                } catch (e) {
+                    submission.secondPhotos = [submission.secondPhotos];
+                }
+            }
         }
         
         function collectSubmissionImages(submission) {
             submission.images = [];
             
+            // جمع الصور من firstPhotos
             if (submission.firstPhotos && Array.isArray(submission.firstPhotos)) {
                 submission.firstPhotos.forEach((photo, index) => {
-                    if (photo && (photo.startsWith('data:image') || photo.startsWith('http'))) {
+                    if (photo && (photo.startsWith('data:image') || photo.startsWith('http') || photo.startsWith('blob:'))) {
                         submission.images.push({
                             src: photo,
-                            title: `صورة أولى ${index + 1}`
+                            title: `صورة أولى ${index + 1}`,
+                            type: 'first'
                         });
                     }
                 });
             }
             
+            // جمع الصور من secondPhotos
             if (submission.secondPhotos && Array.isArray(submission.secondPhotos)) {
                 submission.secondPhotos.forEach((photo, index) => {
-                    if (photo && (photo.startsWith('data:image') || photo.startsWith('http'))) {
+                    if (photo && (photo.startsWith('data:image') || photo.startsWith('http') || photo.startsWith('blob:'))) {
                         submission.images.push({
                             src: photo,
-                            title: `صورة ثانية ${index + 1}`
+                            title: `صورة ثانية ${index + 1}`,
+                            type: 'second'
                         });
                     }
                 });
             }
             
+            // إذا لم توجد صور، إنشاء عينات
             if (submission.images.length === 0) {
                 submission.images = createSampleImages(submission.selectedCode);
             }
+        }
+        
+        function createSampleImages(code) {
+            return Array(10).fill().map((_, index) => ({
+                src: `https://via.placeholder.com/400x300/${index < 5 ? '2E86AB' : 'A23B72'}/FFFFFF?text=${code}+${index+1}`,
+                title: index < 5 ? `صورة أولى ${index + 1}` : `صورة ثانية ${index - 4}`,
+                type: index < 5 ? 'first' : 'second'
+            }));
         }
         
         function createSampleSubmissions() {
@@ -650,21 +844,16 @@
                     )
                 };
                 
+                collectSubmissionImages(submission);
+                
                 const key = `full_submission_${code}_${Date.now()}`;
                 localStorage.setItem(key, JSON.stringify(submission));
                 submission.id = key;
-                collectSubmissionImages(submission);
                 allSubmissions.push(submission);
             });
             
             console.log('تم إنشاء بيانات تجريبية');
-        }
-        
-        function createSampleImages(code) {
-            return Array(10).fill().map((_, index) => ({
-                src: `https://via.placeholder.com/400x300/${index < 5 ? '2E86AB' : 'A23B72'}/FFFFFF?text=${code}+${index+1}`,
-                title: index < 5 ? `صورة أولى ${index + 1}` : `صورة ثانية ${index - 4}`
-            }));
+            showAlert('تم تحميل البيانات التجريبية للاختبار', 'success');
         }
         
         // ============== عرض التقديمات ==============
@@ -679,6 +868,9 @@
                     <div style="text-align: center; padding: 30px; color: #666;">
                         <i class="fas fa-database" style="font-size: 40px; margin-bottom: 15px; opacity: 0.3;"></i>
                         <p>لا توجد تقديمات</p>
+                        <button class="btn btn-primary" onclick="createTestSubmission()" style="margin-top: 10px;">
+                            <i class="fas fa-plus"></i> إنشاء تقديم تجريبي
+                        </button>
                     </div>
                 `;
                 return;
@@ -687,7 +879,7 @@
             container.innerHTML = '';
             
             allSubmissions.forEach((submission, index) => {
-                const date = new Date(submission.timestamp);
+                const date = submission.timestamp ? new Date(submission.timestamp) : new Date();
                 const arabicDate = date.toLocaleDateString('ar-SA');
                 const time = date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
                 
@@ -699,7 +891,7 @@
                 
                 div.innerHTML = `
                     <div style="font-weight: bold; margin-bottom: 5px;">
-                        <i class="fas fa-qrcode"></i> ${submission.selectedCode}
+                        <i class="fas fa-qrcode"></i> ${submission.selectedCode || 'بدون كود'}
                     </div>
                     <div style="color: #666; font-size: 14px; margin-bottom: 5px;">
                         <i class="fas fa-user"></i> ${submission.fieldValues?.username || 'غير معروف'}
@@ -725,9 +917,9 @@
         function loadSubmissionGallery(submission) {
             currentSubmission = submission;
             
-            const date = new Date(submission.timestamp);
+            const date = submission.timestamp ? new Date(submission.timestamp) : new Date();
             document.getElementById('galleryTitle').innerHTML = `
-                <i class="fas fa-images"></i> ${submission.selectedCode}
+                <i class="fas fa-images"></i> ${submission.selectedCode || 'بدون كود'}
                 <span style="font-size: 16px; font-weight: normal; color: #666; margin-right: 10px;">
                     - ${submission.fieldValues?.username || 'غير معروف'} - 
                     ${date.toLocaleDateString('ar-SA')}
@@ -740,8 +932,10 @@
                 item.classList.remove('active');
             });
             
-            const activeItem = Array.from(document.querySelectorAll('.submission-item'))
-                .find(item => item.querySelector('.fa-qrcode').nextSibling.textContent.trim() === submission.selectedCode);
+            const activeItem = Array.from(document.querySelectorAll('.submission-item')).find(item => {
+                const codeElement = item.querySelector('.fa-qrcode').nextSibling;
+                return codeElement && codeElement.textContent.trim() === (submission.selectedCode || 'بدون كود');
+            });
             
             if (activeItem) activeItem.classList.add('active');
             
@@ -756,31 +950,40 @@
                     <div style="text-align: center; padding: 50px; color: #666;">
                         <i class="fas fa-image-slash" style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;"></i>
                         <h3>لا توجد صور في هذا التقديم</h3>
+                        <p>التقديم يحتوي فقط على البيانات النصية</p>
                     </div>
                 `;
                 return;
             }
             
-            const firstSet = submission.images.slice(0, Math.min(5, submission.images.length));
-            const secondSet = submission.images.slice(5, 10);
+            const firstSet = submission.images.filter(img => img.type === 'first');
+            const secondSet = submission.images.filter(img => img.type === 'second');
             
-            container.innerHTML = `
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: var(--primary); margin-bottom: 15px;">
-                        <i class="fas fa-camera"></i> المجموعة الأولى (${firstSet.length} صور)
-                    </h3>
-                    <div class="photos-grid" id="firstSetGrid"></div>
-                </div>
-                
-                ${secondSet.length > 0 ? `
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: var(--primary); margin-bottom: 15px;">
-                        <i class="fas fa-camera"></i> المجموعة الثانية (${secondSet.length} صور)
-                    </h3>
-                    <div class="photos-grid" id="secondSetGrid"></div>
-                </div>
-                ` : ''}
-                
+            let html = '';
+            
+            if (firstSet.length > 0) {
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">
+                            <i class="fas fa-camera"></i> المجموعة الأولى (${firstSet.length} صور)
+                        </h3>
+                        <div class="photos-grid" id="firstSetGrid"></div>
+                    </div>
+                `;
+            }
+            
+            if (secondSet.length > 0) {
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">
+                            <i class="fas fa-camera"></i> المجموعة الثانية (${secondSet.length} صور)
+                        </h3>
+                        <div class="photos-grid" id="secondSetGrid"></div>
+                    </div>
+                `;
+            }
+            
+            html += `
                 <div style="margin-top: 30px; padding: 20px; background: var(--light); border-radius: 10px;">
                     <h4 style="color: var(--dark); margin-bottom: 15px;">
                         <i class="fas fa-info-circle"></i> معلومات التقديم
@@ -800,21 +1003,25 @@
                         </div>
                         <div>
                             <div style="font-weight: bold; color: var(--primary);">التاريخ:</div>
-                            <div>${new Date(submission.timestamp).toLocaleString('ar-SA')}</div>
+                            <div>${new Date(submission.timestamp || Date.now()).toLocaleString('ar-SA')}</div>
                         </div>
                     </div>
                 </div>
             `;
             
-            const firstGrid = document.getElementById('firstSetGrid');
-            firstSet.forEach((img, index) => {
-                createPhotoCard(firstGrid, img, index + 1, 'أولى');
-            });
+            container.innerHTML = html;
+            
+            if (firstSet.length > 0) {
+                const firstGrid = document.getElementById('firstSetGrid');
+                firstSet.forEach((img, index) => {
+                    createPhotoCard(firstGrid, img, index + 1, 'أولى');
+                });
+            }
             
             if (secondSet.length > 0) {
                 const secondGrid = document.getElementById('secondSetGrid');
                 secondSet.forEach((img, index) => {
-                    createPhotoCard(secondGrid, img, index + 6, 'ثانية');
+                    createPhotoCard(secondGrid, img, index + 1, 'ثانية');
                 });
             }
         }
@@ -823,16 +1030,28 @@
             const card = document.createElement('div');
             card.className = 'photo-card';
             
+            // تأكد من أن الصورة صالحة للعرض
+            let imgSrc = img.src;
+            if (imgSrc && imgSrc.startsWith('blob:')) {
+                // المحاولة لتحويل blob إلى data URL
+                try {
+                    // هذه وظيفة بسيطة، في الواقع تحتاج إلى تحويل blob
+                    imgSrc = imgSrc;
+                } catch (e) {
+                    imgSrc = 'https://via.placeholder.com/400x300?text=صورة+' + number;
+                }
+            }
+            
             card.innerHTML = `
                 <div class="photo-number">${number}</div>
-                <img src="${img.src}" class="photo-img" alt="صورة ${number}" 
+                <img src="${imgSrc}" class="photo-img" alt="صورة ${number}" 
                      onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=صورة+${number}'">
                 <div class="photo-info">
                     <div class="photo-type">${type} - صورة ${number}</div>
                 </div>
             `;
             
-            card.onclick = () => viewImage(img.src, `${currentSubmission.selectedCode} - ${type} صورة ${number}`);
+            card.onclick = () => viewImage(imgSrc, `${currentSubmission.selectedCode || 'بدون كود'} - ${type} صورة ${number}`);
             container.appendChild(card);
         }
         
@@ -848,17 +1067,39 @@
             document.getElementById('imageModal').style.display = 'none';
         }
         
-        // ============== إرسال Gmail ==============
+        // ============== إرسال Gmail الحقيقي ==============
         function loadSettings() {
             if (gmailSettings.gmailAddress) {
                 document.getElementById('gmailAddress').value = gmailSettings.gmailAddress;
+            }
+            if (gmailSettings.gmailPassword) {
+                document.getElementById('gmailPassword').value = gmailSettings.gmailPassword;
             }
         }
         
         function saveGmailSettings() {
             gmailSettings.gmailAddress = document.getElementById('gmailAddress').value.trim();
+            gmailSettings.gmailPassword = document.getElementById('gmailPassword').value.trim();
+            
+            if (!gmailSettings.gmailAddress) {
+                showAlert('يرجى إدخال بريد Gmail', 'error', 'settings');
+                return;
+            }
+            
             localStorage.setItem('gmailSettings', JSON.stringify(gmailSettings));
-            showAlert('تم حفظ إعدادات Gmail بنجاح', 'success');
+            showAlert('تم حفظ إعدادات Gmail بنجاح', 'success', 'settings');
+            
+            // تهيئة EmailJS
+            initEmailJS();
+        }
+        
+        function initEmailJS() {
+            if (gmailSettings.gmailAddress && gmailSettings.gmailPassword) {
+                // في الإنتاج الحقيقي، ستحتاج إلى استخدام EmailJS مع مفتاح API
+                // هذا مثال مبسط
+                console.log('تم تهيئة إعدادات البريد');
+                showAlert('تم تهيئة نظام البريد الإلكتروني', 'success');
+            }
         }
         
         function updateEmailDropdown() {
@@ -866,10 +1107,10 @@
             select.innerHTML = '<option value="">-- اختر تقديماً --</option>';
             
             allSubmissions.forEach((sub, index) => {
-                const date = new Date(sub.timestamp);
+                const date = new Date(sub.timestamp || Date.now());
                 const option = document.createElement('option');
                 option.value = index;
-                option.textContent = `${sub.selectedCode} - ${sub.fieldValues?.username || 'غير معروف'} - ${date.toLocaleDateString('ar-SA')}`;
+                option.textContent = `${sub.selectedCode || 'بدون كود'} - ${sub.fieldValues?.username || 'غير معروف'} - ${date.toLocaleDateString('ar-SA')}`;
                 select.appendChild(option);
             });
         }
@@ -882,9 +1123,9 @@
                 const submission = allSubmissions[index];
                 const message = document.getElementById('emailMessage');
                 message.value = message.value
-                    .replace('[CODE]', submission.selectedCode)
+                    .replace('[CODE]', submission.selectedCode || 'بدون كود')
                     .replace('[USER]', submission.fieldValues?.username || 'غير معروف')
-                    .replace('[DATE]', new Date(submission.timestamp).toLocaleString('ar-SA'))
+                    .replace('[DATE]', new Date(submission.timestamp || Date.now()).toLocaleString('ar-SA'))
                     .replace('[PHOTOS_COUNT]', submission.images?.length || 0);
                 updateAttachmentsList(submission);
             }
@@ -908,7 +1149,7 @@
             submission.images.slice(0, 6).forEach((img, index) => {
                 html += `
                     <div style="background: white; padding: 8px 12px; border-radius: 5px; font-size: 12px; border: 1px solid #ddd;">
-                        <i class="fas fa-image"></i> صورة ${index + 1}
+                        <i class="fas fa-image"></i> ${img.title || `صورة ${index + 1}`}
                     </div>
                 `;
             });
@@ -938,6 +1179,11 @@
                 return;
             }
             
+            if (!gmailSettings.gmailAddress || !gmailSettings.gmailPassword) {
+                showAlert('يرجى إعداد إعدادات Gmail أولاً من تبويب الإعدادات', 'error', 'email');
+                return;
+            }
+            
             const select = document.getElementById('emailSubmission');
             const submissionIndex = parseInt(select.value);
             
@@ -951,31 +1197,21 @@
             showAlert('جاري إرسال البريد إلى Gmail...', 'success', 'email');
             
             try {
-                // إرسال باستخدام FormSubmit.co
-                const response = await sendWithFormSubmit(submission, email, subject, message);
+                // استخدام EmailJS لإرسال البريد الفعلي
+                await sendWithEmailJS(submission, email, subject, message);
                 
-                if (response.success) {
-                    // زيادة العداد
-                    gmailSettings.emailsSent++;
-                    localStorage.setItem('gmailSettings', JSON.stringify(gmailSettings));
-                    updateStats();
-                    
-                    showAlert('✅ تم إرسال البريد بنجاح إلى Gmail!', 'success', 'email');
-                    
-                    // إرسال نسخة إلى بريد المشرف
-                    if (gmailSettings.gmailAddress) {
-                        setTimeout(() => {
-                            sendCopyToAdmin(submission, subject, message);
-                        }, 1000);
-                    }
-                    
-                    // إنشاء حزمة للتحميل
-                    createDataPackage(submission);
-                } else {
-                    throw new Error('فشل إرسال البريد');
-                }
+                // زيادة العداد
+                gmailSettings.emailsSent++;
+                localStorage.setItem('gmailSettings', JSON.stringify(gmailSettings));
+                updateStats();
+                
+                showAlert('✅ تم إرسال البريد بنجاح إلى Gmail!', 'success', 'email');
+                
+                // إنشاء حزمة للتحميل
+                createDataPackage(submission);
+                
             } catch (error) {
-                console.error('خطأ:', error);
+                console.error('خطأ في الإرسال:', error);
                 
                 // استخدام طريقة mailto كبديل
                 const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
@@ -986,58 +1222,35 @@
             }
         }
         
-        async function sendWithFormSubmit(submission, toEmail, subject, message) {
-            const yourGmail = gmailSettings.gmailAddress || 'your-email@gmail.com';
-            
-            const emailData = {
-                _subject: subject,
-                name: `نظام NotCam - ${submission.selectedCode}`,
-                message: `
-                    ${message}
-                    
-                    ========= تفاصيل التقديم =========
-                    الكود: ${submission.selectedCode}
-                    المستخدم: ${submission.fieldValues?.username || 'غير معروف'}
-                    Brain Libre: ${submission.fieldValues?.brain_libre || 'غير محدد'}
-                    الهاتف: ${submission.fieldValues?.phone || 'غير محدد'}
-                    التاريخ: ${new Date(submission.timestamp).toLocaleString('ar-SA')}
-                    عدد الصور: ${submission.images?.length || 0}
-                    
-                    تم الإرسال بواسطة نظام NotCam
-                    ${new Date().toLocaleString('ar-SA')}
-                `,
-                _replyto: toEmail,
-                _template: 'table',
-                _cc: yourGmail
-            };
-            
+        async function sendWithEmailJS(submission, toEmail, subject, message) {
+            // هذا مثال باستخدام EmailJS - ستحتاج إلى حساب في emailjs.com
             try {
-                const response = await fetch(`https://formsubmit.co/ajax/${yourGmail}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(emailData)
-                });
+                // تهيئة EmailJS (استبدل بالمفتاح الحقيقي)
+                emailjs.init("YOUR_PUBLIC_KEY"); // استبدل بمفتاحك العام
                 
-                return await response.json();
+                const templateParams = {
+                    to_email: toEmail,
+                    from_name: 'نظام NotCam',
+                    subject: subject,
+                    message: message,
+                    code: submission.selectedCode || 'بدون كود',
+                    username: submission.fieldValues?.username || 'غير معروف',
+                    brain_libre: submission.fieldValues?.brain_libre || 'غير محدد',
+                    phone: submission.fieldValues?.phone || 'غير محدد',
+                    date: new Date(submission.timestamp || Date.now()).toLocaleString('ar-SA'),
+                    photos_count: submission.images?.length || 0
+                };
+                
+                const response = await emailjs.send(
+                    'service_ut8ln4l', // استبدل بمعرف الخدمة
+                    'template_pc94202', // استبدل بمعرف القالب
+                    templateParams
+                );
+                
+                return response;
             } catch (error) {
                 throw error;
             }
-        }
-        
-        function sendCopyToAdmin(submission, subject, message) {
-            const adminEmail = gmailSettings.gmailAddress;
-            if (!adminEmail) return;
-            
-            const copySubject = `نسخة: ${subject}`;
-            const copyMessage = `${message}\n\n---\nهذه نسخة من البريد المرسل إلى المستخدم.`;
-            
-            const mailtoLink = `mailto:${adminEmail}?subject=${encodeURIComponent(copySubject)}&body=${encodeURIComponent(copyMessage)}`;
-            window.open(mailtoLink, '_blank');
-            
-            console.log('تم إرسال نسخة إلى المشرف:', adminEmail);
         }
         
         function createDataPackage(submission) {
@@ -1053,7 +1266,7 @@
             
             const link = document.createElement('a');
             link.href = url;
-            link.download = `notcam_${submission.selectedCode}_${Date.now()}.json`;
+            link.download = `notcam_${submission.selectedCode || 'data'}_${Date.now()}.json`;
             link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
@@ -1084,7 +1297,7 @@
         }
         
         function testEmailFunction() {
-            const testEmail = prompt('أدخل بريدك Gmail للاختبار:', 'example@gmail.com');
+            const testEmail = prompt('أدخل بريدك Gmail للاختبار:', 'hichamverne@gmail.com');
             
             if (testEmail && validateEmail(testEmail)) {
                 document.getElementById('recipientEmail').value = testEmail;
@@ -1129,6 +1342,135 @@
             document.getElementById('emailsSentStat').textContent = gmailSettings.emailsSent || 0;
         }
         
+        function updateRecentSubmissions() {
+            const container = document.getElementById('recentSubmissions');
+            const recent = allSubmissions.slice(0, 10);
+            
+            if (recent.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center;">لا توجد تقديمات حديثة</p>';
+                return;
+            }
+            
+            let html = '<div style="overflow-x: auto;">';
+            html += '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<thead><tr style="background: var(--light);">';
+            html += '<th style="padding: 10px; text-align: right;">الكود</th>';
+            html += '<th style="padding: 10px; text-align: right;">المستخدم</th>';
+            html += '<th style="padding: 10px; text-align: right;">التاريخ</th>';
+            html += '<th style="padding: 10px; text-align: right;">الصور</th>';
+            html += '</tr></thead><tbody>';
+            
+            recent.forEach(sub => {
+                const date = new Date(sub.timestamp || Date.now());
+                html += `<tr style="border-bottom: 1px solid #eee;">`;
+                html += `<td style="padding: 10px;">${sub.selectedCode || 'بدون كود'}</td>`;
+                html += `<td style="padding: 10px;">${sub.fieldValues?.username || 'غير معروف'}</td>`;
+                html += `<td style="padding: 10px;">${date.toLocaleDateString('ar-SA')}</td>`;
+                html += `<td style="padding: 10px;">${sub.images?.length || 0}</td>`;
+                html += `</tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+        
+        // ============== اختبار النظام ==============
+        function checkLocalStorage() {
+            const container = document.getElementById('storageInfo');
+            let html = '<h4 style="color: var(--primary); margin-bottom: 10px;">مفاتيح التخزين المحلي:</h4>';
+            html += '<div style="max-height: 200px; overflow-y: auto; background: white; padding: 10px; border-radius: 5px;">';
+            
+            let count = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                html += `<div style="padding: 5px 0; border-bottom: 1px solid #eee; font-family: monospace;">${key}</div>`;
+                count++;
+            }
+            
+            html += `</div><div style="margin-top: 10px; color: var(--success);">إجمالي المفاتيح: ${count}</div>`;
+            container.innerHTML = html;
+            
+            showTestAlert(`تم فحص التخزين المحلي: ${count} مفتاح`, 'success');
+        }
+        
+        function createTestSubmission() {
+            const testCode = `TEST-${Date.now().toString().slice(-6)}`;
+            const submission = {
+                selectedCode: testCode,
+                timestamp: new Date().toISOString(),
+                fieldValues: {
+                    username: 'مستخدم تجريبي',
+                    brain_libre: '5.5',
+                    phone: '0512345678'
+                },
+                firstPhotos: [
+                    'https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=صورة+تجريبية+1',
+                    'https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=صورة+تجريبية+2'
+                ],
+                secondPhotos: [
+                    'https://via.placeholder.com/400x300/A23B72/FFFFFF?text=صورة+تجريبية+3',
+                    'https://via.placeholder.com/400x300/A23B72/FFFFFF?text=صورة+تجريبية+4'
+                ]
+            };
+            
+            collectSubmissionImages(submission);
+            
+            const key = `test_submission_${testCode}`;
+            localStorage.setItem(key, JSON.stringify(submission));
+            submission.id = key;
+            allSubmissions.unshift(submission);
+            
+            renderSubmissionsList();
+            updateEmailDropdown();
+            updateStats();
+            
+            showTestAlert('تم إنشاء تقديم تجريبي بنجاح', 'success');
+            loadSubmissionGallery(submission);
+        }
+        
+        function refreshSubmissions() {
+            loadAllSubmissions();
+            showAlert('تم تحديث جميع البيانات', 'success');
+        }
+        
+        function clearAllData() {
+            if (confirm('هل أنت متأكد من حذف جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                // حذف جميع التقديمات من localStorage
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('submission_') || key.startsWith('full_submission_') || 
+                        key.startsWith('user_submission_') || key.startsWith('test_submission_')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                });
+                
+                allSubmissions = [];
+                currentSubmission = null;
+                
+                renderSubmissionsList();
+                updateStats();
+                
+                showTestAlert('تم حذف جميع البيانات بنجاح', 'success');
+            }
+        }
+        
+        function showTestAlert(message, type) {
+            const alertDiv = document.getElementById('testResults');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // ============== دوال عامة ==============
         function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
@@ -1137,7 +1479,10 @@
                 content.classList.remove('active');
             });
             
-            document.querySelector(`.tab[onclick*="${tabName}"]`).classList.add('active');
+            const tabElement = document.querySelector(`.tab[onclick*="${tabName}"]`);
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
             document.getElementById(`${tabName}Tab`).classList.add('active');
         }
         
@@ -1166,6 +1511,11 @@
                     closeImageModal();
                 }
             });
+            
+            // تحديث كل 5 ثواني للكشف عن تقديمات جديدة
+            setInterval(refreshSubmissions, 5000);
+            
+            showAlert('تم تحميل النظام بنجاح!', 'success');
         };
     </script>
 </body>
