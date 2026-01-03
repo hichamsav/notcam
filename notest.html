@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام NotCam - المشرف الكامل</title>
+    <title>NotCam System - Complete Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -30,7 +30,7 @@
         }
         
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -75,21 +75,22 @@
             display: block;
         }
         
-        .submissions-container {
+        .users-container {
             display: grid;
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 350px 1fr;
             gap: 20px;
-            height: 75vh;
+            height: 80vh;
         }
         
-        .submissions-sidebar {
+        .users-sidebar {
             background: var(--light);
             padding: 20px;
             border-radius: 10px;
             overflow-y: auto;
+            border: 2px solid #e0e0e0;
         }
         
-        .submission-item {
+        .user-item {
             background: white;
             padding: 15px;
             margin-bottom: 10px;
@@ -97,28 +98,46 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.3s;
+            position: relative;
         }
         
-        .submission-item:hover {
+        .user-item:hover {
             border-color: var(--primary);
             transform: translateX(-5px);
         }
         
-        .submission-item.active {
+        .user-item.active {
             background: var(--primary);
             color: white;
             border-color: var(--secondary);
         }
         
-        .gallery-container {
+        .user-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--success);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .user-detail-container {
             background: white;
             padding: 20px;
             border-radius: 10px;
             overflow-y: auto;
             border: 2px solid var(--light);
+            height: 100%;
         }
         
-        .gallery-header {
+        .user-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -127,9 +146,38 @@
             border-bottom: 2px solid var(--light);
         }
         
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .info-label {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            color: var(--dark);
+            font-size: 16px;
+        }
+        
         .photos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 30px;
         }
@@ -149,20 +197,14 @@
         
         .photo-img {
             width: 100%;
-            height: 180px;
+            height: 150px;
             object-fit: cover;
             background: #f5f5f5;
         }
         
         .photo-info {
-            padding: 15px;
+            padding: 10px;
             background: white;
-        }
-        
-        .photo-type {
-            color: var(--primary);
-            font-weight: bold;
-            margin-bottom: 5px;
         }
         
         .photo-number {
@@ -171,13 +213,44 @@
             right: 10px;
             background: var(--primary);
             color: white;
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 12px;
             font-weight: bold;
+        }
+        
+        .submission-history {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid var(--light);
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .history-table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            text-align: right;
+        }
+        
+        .history-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-table tr:hover {
+            background: #f9f9f9;
         }
         
         .image-modal {
@@ -215,13 +288,6 @@
             border: 2px solid var(--light);
         }
         
-        .email-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
         .form-group {
             margin-bottom: 20px;
         }
@@ -247,15 +313,15 @@
         }
         
         .btn {
-            padding: 15px 30px;
+            padding: 12px 25px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.3s;
         }
         
@@ -272,6 +338,23 @@
         .btn-success {
             background: var(--success);
             color: white;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .alert {
@@ -315,8 +398,26 @@
             border-top: 4px solid var(--primary);
         }
         
-        @media (max-width: 1024px) {
-            .submissions-container {
+        .code-folder {
+            display: inline-block;
+            background: var(--light);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .backup-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px solid var(--light);
+        }
+        
+        @media (max-width: 1200px) {
+            .users-container {
                 grid-template-columns: 1fr;
                 height: auto;
             }
@@ -339,138 +440,138 @@
             .photos-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-crown"></i> لوحة تحكم المشرف الكاملة</h1>
-            <p>عرض الصور وإرسال البيانات إلى Gmail</p>
+            <h1><i class="fas fa-crown"></i> NotCam System - Complete Admin Dashboard</h1>
+            <p>View all user submissions with detailed information and images</p>
         </header>
         
         <div class="tabs">
-            <div class="tab active" onclick="showTab('photos')">
-                <i class="fas fa-images"></i> معرض الصور
+            <div class="tab active" onclick="showTab('users')">
+                <i class="fas fa-users"></i> All Users/Areas
             </div>
             <div class="tab" onclick="showTab('email')">
-                <i class="fas fa-envelope"></i> إرسال إلى Gmail
+                <i class="fas fa-envelope"></i> Send to Email
             </div>
             <div class="tab" onclick="showTab('stats')">
-                <i class="fas fa-chart-bar"></i> الإحصائيات
+                <i class="fas fa-chart-bar"></i> Statistics
             </div>
-            <div class="tab" onclick="showTab('settings')">
-                <i class="fas fa-cog"></i> إعدادات Gmail
-            </div>
-            <div class="tab" onclick="showTab('test')">
-                <i class="fas fa-vial"></i> اختبار النظام
+            <div class="tab" onclick="showTab('backup')">
+                <i class="fas fa-database"></i> Data Backup
             </div>
         </div>
         
-        <!-- تبويب معرض الصور -->
-        <div id="photosTab" class="tab-content active">
-            <div class="submissions-container">
-                <div class="submissions-sidebar">
+        <!-- تبويب جميع المستخدمين/المناطق -->
+        <div id="usersTab" class="tab-content active">
+            <div class="users-container">
+                <div class="users-sidebar">
                     <h3 style="margin-bottom: 20px; color: var(--primary);">
-                        <i class="fas fa-list"></i> التقديمات
-                        <span id="submissionCount" style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 12px;">0</span>
+                        <i class="fas fa-list"></i> Users / Area Codes
+                        <span id="userCount" style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 12px;">0</span>
                     </h3>
-                    <div id="submissionsList"></div>
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="searchUser" placeholder="Search by code or name..." 
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #ddd;"
+                               onkeyup="filterUsers()">
+                    </div>
+                    <div id="usersList"></div>
                 </div>
                 
-                <div class="gallery-container">
-                    <div class="gallery-header">
-                        <h2 id="galleryTitle" style="color: var(--primary);">
-                            <i class="fas fa-images"></i> اختر تقديماً لعرض الصور
+                <div class="user-detail-container">
+                    <div class="user-header">
+                        <h2 id="userDetailTitle" style="color: var(--primary);">
+                            <i class="fas fa-user-circle"></i> Select a user/area to view details
                         </h2>
-                        <div id="galleryActions" style="display: none;">
-                            <button class="btn btn-success" onclick="sendCurrentToEmail()">
-                                <i class="fas fa-paper-plane"></i> إرسال هذا التقديم
+                        <div id="userActions" style="display: none;">
+                            <button class="btn btn-success" onclick="exportUserData()">
+                                <i class="fas fa-download"></i> Export All Data
                             </button>
-                            <button class="btn btn-primary" onclick="refreshSubmissions()" style="margin-right: 10px;">
-                                <i class="fas fa-sync"></i> تحديث البيانات
+                            <button class="btn btn-primary" onclick="sendUserToEmail()" style="margin-right: 10px;">
+                                <i class="fas fa-paper-plane"></i> Send to Email
                             </button>
                         </div>
                     </div>
                     
-                    <div id="photosGallery">
+                    <div id="userDetails">
                         <div style="text-align: center; padding: 50px; color: #666;">
-                            <i class="fas fa-images" style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;"></i>
-                            <h3>لا توجد صور معروضة</h3>
-                            <p>اختر تقديماً من القائمة لعرض الصور</p>
+                            <i class="fas fa-users" style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;"></i>
+                            <h3>No user selected</h3>
+                            <p>Select a user/area from the list to view all details and images</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- تبويب إرسال Gmail -->
+        <!-- تبويب إرسال Email -->
         <div id="emailTab" class="tab-content">
-            <h2><i class="fas fa-envelope"></i> إرسال البيانات إلى Gmail</h2>
-            <p style="color: #666; margin-bottom: 20px;">أرسل الصور والبيانات إلى أي بريد Gmail</p>
+            <h2><i class="fas fa-envelope"></i> Send Data to Email</h2>
+            <p style="color: #666; margin-bottom: 20px;">Send complete user data with all images</p>
             
             <div class="email-section">
-                <div class="email-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="form-group">
-                        <label><i class="fas fa-user"></i> اختر التقديم</label>
-                        <select id="emailSubmission" onchange="loadSelectedSubmission()">
-                            <option value="">-- اختر تقديماً --</option>
+                        <label><i class="fas fa-user"></i> Select User/Area</label>
+                        <select id="emailUser" onchange="loadSelectedUserForEmail()">
+                            <option value="">-- Select user/area --</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-envelope"></i> بريد Gmail المستقبل</label>
+                        <label><i class="fas fa-envelope"></i> Recipient Email</label>
                         <input type="email" id="recipientEmail" placeholder="example@gmail.com" required>
                     </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-edit"></i> موضوع الرسالة</label>
-                        <input type="text" id="emailSubject" value="📸 بيانات وصور من نظام NotCam" required>
-                    </div>
-                    
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label><i class="fas fa-comment"></i> نص الرسالة</label>
-                        <textarea id="emailMessage">
-مرحباً،
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-edit"></i> Email Subject</label>
+                    <input type="text" id="emailSubject" value="📸 Complete Data from NotCam System" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-comment"></i> Email Message</label>
+                    <textarea id="emailMessage">
+Hello,
 
-تم إرسال البيانات والصور المرفقة من نظام NotCam.
+Please find attached the complete data and all images from NotCam System.
 
-تفاصيل التقديم:
-• الكود: [CODE]
-• المستخدم: [USER]
-• التاريخ: [DATE]
-• عدد الصور: [PHOTOS_COUNT]
+User Details:
+• Code: [CODE]
+• User: [USER]
+• Date: [DATE]
+• Total Images: [PHOTOS_COUNT]
+• Brain Libre: [BRAIN_LIBRE]
+• Phone: [PHONE]
 
-يمكنك تنزيل المرفقات لعرض البيانات كاملة.
+All images are organized in folders by area code.
 
-مع خالص التحية،
-مشرف نظام NotCam
-                        </textarea>
-                    </div>
-                    
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label><i class="fas fa-paperclip"></i> المرفقات</label>
-                        <div style="background: var(--light); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                            <div id="attachmentsList"></div>
-                            <div style="margin-top: 10px;">
-                                <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
-                                    <input type="checkbox" id="attachPhotos" checked> إرفاق جميع الصور
-                                </label>
-                                <label style="display: inline-flex; align-items: center; gap: 10px; margin-right: 20px; cursor: pointer;">
-                                    <input type="checkbox" id="attachData" checked> إرفاق ملف البيانات
-                                </label>
-                            </div>
+Best regards,
+NotCam System Admin
+                    </textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-paperclip"></i> Attachments Preview</label>
+                    <div style="background: var(--light); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        <div id="emailAttachments"></div>
+                        <div style="margin-top: 15px; font-size: 14px; color: #666;">
+                            <i class="fas fa-info-circle"></i> All user data and images will be zipped and sent
                         </div>
                     </div>
-                    
-                    <div style="grid-column: 1 / -1; text-align: center; margin-top: 20px;">
-                        <button class="btn btn-primary" onclick="sendEmailNow()" style="padding: 15px 40px; font-size: 18px;">
-                            <i class="fas fa-paper-plane"></i> إرسال إلى Gmail الآن
-                        </button>
-                        <button class="btn" onclick="testEmailFunction()" style="background: var(--warning); color: white; margin-right: 10px;">
-                            <i class="fas fa-vial"></i> اختبار الإرسال
-                        </button>
-                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="sendCompleteEmail()" style="padding: 15px 40px; font-size: 16px;">
+                        <i class="fas fa-paper-plane"></i> Send Complete Data Package
+                    </button>
                 </div>
                 
                 <div id="emailAlert" class="alert" style="margin-top: 20px;"></div>
@@ -479,137 +580,115 @@
         
         <!-- تبويب الإحصائيات -->
         <div id="statsTab" class="tab-content">
-            <h2><i class="fas fa-chart-bar"></i> إحصائيات النظام</h2>
+            <h2><i class="fas fa-chart-bar"></i> System Statistics</h2>
             
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div style="font-size: 2.5rem; color: var(--primary); font-weight: bold;" id="totalSubmissionsStat">0</div>
-                    <div>إجمالي التقديمات</div>
+                    <div style="font-size: 2.5rem; color: var(--primary); font-weight: bold;" id="totalUsersStat">0</div>
+                    <div>Total Users/Areas</div>
                 </div>
                 <div class="stat-card">
-                    <div style="font-size: 2.5rem; color: var(--success); font-weight: bold;" id="totalPhotosStat">0</div>
-                    <div>إجمالي الصور</div>
+                    <div style="font-size: 2.5rem; color: var(--success); font-weight: bold;" id="totalSubmissionsStat">0</div>
+                    <div>Total Submissions</div>
                 </div>
                 <div class="stat-card">
-                    <div style="font-size: 2.5rem; color: var(--secondary); font-weight: bold;" id="activeUsersStat">0</div>
-                    <div>المستخدمين النشطين</div>
+                    <div style="font-size: 2.5rem; color: var(--secondary); font-weight: bold;" id="totalPhotosStat">0</div>
+                    <div>Total Images</div>
                 </div>
                 <div class="stat-card">
-                    <div style="font-size: 2.5rem; color: var(--warning); font-weight: bold;" id="emailsSentStat">0</div>
-                    <div>الإيميلات المرسلة</div>
+                    <div style="font-size: 2.5rem; color: var(--warning); font-weight: bold;" id="totalDataSize">0 MB</div>
+                    <div>Total Data Size</div>
                 </div>
             </div>
             
             <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 30px;">
-                <h3 style="color: var(--primary); margin-bottom: 15px;">آخر 10 تقديمات</h3>
-                <div id="recentSubmissions"></div>
+                <h3 style="color: var(--primary); margin-bottom: 15px;">
+                    <i class="fas fa-folder"></i> Area Code Folders
+                </h3>
+                <div id="areaFolders"></div>
+            </div>
+            
+            <div class="submission-history" style="margin-top: 30px;">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">
+                    <i class="fas fa-history"></i> Recent Activity
+                </h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Area Code</th>
+                            <th>User</th>
+                            <th>Images</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentActivity">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #666; padding: 20px;">
+                                No recent activity
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         
-        <!-- تبويب إعدادات Gmail -->
-        <div id="settingsTab" class="tab-content">
-            <h2><i class="fas fa-cog"></i> إعدادات إرسال Gmail</h2>
+        <!-- تبويب النسخ الاحتياطي -->
+        <div id="backupTab" class="tab-content">
+            <h2><i class="fas fa-database"></i> Data Backup & Management</h2>
             
-            <div style="background: white; padding: 30px; border-radius: 10px; margin-top: 20px;">
-                <div class="form-group">
-                    <label><i class="fas fa-at"></i> بريدك Gmail للإرسال</label>
-                    <input type="email" id="gmailAddress" placeholder="your-email@gmail.com" style="width: 100%; max-width: 400px;">
-                    <small style="color: #666; display: block; margin-top: 5px;">أدخل بريدك Gmail الذي تريد الإرسال منه</small>
-                </div>
+            <div class="backup-section">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">
+                    <i class="fas fa-save"></i> Backup All Data
+                </h3>
+                <p style="color: #666; margin-bottom: 20px;">Create a complete backup of all user data, images, and submissions</p>
                 
-                <div style="margin-top: 30px; padding: 20px; background: #f0f7ff; border-radius: 10px;">
-                    <h4 style="color: var(--primary); margin-bottom: 15px;">
-                        <i class="fas fa-info-circle"></i> كيفية عمل النظام:
-                    </h4>
-                    <ol style="color: #666; line-height: 2; padding-right: 20px;">
-                        <li>النظام يستخدم <strong>SMTP.js</strong> لإرسال Gmail مباشرة</li>
-                        <li>أدخل بريدك وكلمة المرور المخصصة للتطبيق</li>
-                        <li>احفظ الإعدادات واختر تقديماً للإرسال</li>
-                        <li>سيتم الإرسال مباشرة إلى بريد المستقبل</li>
-                    </ol>
-                </div>
-                
-                <div class="form-group" style="margin-top: 20px;">
-                    <label><i class="fas fa-key"></i> كلمة المرور المخصصة للتطبيق (App Password)</label>
-                    <input type="password" id="gmailPassword" placeholder="أدخل كلمة المرور" style="width: 100%; max-width: 400px;">
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        للحصول على كلمة المرور: 
-                        <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color: var(--primary); text-decoration: none;">
-                            <i class="fas fa-external-link-alt"></i> أنشئ كلمة مرور للتطبيق هنا
-                        </a>
-                    </small>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="backupAllData()">
+                        <i class="fas fa-download"></i> Download Complete Backup
+                    </button>
+                    <button class="btn btn-primary" onclick="backupUsersOnly()">
+                        <i class="fas fa-users"></i> Backup Users Data Only
+                    </button>
+                    <button class="btn btn-warning" onclick="backupImagesOnly()">
+                        <i class="fas fa-images"></i> Backup Images Only
+                    </button>
                 </div>
                 
                 <div style="margin-top: 30px;">
-                    <button class="btn btn-success" onclick="saveGmailSettings()">
-                        <i class="fas fa-save"></i> حفظ الإعدادات
-                    </button>
-                    <button class="btn" onclick="sendTestToYourself()" style="background: var(--primary); color: white; margin-right: 10px;">
-                        <i class="fas fa-paper-plane"></i> إرسال رسالة تجريبية لنفسك
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">
+                        <i class="fas fa-upload"></i> Restore Data
+                    </h3>
+                    <div class="form-group">
+                        <label>Select backup file to restore</label>
+                        <input type="file" id="restoreFile" accept=".json,.zip" style="padding: 10px;">
+                    </div>
+                    <button class="btn btn-primary" onclick="restoreBackup()">
+                        <i class="fas fa-upload"></i> Restore Selected Backup
                     </button>
                 </div>
                 
-                <div id="settingsAlert" class="alert" style="margin-top: 20px;"></div>
-            </div>
-        </div>
-        
-        <!-- تبويب اختبار النظام -->
-        <div id="testTab" class="tab-content">
-            <h2><i class="fas fa-vial"></i> اختبار النظام</h2>
-            <p style="color: #666; margin-bottom: 20px;">اختبار اتصال النظام مع بيانات المستخدم</p>
-            
-            <div style="background: white; padding: 30px; border-radius: 10px; margin-top: 20px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                    <div>
-                        <h3 style="color: var(--primary); margin-bottom: 15px;">
-                            <i class="fas fa-database"></i> فحص البيانات المحفوظة
-                        </h3>
-                        <div style="background: var(--light); padding: 20px; border-radius: 10px;">
-                            <div id="storageInfo"></div>
-                        </div>
-                        
-                        <div style="margin-top: 20px;">
-                            <button class="btn btn-primary" onclick="checkLocalStorage()">
-                                <i class="fas fa-search"></i> فحص التخزين المحلي
-                            </button>
-                            <button class="btn" onclick="createTestSubmission()" style="background: var(--secondary); color: white; margin-right: 10px;">
-                                <i class="fas fa-plus"></i> إنشاء تقديم تجريبي
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h3 style="color: var(--primary); margin-bottom: 15px;">
-                            <i class="fas fa-camera"></i> اختبار معرض الصور
-                        </h3>
-                        <div style="background: var(--light); padding: 20px; border-radius: 10px;">
-                            <p>لاختبار النظام:</p>
-                            <ol style="margin-top: 10px; padding-right: 20px; color: #666;">
-                                <li>افتح تطبيق المستخدم وأدخل بيانات</li>
-                                <li>التقط صوراً باستخدام الكاميرا</li>
-                                <li>اضغط على "إرسال" في تطبيق المستخدم</li>
-                                <li>ارجع إلى هذه اللوحة وانقر على "تحديث البيانات"</li>
-                            </ol>
-                        </div>
-                        
-                        <div style="margin-top: 20px;">
-                            <button class="btn btn-success" onclick="refreshSubmissions()">
-                                <i class="fas fa-sync"></i> تحديث جميع البيانات
-                            </button>
-                            <button class="btn" onclick="clearAllData()" style="background: var(--danger); color: white; margin-right: 10px;">
-                                <i class="fas fa-trash"></i> مسح جميع البيانات
-                            </button>
-                        </div>
+                <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;">
+                    <h4 style="color: var(--warning); margin-bottom: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i> Data Management
+                    </h4>
+                    <p style="color: #666; margin-bottom: 15px;">Warning: These actions cannot be undone</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-danger" onclick="clearOldData()">
+                            <i class="fas fa-trash"></i> Clear Data Older Than 30 Days
+                        </button>
+                        <button class="btn btn-danger" onclick="clearAllSystemData()">
+                            <i class="fas fa-bomb"></i> Clear ALL System Data
+                        </button>
                     </div>
                 </div>
-                
-                <div id="testResults" class="alert" style="margin-top: 20px;"></div>
             </div>
         </div>
         
         <div id="mainAlert" class="alert" style="position: fixed; top: 20px; right: 20px; z-index: 2000; max-width: 400px;"></div>
     </div>
     
+    <!-- Modal لعرض الصور -->
     <div class="image-modal" id="imageModal">
         <div style="position: absolute; top: 20px; right: 20px;">
             <button onclick="closeImageModal()" style="background: var(--danger); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;">
@@ -620,705 +699,1017 @@
             <img id="modalImage" class="modal-image">
             <div style="background: white; padding: 20px; border-radius: 0 0 10px 10px; margin-top: -5px;">
                 <h3 id="modalTitle"></h3>
-                <p id="modalDescription"></p>
+                <div id="modalDescription"></div>
             </div>
         </div>
     </div>
 
-    <!-- مكتبة EmailJS للإرسال الفعلي -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    
     <script>
-        // ============== النظام المصحح ==============
+        // ============== النظام المحسن ==============
         
-        let allSubmissions = [];
-        let currentSubmission = null;
-        let gmailSettings = JSON.parse(localStorage.getItem('gmailSettings')) || {
-            gmailAddress: '',
-            gmailPassword: '',
-            emailsSent: 0
+        let allUsers = {}; // تخزين جميع المستخدمين مفصولين حسب الكود
+        let currentUser = null;
+        let systemStats = JSON.parse(localStorage.getItem('systemStats')) || {
+            totalUsers: 0,
+            totalSubmissions: 0,
+            totalPhotos: 0,
+            totalDataSize: 0,
+            emailsSent: 0,
+            lastBackup: null
         };
         
-        // ============== تحميل التقديمات الحقيقية ==============
-        function loadAllSubmissions() {
-            allSubmissions = [];
+        // ============== تحميل وتنظيم البيانات ==============
+        function loadAllData() {
+            allUsers = {};
             
-            // البحث عن جميع التقديمات في localStorage
+            // مسح جميع مفاتيح localStorage ذات الصلة
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 
-                // البحث عن التقديمات الحقيقية
-                if (key.startsWith('submission_') || key.startsWith('full_submission_') || 
-                    key.startsWith('user_submission_') || key.includes('_submission_')) {
+                // البحث عن التقديمات والبيانات
+                if (key.includes('submission_') || key.includes('user_') || key.includes('area_')) {
                     try {
-                        const submission = JSON.parse(localStorage.getItem(key));
+                        const data = JSON.parse(localStorage.getItem(key));
                         
-                        if (submission && (submission.selectedCode || submission.code || submission.fieldValues)) {
-                            submission.id = key;
-                            submission.storageKey = key;
+                        if (data && (data.selectedCode || data.code || data.areaCode)) {
+                            const areaCode = data.selectedCode || data.code || data.areaCode || 'UNKNOWN';
+                            const userName = data.fieldValues?.username || data.username || 'Unknown User';
                             
-                            // تنسيق البيانات لمطابقة هيكل النظام
-                            normalizeSubmissionData(submission);
-                            collectSubmissionImages(submission);
-                            allSubmissions.push(submission);
+                            // إنشاء مجلد للمستخدم/المنطقة إذا لم يكن موجوداً
+                            if (!allUsers[areaCode]) {
+                                allUsers[areaCode] = {
+                                    code: areaCode,
+                                    name: userName,
+                                    submissions: [],
+                                    totalImages: 0,
+                                    firstSubmission: data.timestamp || new Date().toISOString(),
+                                    lastSubmission: data.timestamp || new Date().toISOString(),
+                                    dataSize: 0
+                                };
+                            }
+                            
+                            // إضافة التقديم للمستخدم
+                            const submission = {
+                                id: key,
+                                data: data,
+                                timestamp: data.timestamp || new Date().toISOString(),
+                                images: collectImagesFromSubmission(data),
+                                fieldValues: data.fieldValues || {
+                                    username: userName,
+                                    brain_libre: data.brain_libre || data.fieldValues?.brain_libre || 'N/A',
+                                    phone: data.phone || data.fieldValues?.phone || 'N/A'
+                                }
+                            };
+                            
+                            allUsers[areaCode].submissions.push(submission);
+                            allUsers[areaCode].totalImages += submission.images.length;
+                            allUsers[areaCode].lastSubmission = submission.timestamp;
+                            
+                            // تحديث حجم البيانات (تقدير)
+                            const dataSize = JSON.stringify(data).length;
+                            allUsers[areaCode].dataSize += dataSize;
                         }
                     } catch (e) {
-                        console.warn('تخطي بيانات غير صالحة:', key, e);
+                        console.warn('Skipping invalid data:', key, e);
                     }
                 }
             }
             
-            // البحث عن بيانات نموذج NotCam الأساسية
-            scanForFormData();
-            
-            if (allSubmissions.length === 0) {
-                createSampleSubmissions();
+            // إذا لم توجد بيانات، إنشاء بيانات تجريبية
+            if (Object.keys(allUsers).length === 0) {
+                createSampleData();
             }
             
-            // ترتيب التقديمات من الأحدث إلى الأقدم
-            allSubmissions.sort((a, b) => {
-                const dateA = a.timestamp ? new Date(a.timestamp) : new Date();
-                const dateB = b.timestamp ? new Date(b.timestamp) : new Date();
-                return dateB - dateA;
-            });
-            
-            renderSubmissionsList();
+            updateUserList();
             updateEmailDropdown();
-            updateStats();
-            updateRecentSubmissions();
-            loadSettings();
+            updateStatistics();
+            updateRecentActivity();
+            
+            // تحديث كل 10 ثواني
+            setTimeout(loadAllData, 10000);
         }
         
-        function scanForFormData() {
-            // البحث عن بيانات الحقول الفردية
-            const formDataKeys = [
-                'username', 'brain_libre', 'phone', 'selectedCode',
-                'firstPhotos', 'secondPhotos', 'timestamp'
-            ];
-            
-            let submissionFound = false;
-            let tempSubmission = {
-                selectedCode: 'CODE-' + Date.now().toString().slice(-6),
-                timestamp: new Date().toISOString(),
-                fieldValues: {},
-                images: []
-            };
-            
-            formDataKeys.forEach(key => {
-                const value = localStorage.getItem(key);
-                if (value) {
-                    if (key === 'username' || key === 'brain_libre' || key === 'phone') {
-                        tempSubmission.fieldValues[key] = value;
-                    } else if (key === 'selectedCode') {
-                        tempSubmission.selectedCode = value;
-                    } else if (key === 'timestamp') {
-                        tempSubmission.timestamp = value;
-                    } else if (key === 'firstPhotos' || key === 'secondPhotos') {
-                        try {
-                            const photos = JSON.parse(value);
-                            if (Array.isArray(photos)) {
-                                tempSubmission[key] = photos;
-                            }
-                        } catch (e) {
-                            console.warn('خطأ في تحليل الصور:', e);
-                        }
-                    }
-                    submissionFound = true;
-                }
-            });
-            
-            if (submissionFound && !allSubmissions.some(s => 
-                s.fieldValues?.username === tempSubmission.fieldValues?.username && 
-                s.selectedCode === tempSubmission.selectedCode)) {
-                
-                collectSubmissionImages(tempSubmission);
-                allSubmissions.push(tempSubmission);
-                
-                // حفظ كنموذج كامل
-                const key = `full_submission_${tempSubmission.selectedCode}_${Date.now()}`;
-                localStorage.setItem(key, JSON.stringify(tempSubmission));
-            }
-        }
-        
-        function normalizeSubmissionData(submission) {
-            // توحيد هيكل البيانات
-            if (!submission.selectedCode && submission.code) {
-                submission.selectedCode = submission.code;
-            }
-            
-            if (!submission.fieldValues) {
-                submission.fieldValues = {};
-            }
-            
-            if (submission.username && !submission.fieldValues.username) {
-                submission.fieldValues.username = submission.username;
-            }
-            
-            if (submission.brain_libre && !submission.fieldValues.brain_libre) {
-                submission.fieldValues.brain_libre = submission.brain_libre;
-            }
-            
-            if (submission.phone && !submission.fieldValues.phone) {
-                submission.fieldValues.phone = submission.phone;
-            }
-            
-            // تحويل الصور إذا كانت نصاً
-            if (typeof submission.firstPhotos === 'string') {
-                try {
-                    submission.firstPhotos = JSON.parse(submission.firstPhotos);
-                } catch (e) {
-                    submission.firstPhotos = [submission.firstPhotos];
-                }
-            }
-            
-            if (typeof submission.secondPhotos === 'string') {
-                try {
-                    submission.secondPhotos = JSON.parse(submission.secondPhotos);
-                } catch (e) {
-                    submission.secondPhotos = [submission.secondPhotos];
-                }
-            }
-        }
-        
-        function collectSubmissionImages(submission) {
-            submission.images = [];
+        function collectImagesFromSubmission(data) {
+            const images = [];
             
             // جمع الصور من firstPhotos
-            if (submission.firstPhotos && Array.isArray(submission.firstPhotos)) {
-                submission.firstPhotos.forEach((photo, index) => {
+            if (data.firstPhotos && Array.isArray(data.firstPhotos)) {
+                data.firstPhotos.forEach((photo, index) => {
                     if (photo && (photo.startsWith('data:image') || photo.startsWith('http') || photo.startsWith('blob:'))) {
-                        submission.images.push({
+                        images.push({
                             src: photo,
-                            title: `صورة أولى ${index + 1}`,
-                            type: 'first'
+                            title: `First Image ${index + 1}`,
+                            type: 'first',
+                            index: index + 1
                         });
                     }
                 });
             }
             
             // جمع الصور من secondPhotos
-            if (submission.secondPhotos && Array.isArray(submission.secondPhotos)) {
-                submission.secondPhotos.forEach((photo, index) => {
+            if (data.secondPhotos && Array.isArray(data.secondPhotos)) {
+                data.secondPhotos.forEach((photo, index) => {
                     if (photo && (photo.startsWith('data:image') || photo.startsWith('http') || photo.startsWith('blob:'))) {
-                        submission.images.push({
+                        images.push({
                             src: photo,
-                            title: `صورة ثانية ${index + 1}`,
-                            type: 'second'
+                            title: `Second Image ${index + 1}`,
+                            type: 'second',
+                            index: data.firstPhotos ? data.firstPhotos.length + index + 1 : index + 1
                         });
                     }
                 });
             }
             
-            // إذا لم توجد صور، إنشاء عينات
-            if (submission.images.length === 0) {
-                submission.images = createSampleImages(submission.selectedCode);
-            }
+            return images;
         }
         
-        function createSampleImages(code) {
-            return Array(10).fill().map((_, index) => ({
-                src: `https://via.placeholder.com/400x300/${index < 5 ? '2E86AB' : 'A23B72'}/FFFFFF?text=${code}+${index+1}`,
-                title: index < 5 ? `صورة أولى ${index + 1}` : `صورة ثانية ${index - 4}`,
-                type: index < 5 ? 'first' : 'second'
-            }));
-        }
-        
-        function createSampleSubmissions() {
-            const sampleCodes = ['AREA-001', 'AREA-002', 'AREA-003', 'AREA-004'];
-            const sampleUsers = ['محمد أحمد', 'سارة خالد', 'علي حسن', 'فاطمة محمد'];
+        function createSampleData() {
+            const sampleAreas = [
+                { code: 'AREA-001', name: 'John Smith' },
+                { code: 'AREA-002', name: 'Sarah Johnson' },
+                { code: 'AREA-003', name: 'Michael Brown' },
+                { code: 'AREA-004', name: 'Emma Wilson' }
+            ];
             
-            sampleCodes.forEach((code, index) => {
-                const submission = {
-                    selectedCode: code,
-                    timestamp: new Date(Date.now() - index * 86400000).toISOString(),
-                    fieldValues: {
-                        username: sampleUsers[index],
-                        brain_libre: (index % 10).toString(),
-                        phone: `05${Math.floor(Math.random() * 90000000) + 10000000}`
-                    },
-                    firstPhotos: Array(5).fill().map((_, i) => 
-                        `https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=${code}+${i+1}`
-                    ),
-                    secondPhotos: Array(5).fill().map((_, i) => 
-                        `https://via.placeholder.com/400x300/A23B72/FFFFFF?text=${code}+${i+6}`
-                    )
+            sampleAreas.forEach((area, areaIndex) => {
+                const submissions = [];
+                
+                // إنشاء 2-4 تقديمات لكل منطقة
+                const numSubmissions = 2 + Math.floor(Math.random() * 3);
+                
+                for (let i = 0; i < numSubmissions; i++) {
+                    const submissionData = {
+                        selectedCode: area.code,
+                        timestamp: new Date(Date.now() - (areaIndex * 86400000) - (i * 3600000)).toISOString(),
+                        fieldValues: {
+                            username: area.name,
+                            brain_libre: (5 + Math.random() * 3).toFixed(1),
+                            phone: `05${Math.floor(Math.random() * 90000000) + 10000000}`
+                        },
+                        firstPhotos: Array(3).fill().map((_, idx) => 
+                            `https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=${area.code}-F${idx+1}`
+                        ),
+                        secondPhotos: Array(2).fill().map((_, idx) => 
+                            `https://via.placeholder.com/400x300/A23B72/FFFFFF?text=${area.code}-S${idx+1}`
+                        )
+                    };
+                    
+                    const submission = {
+                        id: `submission_${area.code}_${Date.now()}_${i}`,
+                        data: submissionData,
+                        timestamp: submissionData.timestamp,
+                        images: collectImagesFromSubmission(submissionData),
+                        fieldValues: submissionData.fieldValues
+                    };
+                    
+                    submissions.push(submission);
+                    
+                    // حفظ في localStorage
+                    localStorage.setItem(submission.id, JSON.stringify(submissionData));
+                }
+                
+                allUsers[area.code] = {
+                    code: area.code,
+                    name: area.name,
+                    submissions: submissions,
+                    totalImages: submissions.reduce((sum, sub) => sum + sub.images.length, 0),
+                    firstSubmission: submissions[submissions.length - 1].timestamp,
+                    lastSubmission: submissions[0].timestamp,
+                    dataSize: 1024 * submissions.length // 1KB تقدير لكل تقديم
                 };
-                
-                collectSubmissionImages(submission);
-                
-                const key = `full_submission_${code}_${Date.now()}`;
-                localStorage.setItem(key, JSON.stringify(submission));
-                submission.id = key;
-                allSubmissions.push(submission);
             });
             
-            console.log('تم إنشاء بيانات تجريبية');
-            showAlert('تم تحميل البيانات التجريبية للاختبار', 'success');
+            showAlert('Sample data created for testing', 'success');
         }
         
-        // ============== عرض التقديمات ==============
-        function renderSubmissionsList() {
-            const container = document.getElementById('submissionsList');
-            const countElement = document.getElementById('submissionCount');
+        // ============== عرض قائمة المستخدمين ==============
+        function updateUserList() {
+            const container = document.getElementById('usersList');
+            const countElement = document.getElementById('userCount');
+            const usersArray = Object.values(allUsers);
             
-            countElement.textContent = allSubmissions.length;
+            countElement.textContent = usersArray.length;
             
-            if (allSubmissions.length === 0) {
+            if (usersArray.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 30px; color: #666;">
                         <i class="fas fa-database" style="font-size: 40px; margin-bottom: 15px; opacity: 0.3;"></i>
-                        <p>لا توجد تقديمات</p>
-                        <button class="btn btn-primary" onclick="createTestSubmission()" style="margin-top: 10px;">
-                            <i class="fas fa-plus"></i> إنشاء تقديم تجريبي
+                        <p>No users found</p>
+                        <button class="btn btn-primary" onclick="createSampleData()" style="margin-top: 10px;">
+                            <i class="fas fa-plus"></i> Create Sample Data
                         </button>
                     </div>
                 `;
                 return;
             }
             
+            // ترتيب حسب آخر تحديث
+            usersArray.sort((a, b) => new Date(b.lastSubmission) - new Date(a.lastSubmission));
+            
             container.innerHTML = '';
             
-            allSubmissions.forEach((submission, index) => {
-                const date = submission.timestamp ? new Date(submission.timestamp) : new Date();
-                const arabicDate = date.toLocaleDateString('ar-SA');
-                const time = date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+            usersArray.forEach(user => {
+                const lastDate = new Date(user.lastSubmission);
+                const firstDate = new Date(user.firstSubmission);
                 
                 const div = document.createElement('div');
-                div.className = 'submission-item';
-                if (currentSubmission && currentSubmission.id === submission.id) {
+                div.className = 'user-item';
+                if (currentUser && currentUser.code === user.code) {
                     div.classList.add('active');
                 }
                 
                 div.innerHTML = `
-                    <div style="font-weight: bold; margin-bottom: 5px;">
-                        <i class="fas fa-qrcode"></i> ${submission.selectedCode || 'بدون كود'}
+                    <div class="user-badge">${user.submissions.length}</div>
+                    <div style="font-weight: bold; margin-bottom: 5px; font-size: 16px;">
+                        <i class="fas fa-qrcode"></i> ${user.code}
                     </div>
                     <div style="color: #666; font-size: 14px; margin-bottom: 5px;">
-                        <i class="fas fa-user"></i> ${submission.fieldValues?.username || 'غير معروف'}
+                        <i class="fas fa-user"></i> ${user.name}
                     </div>
-                    <div style="color: #666; font-size: 12px;">
-                        <i class="far fa-calendar"></i> ${arabicDate} ${time}
+                    <div style="color: #888; font-size: 12px; margin-bottom: 5px;">
+                        <i class="fas fa-images"></i> ${user.totalImages} images
                     </div>
-                    <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px;">
-                        <span><i class="fas fa-images"></i> ${submission.images?.length || 0}</span>
-                        <span><i class="fas fa-brain"></i> ${submission.fieldValues?.brain_libre || '?'}</span>
+                    <div style="color: #888; font-size: 11px; display: flex; justify-content: space-between;">
+                        <span><i class="far fa-calendar"></i> ${formatDate(firstDate)}</span>
+                        <span><i class="fas fa-sync"></i> ${formatDate(lastDate)}</span>
                     </div>
                 `;
                 
-                div.onclick = () => loadSubmissionGallery(submission);
+                div.onclick = () => loadUserDetails(user);
                 container.appendChild(div);
             });
-            
-            if (allSubmissions.length > 0 && !currentSubmission) {
-                loadSubmissionGallery(allSubmissions[0]);
-            }
         }
         
-        function loadSubmissionGallery(submission) {
-            currentSubmission = submission;
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchUser').value.toLowerCase();
+            const userItems = document.querySelectorAll('.user-item');
             
-            const date = submission.timestamp ? new Date(submission.timestamp) : new Date();
-            document.getElementById('galleryTitle').innerHTML = `
-                <i class="fas fa-images"></i> ${submission.selectedCode || 'بدون كود'}
+            userItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+        
+        // ============== عرض تفاصيل المستخدم ==============
+        function loadUserDetails(user) {
+            currentUser = user;
+            
+            document.getElementById('userDetailTitle').innerHTML = `
+                <i class="fas fa-user-circle"></i> ${user.code}
                 <span style="font-size: 16px; font-weight: normal; color: #666; margin-right: 10px;">
-                    - ${submission.fieldValues?.username || 'غير معروف'} - 
-                    ${date.toLocaleDateString('ar-SA')}
+                    - ${user.name} - 
+                    ${user.submissions.length} submissions
                 </span>
             `;
             
-            document.getElementById('galleryActions').style.display = 'block';
+            document.getElementById('userActions').style.display = 'flex';
             
-            document.querySelectorAll('.submission-item').forEach(item => {
+            // تحديث العنصر النشط في القائمة
+            document.querySelectorAll('.user-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            const activeItem = Array.from(document.querySelectorAll('.submission-item')).find(item => {
+            const activeItem = Array.from(document.querySelectorAll('.user-item')).find(item => {
                 const codeElement = item.querySelector('.fa-qrcode').nextSibling;
-                return codeElement && codeElement.textContent.trim() === (submission.selectedCode || 'بدون كود');
+                return codeElement && codeElement.textContent.trim() === user.code;
             });
             
             if (activeItem) activeItem.classList.add('active');
             
-            displaySubmissionPhotos(submission);
+            displayUserDetails(user);
         }
         
-        function displaySubmissionPhotos(submission) {
-            const container = document.getElementById('photosGallery');
+        function displayUserDetails(user) {
+            const container = document.getElementById('userDetails');
             
-            if (!submission.images || submission.images.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 50px; color: #666;">
-                        <i class="fas fa-image-slash" style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;"></i>
-                        <h3>لا توجد صور في هذا التقديم</h3>
-                        <p>التقديم يحتوي فقط على البيانات النصية</p>
+            // ترتيب التقديمات من الأحدث إلى الأقدم
+            user.submissions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let html = `
+                <div class="user-info-grid">
+                    <div class="info-card">
+                        <div class="info-label">Area Code</div>
+                        <div class="info-value" style="font-family: monospace; font-size: 18px;">${user.code}</div>
                     </div>
-                `;
-                return;
-            }
+                    <div class="info-card">
+                        <div class="info-label">User Name</div>
+                        <div class="info-value">${user.name}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Total Submissions</div>
+                        <div class="info-value">${user.submissions.length}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Total Images</div>
+                        <div class="info-value">${user.totalImages}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">First Submission</div>
+                        <div class="info-value">${formatDate(new Date(user.firstSubmission))}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Last Submission</div>
+                        <div class="info-value">${formatDate(new Date(user.lastSubmission))}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Data Size</div>
+                        <div class="info-value">${formatFileSize(user.dataSize)}</div>
+                    </div>
+                </div>
+            `;
             
-            const firstSet = submission.images.filter(img => img.type === 'first');
-            const secondSet = submission.images.filter(img => img.type === 'second');
+            // عرض جميع الصور في شبكة واحدة
+            const allImages = [];
+            user.submissions.forEach((sub, subIndex) => {
+                sub.images.forEach(img => {
+                    allImages.push({
+                        ...img,
+                        submissionDate: sub.timestamp,
+                        submissionIndex: subIndex + 1
+                    });
+                });
+            });
             
-            let html = '';
-            
-            if (firstSet.length > 0) {
+            if (allImages.length > 0) {
                 html += `
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: var(--primary); margin-bottom: 15px;">
-                            <i class="fas fa-camera"></i> المجموعة الأولى (${firstSet.length} صور)
-                        </h3>
-                        <div class="photos-grid" id="firstSetGrid"></div>
-                    </div>
+                    <h3 style="color: var(--primary); margin-bottom: 15px; margin-top: 30px;">
+                        <i class="fas fa-images"></i> All Images (${allImages.length})
+                    </h3>
+                    <div class="photos-grid" id="userImagesGrid"></div>
                 `;
             }
             
-            if (secondSet.length > 0) {
-                html += `
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: var(--primary); margin-bottom: 15px;">
-                            <i class="fas fa-camera"></i> المجموعة الثانية (${secondSet.length} صور)
-                        </h3>
-                        <div class="photos-grid" id="secondSetGrid"></div>
-                    </div>
-                `;
-            }
-            
+            // سجل التقديمات
             html += `
-                <div style="margin-top: 30px; padding: 20px; background: var(--light); border-radius: 10px;">
-                    <h4 style="color: var(--dark); margin-bottom: 15px;">
-                        <i class="fas fa-info-circle"></i> معلومات التقديم
-                    </h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                        <div>
-                            <div style="font-weight: bold; color: var(--primary);">المستخدم:</div>
-                            <div>${submission.fieldValues?.username || 'غير محدد'}</div>
-                        </div>
-                        <div>
-                            <div style="font-weight: bold; color: var(--primary);">Brain Libre:</div>
-                            <div>${submission.fieldValues?.brain_libre || 'غير محدد'}</div>
-                        </div>
-                        <div>
-                            <div style="font-weight: bold; color: var(--primary);">الهاتف:</div>
-                            <div>${submission.fieldValues?.phone || 'غير محدد'}</div>
-                        </div>
-                        <div>
-                            <div style="font-weight: bold; color: var(--primary);">التاريخ:</div>
-                            <div>${new Date(submission.timestamp || Date.now()).toLocaleString('ar-SA')}</div>
-                        </div>
-                    </div>
+                <div class="submission-history">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">
+                        <i class="fas fa-history"></i> Submission History
+                    </h3>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Submission #</th>
+                                <th>Brain Libre</th>
+                                <th>Phone</th>
+                                <th>Images</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userSubmissionsTable"></tbody>
+                    </table>
                 </div>
             `;
             
             container.innerHTML = html;
             
-            if (firstSet.length > 0) {
-                const firstGrid = document.getElementById('firstSetGrid');
-                firstSet.forEach((img, index) => {
-                    createPhotoCard(firstGrid, img, index + 1, 'أولى');
+            // عرض الصور
+            if (allImages.length > 0) {
+                const grid = document.getElementById('userImagesGrid');
+                allImages.forEach((img, index) => {
+                    createImageCard(grid, img, index + 1);
                 });
             }
             
-            if (secondSet.length > 0) {
-                const secondGrid = document.getElementById('secondSetGrid');
-                secondSet.forEach((img, index) => {
-                    createPhotoCard(secondGrid, img, index + 1, 'ثانية');
-                });
-            }
+            // عرض جدول التقديمات
+            const tableBody = document.getElementById('userSubmissionsTable');
+            user.submissions.forEach((sub, index) => {
+                const row = document.createElement('tr');
+                const date = new Date(sub.timestamp);
+                
+                row.innerHTML = `
+                    <td>${formatDateTime(date)}</td>
+                    <td>Submission ${index + 1}</td>
+                    <td>${sub.fieldValues.brain_libre}</td>
+                    <td>${sub.fieldValues.phone}</td>
+                    <td>${sub.images.length}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="viewSubmission(${index})" style="padding: 5px 10px; font-size: 12px;">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-success" onclick="downloadSubmission(${index})" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
         }
         
-        function createPhotoCard(container, img, number, type) {
+        function createImageCard(container, img, number) {
             const card = document.createElement('div');
             card.className = 'photo-card';
             
-            // تأكد من أن الصورة صالحة للعرض
-            let imgSrc = img.src;
-            if (imgSrc && imgSrc.startsWith('blob:')) {
-                // المحاولة لتحويل blob إلى data URL
-                try {
-                    // هذه وظيفة بسيطة، في الواقع تحتاج إلى تحويل blob
-                    imgSrc = imgSrc;
-                } catch (e) {
-                    imgSrc = 'https://via.placeholder.com/400x300?text=صورة+' + number;
-                }
-            }
-            
             card.innerHTML = `
                 <div class="photo-number">${number}</div>
-                <img src="${imgSrc}" class="photo-img" alt="صورة ${number}" 
-                     onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=صورة+${number}'">
+                <img src="${img.src}" class="photo-img" alt="Image ${number}" 
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Image+${number}'">
                 <div class="photo-info">
-                    <div class="photo-type">${type} - صورة ${number}</div>
+                    <div style="font-weight: bold; font-size: 12px;">${img.title}</div>
+                    <div style="color: #666; font-size: 11px; margin-top: 5px;">
+                        ${formatDate(new Date(img.submissionDate))}
+                    </div>
                 </div>
             `;
             
-            card.onclick = () => viewImage(imgSrc, `${currentSubmission.selectedCode || 'بدون كود'} - ${type} صورة ${number}`);
+            card.onclick = () => viewImage(img.src, `${img.title} - ${currentUser.code}`);
             container.appendChild(card);
         }
         
-        function viewImage(src, title) {
-            document.getElementById('modalImage').src = src;
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalDescription').textContent = 
-                `المستخدم: ${currentSubmission.fieldValues?.username || 'غير معروف'}`;
-            document.getElementById('imageModal').style.display = 'block';
-        }
-        
-        function closeImageModal() {
-            document.getElementById('imageModal').style.display = 'none';
-        }
-        
-        // ============== إرسال Gmail الحقيقي ==============
-        function loadSettings() {
-            if (gmailSettings.gmailAddress) {
-                document.getElementById('gmailAddress').value = gmailSettings.gmailAddress;
-            }
-            if (gmailSettings.gmailPassword) {
-                document.getElementById('gmailPassword').value = gmailSettings.gmailPassword;
-            }
-        }
-        
-        function saveGmailSettings() {
-            gmailSettings.gmailAddress = document.getElementById('gmailAddress').value.trim();
-            gmailSettings.gmailPassword = document.getElementById('gmailPassword').value.trim();
+        function viewSubmission(index) {
+            if (!currentUser || !currentUser.submissions[index]) return;
             
-            if (!gmailSettings.gmailAddress) {
-                showAlert('يرجى إدخال بريد Gmail', 'error', 'settings');
-                return;
-            }
-            
-            localStorage.setItem('gmailSettings', JSON.stringify(gmailSettings));
-            showAlert('تم حفظ إعدادات Gmail بنجاح', 'success', 'settings');
-            
-            // تهيئة EmailJS
-            initEmailJS();
-        }
-        
-        function initEmailJS() {
-            if (gmailSettings.gmailAddress && gmailSettings.gmailPassword) {
-                // في الإنتاج الحقيقي، ستحتاج إلى استخدام EmailJS مع مفتاح API
-                // هذا مثال مبسط
-                console.log('تم تهيئة إعدادات البريد');
-                showAlert('تم تهيئة نظام البريد الإلكتروني', 'success');
-            }
-        }
-        
-        function updateEmailDropdown() {
-            const select = document.getElementById('emailSubmission');
-            select.innerHTML = '<option value="">-- اختر تقديماً --</option>';
-            
-            allSubmissions.forEach((sub, index) => {
-                const date = new Date(sub.timestamp || Date.now());
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `${sub.selectedCode || 'بدون كود'} - ${sub.fieldValues?.username || 'غير معروف'} - ${date.toLocaleDateString('ar-SA')}`;
-                select.appendChild(option);
-            });
-        }
-        
-        function loadSelectedSubmission() {
-            const select = document.getElementById('emailSubmission');
-            const index = parseInt(select.value);
-            
-            if (!isNaN(index) && allSubmissions[index]) {
-                const submission = allSubmissions[index];
-                const message = document.getElementById('emailMessage');
-                message.value = message.value
-                    .replace('[CODE]', submission.selectedCode || 'بدون كود')
-                    .replace('[USER]', submission.fieldValues?.username || 'غير معروف')
-                    .replace('[DATE]', new Date(submission.timestamp || Date.now()).toLocaleString('ar-SA'))
-                    .replace('[PHOTOS_COUNT]', submission.images?.length || 0);
-                updateAttachmentsList(submission);
-            }
-        }
-        
-        function updateAttachmentsList(submission) {
-            const container = document.getElementById('attachmentsList');
-            
-            if (!submission.images || submission.images.length === 0) {
-                container.innerHTML = '<div style="color: #666;">لا توجد صور في هذا التقديم</div>';
-                return;
-            }
+            const sub = currentUser.submissions[index];
+            const date = new Date(sub.timestamp);
             
             let html = `
-                <div style="margin-bottom: 10px;">
-                    <i class="fas fa-paperclip"></i> المرفقات المتاحة:
+                <div style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">
+                        Submission Details - ${formatDateTime(date)}
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <div style="font-weight: bold; color: var(--primary);">Brain Libre:</div>
+                            <div>${sub.fieldValues.brain_libre}</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; color: var(--primary);">Phone:</div>
+                            <div>${sub.fieldValues.phone}</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; color: var(--primary);">Total Images:</div>
+                            <div>${sub.images.length}</div>
+                        </div>
+                    </div>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
             `;
             
-            submission.images.slice(0, 6).forEach((img, index) => {
-                html += `
-                    <div style="background: white; padding: 8px 12px; border-radius: 5px; font-size: 12px; border: 1px solid #ddd;">
-                        <i class="fas fa-image"></i> ${img.title || `صورة ${index + 1}`}
+            // عرض صور هذا التقديم
+            if (sub.images.length > 0) {
+                html += `<h4 style="color: var(--primary); margin-bottom: 15px;">Submission Images (${sub.images.length})</h4>`;
+                html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">';
+                
+                sub.images.forEach((img, idx) => {
+                    html += `
+                        <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                            <img src="${img.src}" style="width: 100%; height: 100px; object-fit: cover;"
+                                 onerror="this.src='https://via.placeholder.com/150x100?text=Image'">
+                            <div style="padding: 8px; font-size: 12px;">${img.title}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            // فتح في نافذة جديدة أو عرض في modal
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>${currentUser.code} - Submission ${index + 1}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #2E86AB; }
+                        .image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+                        .image-item { border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
+                        img { max-width: 100%; height: auto; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${currentUser.code} - Submission ${index + 1}</h1>
+                    ${html}
+                    <div style="margin-top: 20px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #2E86AB; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Print This Report
+                        </button>
                     </div>
-                `;
-            });
-            
-            if (submission.images.length > 6) {
-                html += `<div style="background: white; padding: 8px 12px; border-radius: 5px; font-size: 12px; border: 1px solid #ddd;">
-                    +${submission.images.length - 6} صورة
-                </div>`;
-            }
-            
-            html += '</div>';
-            container.innerHTML = html;
+                </body>
+                </html>
+            `);
         }
         
-        async function sendEmailNow() {
-            const email = document.getElementById('recipientEmail').value.trim();
-            const subject = document.getElementById('emailSubject').value;
-            const message = document.getElementById('emailMessage').value;
+        function downloadSubmission(index) {
+            if (!currentUser || !currentUser.submissions[index]) return;
             
-            if (!email || !subject || !message) {
-                showAlert('يرجى ملء جميع الحقول المطلوبة', 'error', 'email');
-                return;
-            }
-            
-            if (!validateEmail(email)) {
-                showAlert('البريد الإلكتروني غير صالح', 'error', 'email');
-                return;
-            }
-            
-            if (!gmailSettings.gmailAddress || !gmailSettings.gmailPassword) {
-                showAlert('يرجى إعداد إعدادات Gmail أولاً من تبويب الإعدادات', 'error', 'email');
-                return;
-            }
-            
-            const select = document.getElementById('emailSubmission');
-            const submissionIndex = parseInt(select.value);
-            
-            if (isNaN(submissionIndex) || !allSubmissions[submissionIndex]) {
-                showAlert('يرجى اختيار تقديم صالح', 'error', 'email');
-                return;
-            }
-            
-            const submission = allSubmissions[submissionIndex];
-            
-            showAlert('جاري إرسال البريد إلى Gmail...', 'success', 'email');
-            
-            try {
-                // استخدام EmailJS لإرسال البريد الفعلي
-                await sendWithEmailJS(submission, email, subject, message);
-                
-                // زيادة العداد
-                gmailSettings.emailsSent++;
-                localStorage.setItem('gmailSettings', JSON.stringify(gmailSettings));
-                updateStats();
-                
-                showAlert('✅ تم إرسال البريد بنجاح إلى Gmail!', 'success', 'email');
-                
-                // إنشاء حزمة للتحميل
-                createDataPackage(submission);
-                
-            } catch (error) {
-                console.error('خطأ في الإرسال:', error);
-                
-                // استخدام طريقة mailto كبديل
-                const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-                window.open(mailtoLink, '_blank');
-                
-                showAlert('📧 تم فتح بريدك Gmail. أضف المرفقات يدوياً.', 'success', 'email');
-                createDataPackage(submission);
-            }
-        }
-        
-        async function sendWithEmailJS(submission, toEmail, subject, message) {
-            // هذا مثال باستخدام EmailJS - ستحتاج إلى حساب في emailjs.com
-            try {
-                // تهيئة EmailJS (استبدل بالمفتاح الحقيقي)
-                emailjs.init("YOUR_PUBLIC_KEY"); // استبدل بمفتاحك العام
-                
-                const templateParams = {
-                    to_email: toEmail,
-                    from_name: 'نظام NotCam',
-                    subject: subject,
-                    message: message,
-                    code: submission.selectedCode || 'بدون كود',
-                    username: submission.fieldValues?.username || 'غير معروف',
-                    brain_libre: submission.fieldValues?.brain_libre || 'غير محدد',
-                    phone: submission.fieldValues?.phone || 'غير محدد',
-                    date: new Date(submission.timestamp || Date.now()).toLocaleString('ar-SA'),
-                    photos_count: submission.images?.length || 0
-                };
-                
-                const response = await emailjs.send(
-                    'YOUR_SERVICE_ID', // استبدل بمعرف الخدمة
-                    'YOUR_TEMPLATE_ID', // استبدل بمعرف القالب
-                    templateParams
-                );
-                
-                return response;
-            } catch (error) {
-                throw error;
-            }
-        }
-        
-        function createDataPackage(submission) {
-            const packageData = {
-                submission: submission,
-                exportDate: new Date().toISOString(),
-                system: 'NotCam Admin System'
+            const sub = currentUser.submissions[index];
+            const data = {
+                areaCode: currentUser.code,
+                userName: currentUser.name,
+                submission: sub.data,
+                exportDate: new Date().toISOString()
             };
             
-            const dataStr = JSON.stringify(packageData, null, 2);
+            const dataStr = JSON.stringify(data, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             
             const link = document.createElement('a');
             link.href = url;
-            link.download = `notcam_${submission.selectedCode || 'data'}_${Date.now()}.json`;
-            link.style.display = 'none';
-            document.body.appendChild(link);
+            link.download = `${currentUser.code}_submission_${index + 1}_${Date.now()}.json`;
             link.click();
-            document.body.removeChild(link);
             
-            console.log('تم إنشاء حزمة بيانات للتحميل');
+            showAlert(`Downloaded submission ${index + 1} for ${currentUser.code}`, 'success');
         }
         
-        function sendCurrentToEmail() {
-            if (!currentSubmission) {
-                showAlert('لا يوجد تقديم محدد', 'error');
+        function exportUserData() {
+            if (!currentUser) return;
+            
+            const data = {
+                user: currentUser,
+                exportDate: new Date().toISOString(),
+                system: 'NotCam System Export'
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${currentUser.code}_complete_data_${Date.now()}.json`;
+            link.click();
+            
+            showAlert(`Exported complete data for ${currentUser.code}`, 'success');
+        }
+        
+        // ============== إرسال Email ==============
+        function updateEmailDropdown() {
+            const select = document.getElementById('emailUser');
+            select.innerHTML = '<option value="">-- Select user/area --</option>';
+            
+            Object.values(allUsers).forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.code;
+                option.textContent = `${user.code} - ${user.name} (${user.submissions.length} submissions)`;
+                select.appendChild(option);
+            });
+        }
+        
+        function loadSelectedUserForEmail() {
+            const code = document.getElementById('emailUser').value;
+            if (!code || !allUsers[code]) return;
+            
+            const user = allUsers[code];
+            const message = document.getElementById('emailMessage');
+            message.value = message.value
+                .replace('[CODE]', user.code)
+                .replace('[USER]', user.name)
+                .replace('[DATE]', formatDate(new Date(user.lastSubmission)))
+                .replace('[PHOTOS_COUNT]', user.totalImages)
+                .replace('[BRAIN_LIBRE]', user.submissions[0]?.fieldValues.brain_libre || 'N/A')
+                .replace('[PHONE]', user.submissions[0]?.fieldValues.phone || 'N/A');
+            
+            updateEmailAttachments(user);
+        }
+        
+        function updateEmailAttachments(user) {
+            const container = document.getElementById('emailAttachments');
+            container.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <i class="fas fa-folder"></i> Will include:
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <div style="background: white; padding: 8px 12px; border-radius: 5px; font-size: 12px; border: 1px solid #ddd;">
+                        <i class="fas fa-file-alt"></i> User Data (${user.submissions.length} submissions)
+                    </div>
+                    <div style="background: white; padding: 8px 12px; border-radius: 5px; font-size: 12px; border: 1px solid #ddd;">
+                        <i class="fas fa-images"></i> ${user.totalImages} Images
+                    </div>
+                    <div style="background: white; padding: 8px 12px; border-radius: 5px; font-size: 12px; border: 1px solid #ddd;">
+                        <i class="fas fa-chart-bar"></i> Statistics Report
+                    </div>
+                </div>
+            `;
+        }
+        
+        function sendCompleteEmail() {
+            const code = document.getElementById('emailUser').value;
+            const email = document.getElementById('recipientEmail').value.trim();
+            const subject = document.getElementById('emailSubject').value;
+            const message = document.getElementById('emailMessage').value;
+            
+            if (!code || !email || !subject || !message) {
+                showAlert('Please fill all required fields', 'error', 'email');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showAlert('Invalid email address', 'error', 'email');
+                return;
+            }
+            
+            const user = allUsers[code];
+            if (!user) {
+                showAlert('User not found', 'error', 'email');
+                return;
+            }
+            
+            showAlert('Preparing and sending complete data package...', 'success', 'email');
+            
+            // إنشاء حزمة البيانات
+            const dataPackage = createDataPackageForEmail(user);
+            
+            // استخدام mailto كبديل (في الواقع ستستخدم EmailJS أو خدمة مماثلة)
+            const mailtoBody = `${message}\n\n---\nData Package Created: ${new Date().toLocaleString()}`;
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailtoBody)}`;
+            
+            // فتح البريد مع إرفاق الملف
+            setTimeout(() => {
+                window.open(mailtoLink, '_blank');
+                showAlert('Email client opened. Attach the downloaded files manually.', 'success', 'email');
+                
+                // تحديث الإحصائيات
+                systemStats.emailsSent++;
+                localStorage.setItem('systemStats', JSON.stringify(systemStats));
+                updateStatistics();
+            }, 1000);
+        }
+        
+        function createDataPackageForEmail(user) {
+            // 1. إنشاء ملف JSON يحتوي على جميع البيانات
+            const jsonData = {
+                user: user,
+                exportDate: new Date().toISOString(),
+                system: 'NotCam System'
+            };
+            
+            const jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+            const jsonUrl = URL.createObjectURL(jsonBlob);
+            
+            const jsonLink = document.createElement('a');
+            jsonLink.href = jsonUrl;
+            jsonLink.download = `${user.code}_data_package.json`;
+            jsonLink.click();
+            
+            // 2. إنشاء تقرير HTML
+            const htmlReport = createHTMLReport(user);
+            const htmlBlob = new Blob([htmlReport], { type: 'text/html' });
+            const htmlUrl = URL.createObjectURL(htmlBlob);
+            
+            const htmlLink = document.createElement('a');
+            htmlLink.href = htmlUrl;
+            htmlLink.download = `${user.code}_report.html`;
+            htmlLink.click();
+            
+            return { jsonBlob, htmlBlob };
+        }
+        
+        function createHTMLReport(user) {
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${user.code} - NotCam System Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+                        h1 { color: #2E86AB; border-bottom: 2px solid #2E86AB; padding-bottom: 10px; }
+                        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
+                        .info-card { border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+                        .info-label { color: #666; font-size: 12px; margin-bottom: 5px; }
+                        .info-value { font-size: 16px; font-weight: bold; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th { background: #2E86AB; color: white; padding: 10px; text-align: left; }
+                        td { padding: 10px; border-bottom: 1px solid #ddd; }
+                        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>NotCam System Report - ${user.code}</h1>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-label">Area Code</div>
+                            <div class="info-value">${user.code}</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">User Name</div>
+                            <div class="info-value">${user.name}</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Total Submissions</div>
+                            <div class="info-value">${user.submissions.length}</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Total Images</div>
+                            <div class="info-value">${user.totalImages}</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">First Submission</div>
+                            <div class="info-value">${formatDate(new Date(user.firstSubmission))}</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Last Submission</div>
+                            <div class="info-value">${formatDate(new Date(user.lastSubmission))}</div>
+                        </div>
+                    </div>
+                    
+                    <h2>Submission History</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Brain Libre</th>
+                                <th>Phone</th>
+                                <th>Images</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${user.submissions.map(sub => `
+                                <tr>
+                                    <td>${formatDate(new Date(sub.timestamp))}</td>
+                                    <td>${sub.fieldValues.brain_libre}</td>
+                                    <td>${sub.fieldValues.phone}</td>
+                                    <td>${sub.images.length}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div class="footer">
+                        <p>Report generated on ${new Date().toLocaleString()}</p>
+                        <p>NotCam System - Complete Admin Dashboard</p>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+        
+        function sendUserToEmail() {
+            if (!currentUser) {
+                showAlert('No user selected', 'error');
                 return;
             }
             
             showTab('email');
+            document.getElementById('emailUser').value = currentUser.code;
+            loadSelectedUserForEmail();
             
-            const index = allSubmissions.findIndex(s => s.id === currentSubmission.id);
-            if (index !== -1) {
-                document.getElementById('emailSubmission').value = index;
-                loadSelectedSubmission();
-            }
-            
-            if (gmailSettings.gmailAddress) {
-                document.getElementById('recipientEmail').value = gmailSettings.gmailAddress;
-            }
-            
-            showAlert('تم تحميل التقديم الحالي. أضف البريد وانقر على إرسال', 'success', 'email');
+            showAlert(`Loaded ${currentUser.code} for email sending`, 'success', 'email');
         }
         
-        function testEmailFunction() {
-            const testEmail = prompt('أدخل بريدك Gmail للاختبار:', 'example@gmail.com');
+        // ============== الإحصائيات ==============
+        function updateStatistics() {
+            const usersArray = Object.values(allUsers);
             
-            if (testEmail && validateEmail(testEmail)) {
-                document.getElementById('recipientEmail').value = testEmail;
-                document.getElementById('emailSubject').value = '📧 اختبار إرسال من نظام NotCam';
-                document.getElementById('emailMessage').value = 'هذا بريد اختبار للتأكد من عمل نظام الإرسال إلى Gmail.\n\nإذا استلمت هذا البريد، فالنظام يعمل بشكل صحيح.';
-                
-                showAlert('تم تعيين بيانات الاختبار. انقر على "إرسال إلى Gmail الآن"', 'success', 'email');
-            }
+            document.getElementById('totalUsersStat').textContent = usersArray.length;
+            document.getElementById('totalSubmissionsStat').textContent = 
+                usersArray.reduce((sum, user) => sum + user.submissions.length, 0);
+            document.getElementById('totalPhotosStat').textContent = 
+                usersArray.reduce((sum, user) => sum + user.totalImages, 0);
+            
+            const totalSize = usersArray.reduce((sum, user) => sum + user.dataSize, 0);
+            document.getElementById('totalDataSize').textContent = formatFileSize(totalSize);
+            
+            // تحديث مجلدات المناطق
+            updateAreaFolders();
         }
         
-        function sendTestToYourself() {
-            if (!gmailSettings.gmailAddress) {
-                showAlert('أدخل بريدك Gmail أولاً في الإعدادات', 'error');
+        function updateAreaFolders() {
+            const container = document.getElementById('areaFolders');
+            const usersArray = Object.values(allUsers);
+            
+            if (usersArray.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No area folders</p>';
                 return;
             }
             
-            document.getElementById('recipientEmail').value = gmailSettings.gmailAddress;
-            document.getElementById('emailSubject').value = 'اختبار نظام NotCam';
-            document.getElementById('emailMessage').value = 'هذا اختبار لنظام إرسال البريد الإلكتروني.\n\nإذا استلمت هذا البريد، فالنظام يعمل بنجاح.';
+            let html = '<div style="display: flex; flex-wrap: wrap; gap: 10px;">';
+            usersArray.forEach(user => {
+                html += `
+                    <div class="code-folder">
+                        <i class="fas fa-folder"></i> ${user.code}
+                        <span style="background: var(--primary); color: white; padding: 1px 6px; border-radius: 10px; font-size: 11px; margin-right: 5px;">
+                            ${user.submissions.length}
+                        </span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function updateRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            const allSubmissions = [];
             
-            showAlert('تم تعيين بيانات الاختبار. انقر على "إرسال إلى Gmail الآن"', 'success', 'email');
+            // جمع جميع التقديمات من جميع المستخدمين
+            Object.values(allUsers).forEach(user => {
+                user.submissions.forEach(sub => {
+                    allSubmissions.push({
+                        ...sub,
+                        userCode: user.code,
+                        userName: user.name
+                    });
+                });
+            });
+            
+            // ترتيب حسب التاريخ
+            allSubmissions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            const recent = allSubmissions.slice(0, 10);
+            
+            if (recent.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #666; padding: 20px;">
+                            No recent activity
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            container.innerHTML = recent.map(sub => `
+                <tr>
+                    <td>${formatDateTime(new Date(sub.timestamp))}</td>
+                    <td>${sub.userCode}</td>
+                    <td>${sub.userName}</td>
+                    <td>${sub.images.length}</td>
+                    <td>
+                        <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                            Completed
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // ============== النسخ الاحتياطي ==============
+        function backupAllData() {
+            const backupData = {
+                users: allUsers,
+                systemStats: systemStats,
+                backupDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `notcam_complete_backup_${Date.now()}.json`;
+            link.click();
+            
+            systemStats.lastBackup = new Date().toISOString();
+            localStorage.setItem('systemStats', JSON.stringify(systemStats));
+            
+            showAlert('Complete backup downloaded successfully', 'success');
+        }
+        
+        function backupUsersOnly() {
+            const backupData = {
+                users: allUsers,
+                backupDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `notcam_users_backup_${Date.now()}.json`;
+            link.click();
+            
+            showAlert('Users backup downloaded successfully', 'success');
+        }
+        
+        function backupImagesOnly() {
+            // هذا مثال مبسط - في الواقع ستحتاج إلى تحويل الصور إلى ملفات
+            const imageData = {};
+            
+            Object.values(allUsers).forEach(user => {
+                imageData[user.code] = {
+                    code: user.code,
+                    name: user.name,
+                    totalImages: user.totalImages,
+                    imageReferences: []
+                };
+                
+                user.submissions.forEach(sub => {
+                    sub.images.forEach(img => {
+                        imageData[user.code].imageReferences.push({
+                            src: img.src.substring(0, 100) + '...', // تقصير لعرض جزء فقط
+                            title: img.title,
+                            date: sub.timestamp
+                        });
+                    });
+                });
+            });
+            
+            const dataStr = JSON.stringify(imageData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `notcam_images_index_${Date.now()}.json`;
+            link.click();
+            
+            showAlert('Images index backup downloaded', 'success');
+        }
+        
+        function restoreBackup() {
+            const fileInput = document.getElementById('restoreFile');
+            if (!fileInput.files.length) {
+                showAlert('Please select a backup file', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    if (confirm('Restore backup? This will replace current data.')) {
+                        // حفظ البيانات المستعادة
+                        if (backupData.users) {
+                            // في نظام حقيقي، ستقوم بتحميل البيانات إلى localStorage
+                            showAlert('Backup loaded successfully. Manual restore required.', 'success');
+                        }
+                    }
+                } catch (error) {
+                    showAlert('Invalid backup file format', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function clearOldData() {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 30); // 30 يوم
+            
+            let clearedCount = 0;
+            
+            Object.values(allUsers).forEach(user => {
+                user.submissions = user.submissions.filter(sub => {
+                    const subDate = new Date(sub.timestamp);
+                    if (subDate < cutoffDate) {
+                        clearedCount++;
+                        localStorage.removeItem(sub.id);
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            // إعادة تحميل البيانات
+            loadAllData();
+            showAlert(`Cleared ${clearedCount} old submissions`, 'success');
+        }
+        
+        function clearAllSystemData() {
+            if (confirm('DELETE ALL SYSTEM DATA? This cannot be undone!')) {
+                localStorage.clear();
+                allUsers = {};
+                currentUser = null;
+                systemStats = {
+                    totalUsers: 0,
+                    totalSubmissions: 0,
+                    totalPhotos: 0,
+                    totalDataSize: 0,
+                    emailsSent: 0,
+                    lastBackup: null
+                };
+                
+                updateUserList();
+                updateStatistics();
+                showAlert('All system data cleared', 'success');
+            }
+        }
+        
+        // ============== دوال المساعدة ==============
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+        
+        function formatDateTime(date) {
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
         
         function validateEmail(email) {
@@ -1326,151 +1717,23 @@
             return re.test(email);
         }
         
-        // ============== إحصائيات ==============
-        function updateStats() {
-            document.getElementById('totalSubmissionsStat').textContent = allSubmissions.length;
-            document.getElementById('totalPhotosStat').textContent = allSubmissions.reduce((sum, sub) => sum + (sub.images?.length || 0), 0);
-            
-            const users = new Set();
-            allSubmissions.forEach(sub => {
-                if (sub.fieldValues?.username) {
-                    users.add(sub.fieldValues.username);
-                }
-            });
-            document.getElementById('activeUsersStat').textContent = users.size;
-            
-            document.getElementById('emailsSentStat').textContent = gmailSettings.emailsSent || 0;
+        function viewImage(src, title) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalDescription').innerHTML = `
+                <div style="margin-top: 10px;">
+                    <div><strong>Area:</strong> ${currentUser?.code || 'N/A'}</div>
+                    <div><strong>User:</strong> ${currentUser?.name || 'N/A'}</div>
+                    <div><strong>Date:</strong> ${formatDate(new Date())}</div>
+                </div>
+            `;
+            document.getElementById('imageModal').style.display = 'block';
         }
         
-        function updateRecentSubmissions() {
-            const container = document.getElementById('recentSubmissions');
-            const recent = allSubmissions.slice(0, 10);
-            
-            if (recent.length === 0) {
-                container.innerHTML = '<p style="color: #666; text-align: center;">لا توجد تقديمات حديثة</p>';
-                return;
-            }
-            
-            let html = '<div style="overflow-x: auto;">';
-            html += '<table style="width: 100%; border-collapse: collapse;">';
-            html += '<thead><tr style="background: var(--light);">';
-            html += '<th style="padding: 10px; text-align: right;">الكود</th>';
-            html += '<th style="padding: 10px; text-align: right;">المستخدم</th>';
-            html += '<th style="padding: 10px; text-align: right;">التاريخ</th>';
-            html += '<th style="padding: 10px; text-align: right;">الصور</th>';
-            html += '</tr></thead><tbody>';
-            
-            recent.forEach(sub => {
-                const date = new Date(sub.timestamp || Date.now());
-                html += `<tr style="border-bottom: 1px solid #eee;">`;
-                html += `<td style="padding: 10px;">${sub.selectedCode || 'بدون كود'}</td>`;
-                html += `<td style="padding: 10px;">${sub.fieldValues?.username || 'غير معروف'}</td>`;
-                html += `<td style="padding: 10px;">${date.toLocaleDateString('ar-SA')}</td>`;
-                html += `<td style="padding: 10px;">${sub.images?.length || 0}</td>`;
-                html += `</tr>`;
-            });
-            
-            html += '</tbody></table></div>';
-            container.innerHTML = html;
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
         }
         
-        // ============== اختبار النظام ==============
-        function checkLocalStorage() {
-            const container = document.getElementById('storageInfo');
-            let html = '<h4 style="color: var(--primary); margin-bottom: 10px;">مفاتيح التخزين المحلي:</h4>';
-            html += '<div style="max-height: 200px; overflow-y: auto; background: white; padding: 10px; border-radius: 5px;">';
-            
-            let count = 0;
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                html += `<div style="padding: 5px 0; border-bottom: 1px solid #eee; font-family: monospace;">${key}</div>`;
-                count++;
-            }
-            
-            html += `</div><div style="margin-top: 10px; color: var(--success);">إجمالي المفاتيح: ${count}</div>`;
-            container.innerHTML = html;
-            
-            showTestAlert(`تم فحص التخزين المحلي: ${count} مفتاح`, 'success');
-        }
-        
-        function createTestSubmission() {
-            const testCode = `TEST-${Date.now().toString().slice(-6)}`;
-            const submission = {
-                selectedCode: testCode,
-                timestamp: new Date().toISOString(),
-                fieldValues: {
-                    username: 'مستخدم تجريبي',
-                    brain_libre: '5.5',
-                    phone: '0512345678'
-                },
-                firstPhotos: [
-                    'https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=صورة+تجريبية+1',
-                    'https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=صورة+تجريبية+2'
-                ],
-                secondPhotos: [
-                    'https://via.placeholder.com/400x300/A23B72/FFFFFF?text=صورة+تجريبية+3',
-                    'https://via.placeholder.com/400x300/A23B72/FFFFFF?text=صورة+تجريبية+4'
-                ]
-            };
-            
-            collectSubmissionImages(submission);
-            
-            const key = `test_submission_${testCode}`;
-            localStorage.setItem(key, JSON.stringify(submission));
-            submission.id = key;
-            allSubmissions.unshift(submission);
-            
-            renderSubmissionsList();
-            updateEmailDropdown();
-            updateStats();
-            
-            showTestAlert('تم إنشاء تقديم تجريبي بنجاح', 'success');
-            loadSubmissionGallery(submission);
-        }
-        
-        function refreshSubmissions() {
-            loadAllSubmissions();
-            showAlert('تم تحديث جميع البيانات', 'success');
-        }
-        
-        function clearAllData() {
-            if (confirm('هل أنت متأكد من حذف جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.')) {
-                // حذف جميع التقديمات من localStorage
-                const keysToRemove = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key.startsWith('submission_') || key.startsWith('full_submission_') || 
-                        key.startsWith('user_submission_') || key.startsWith('test_submission_')) {
-                        keysToRemove.push(key);
-                    }
-                }
-                
-                keysToRemove.forEach(key => {
-                    localStorage.removeItem(key);
-                });
-                
-                allSubmissions = [];
-                currentSubmission = null;
-                
-                renderSubmissionsList();
-                updateStats();
-                
-                showTestAlert('تم حذف جميع البيانات بنجاح', 'success');
-            }
-        }
-        
-        function showTestAlert(message, type) {
-            const alertDiv = document.getElementById('testResults');
-            alertDiv.textContent = message;
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                alertDiv.style.display = 'none';
-            }, 5000);
-        }
-        
-        // ============== دوال عامة ==============
         function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
@@ -1503,7 +1766,7 @@
         
         // تشغيل النظام
         window.onload = function() {
-            loadAllSubmissions();
+            loadAllData();
             
             // إضافة حدث لإغلاق المعرض بالزر ESC
             document.addEventListener('keydown', function(e) {
@@ -1512,10 +1775,7 @@
                 }
             });
             
-            // تحديث كل 5 ثواني للكشف عن تقديمات جديدة
-            setInterval(refreshSubmissions, 5000);
-            
-            showAlert('تم تحميل النظام بنجاح!', 'success');
+            showAlert('System loaded successfully!', 'success');
         };
     </script>
 </body>
