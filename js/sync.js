@@ -1,89 +1,17 @@
-// نظام المزامنة مع Supabase - يعمل مع الكود الأصلي
-class SupabaseSync {
+// نظام مزامنة NoteCam مع Supabase
+class NoteCamSync {
     constructor() {
-        this.lastSync = null;
-        this.isSyncing = false;
-        this.syncQueue = [];
+        this.lastSyncTime = null;
+        this.syncInProgress = false;
+        this.pendingItems = [];
     }
 
-    // حفظ بيانات في Supabase
-    async saveToSupabase(table, data) {
-        if (!window.supabaseClient) return null;
+    // بدء المزامنة
+    async startSync() {
+        if (this.syncInProgress || !window.notecamSupabase) return;
         
-        try {
-            const { data: result, error } = await supabaseClient
-                .from(table)
-                .upsert(data)
-                .select();
-            
-            if (error) throw error;
-            return result;
-        } catch (error) {
-            console.error('خطأ في حفظ البيانات:', error);
-            // حفظ محلي في حالة فشل
-            this.saveLocally(table, data);
-            return null;
-        }
-    }
-
-    // جلب بيانات من Supabase
-    async fetchFromSupabase(table, query = {}) {
-        if (!window.supabaseClient) return [];
-        
-        try {
-            let supabaseQuery = supabaseClient.from(table).select('*');
-            
-            if (query.where) {
-                Object.entries(query.where).forEach(([key, value]) => {
-                    supabaseQuery = supabaseQuery.eq(key, value);
-                });
-            }
-            
-            if (query.orderBy) {
-                supabaseQuery = supabaseQuery.order(query.orderBy, { ascending: query.ascending || false });
-            }
-            
-            if (query.limit) {
-                supabaseQuery = supabaseQuery.limit(query.limit);
-            }
-            
-            const { data, error } = await supabaseQuery;
-            
-            if (error) throw error;
-            return data || [];
-        } catch (error) {
-            console.error('خطأ في جلب البيانات:', error);
-            return [];
-        }
-    }
-
-    // رفع صورة إلى Supabase Storage
-    async uploadPhoto(file, path) {
-        if (!window.supabaseClient) return null;
-        
-        try {
-            const { data, error } = await supabaseClient.storage
-                .from(SUPABASE_CONFIG.STORAGE_BUCKET)
-                .upload(path, file);
-            
-            if (error) throw error;
-            
-            // الحصول على رابط عام
-            const { data: urlData } = supabaseClient.storage
-                .from(SUPABASE_CONFIG.STORAGE_BUCKET)
-                .getPublicUrl(path);
-            
-            return urlData.publicUrl;
-        } catch (error) {
-            console.error('خطأ في رفع الصورة:', error);
-            return null;
-        }
-    }
-
-    // مزامنة الكل
-    async syncAll() {
-        if (this.isSyncing) return;
-        this.isSyncing = true;
+        this.syncInProgress = true;
+        this.updateSyncUI('syncing');
         
         try {
             // 1. مزامنة المستخدمين
@@ -93,152 +21,219 @@ class SupabaseSync {
             await this.syncAreas();
             
             // 3. مزامنة التقارير
-            await this.syncReports();
+            await this.syncZoneReports();
             
-            // 4. معالجة قائمة الانتظار
-            await this.processQueue();
+            // 4. معالجة العناصر المنتظرة
+            await this.processPending();
             
-            this.lastSync = new Date();
-            this.updateSyncStatus('success');
+            this.lastSyncTime = new Date();
+            this.updateSyncUI('success');
             
         } catch (error) {
-            console.error('خطأ في المزامنة:', error);
-            this.updateSyncStatus('error');
+            console.error('❌ خطأ في المزامنة:', error);
+            this.updateSyncUI('error');
         } finally {
-            this.isSyncing = false;
+            this.syncInProgress = false;
         }
     }
 
     // مزامنة المستخدمين
     async syncUsers() {
-        // جلب المستخدمين من Supabase
-        const remoteUsers = await this.fetchFromSupabase('users');
-        
-        if (remoteUsers.length > 0) {
-            // تحديث usersData المحلية
-            remoteUsers.forEach(user => {
-                window.usersData[user.username] = {
-                    password: user.password,
-                    role: user.role,
-                    name: user.name,
-                    assignedAreas: user.assigned_areas || []
-                };
-            });
+        try {
+            // جلب من Supabase
+            const { data: remoteUsers } = await window.notecamSupabase
+                .from('users')
+                .select('*');
             
-            // حفظ محلياً
-            window.saveToLocalStorage();
+            if (remoteUsers && remoteUsers.length > 0) {
+                remoteUsers.forEach(user => {
+                    if (!window.usersData[user.username]) {
+                        window.usersData[user.username] = {
+                            password: user.password,
+                            role: user.role,
+                            name: user.name,
+                            assignedAreas: user.assigned_areas || []
+                        };
+                    }
+                });
+            }
+            
+            // إرسال إلى Supabase
+            for (const [username, userData] of Object.entries(window.usersData)) {
+                await window.notecamSupabase
+                    .from('users')
+                    .upsert({
+                        username: username,
+                        password: userData.password,
+                        role: userData.role,
+                        name: userData.name,
+                        assigned_areas: userData.assignedAreas || []
+                    });
+            }
+            
+        } catch (error) {
+            console.error('❌ خطأ في مزامنة المستخدمين:', error);
         }
-        
-        // إرسال المستخدمين المحليين إلى Supabase
-        Object.entries(window.usersData).forEach(async ([username, data]) => {
-            await this.saveToSupabase('users', {
-                username: username,
-                password: data.password,
-                role: data.role,
-                name: data.name,
-                assigned_areas: data.assignedAreas || []
-            });
-        });
     }
 
     // مزامنة المناطق
     async syncAreas() {
-        const remoteAreas = await this.fetchFromSupabase('assigned_areas', {
-            orderBy: 'date',
-            ascending: false
-        });
-        
-        if (remoteAreas.length > 0) {
-            window.assignedAreas = remoteAreas.map(area => ({
-                id: area.id,
-                employee: area.employee,
-                name: area.name,
-                code: area.code,
-                date: area.date,
-                isActive: area.is_active
-            }));
+        try {
+            const { data: remoteAreas } = await window.notecamSupabase
+                .from('assigned_areas')
+                .select('*')
+                .order('date', { ascending: false });
+            
+            if (remoteAreas && remoteAreas.length > 0) {
+                window.assignedAreas = remoteAreas.map(area => ({
+                    id: area.id,
+                    employee: area.employee,
+                    name: area.name,
+                    code: area.code,
+                    date: area.date,
+                    isActive: area.is_active
+                }));
+            }
+            
+            // إرسال المناطق المحلية
+            for (const area of window.assignedAreas) {
+                await window.notecamSupabase
+                    .from('assigned_areas')
+                    .upsert({
+                        id: area.id,
+                        employee: area.employee,
+                        name: area.name,
+                        code: area.code,
+                        date: area.date,
+                        is_active: area.isActive
+                    });
+            }
+            
+        } catch (error) {
+            console.error('❌ خطأ في مزامنة المناطق:', error);
         }
     }
 
     // مزامنة التقارير
-    async syncReports() {
-        const remoteReports = await this.fetchFromSupabase('reports', {
-            orderBy: 'date',
-            ascending: false,
-            limit: 100
-        });
-        
-        if (remoteReports.length > 0) {
-            remoteReports.forEach(report => {
-                const zoneCode = report.area_code;
-                if (!window.zoneReports[zoneCode]) {
-                    window.zoneReports[zoneCode] = {
-                        name: report.area,
-                        reports: [],
-                        photos: []
-                    };
-                }
-                
-                window.zoneReports[zoneCode].reports.push({
-                    id: report.id,
-                    employee: report.employee,
-                    employeeName: report.employee_name,
-                    numberBefore: report.number_before,
-                    numberAfter: report.number_after,
-                    date: report.date,
-                    location: report.location,
-                    area: report.area,
-                    areaCode: report.area_code,
-                    noteCode: report.note_code,
-                    status: report.status,
-                    step: report.step,
-                    completionDate: report.completion_date,
-                    photos: report.photos || []
+    async syncZoneReports() {
+        try {
+            const { data: remoteReports } = await window.notecamSupabase
+                .from('reports')
+                .select('*')
+                .order('date', { ascending: false })
+                .limit(100);
+            
+            if (remoteReports) {
+                remoteReports.forEach(report => {
+                    const zoneCode = report.area_code;
+                    if (!window.zoneReports[zoneCode]) {
+                        window.zoneReports[zoneCode] = {
+                            name: report.area,
+                            reports: [],
+                            photos: []
+                        };
+                    }
+                    
+                    window.zoneReports[zoneCode].reports.push({
+                        id: report.id,
+                        employee: report.employee,
+                        employeeName: report.employee_name,
+                        numberBefore: report.number_before,
+                        numberAfter: report.number_after,
+                        date: report.date,
+                        location: report.location,
+                        area: report.area,
+                        areaCode: report.area_code,
+                        noteCode: report.note_code,
+                        status: report.status,
+                        step: report.step,
+                        completionDate: report.completion_date,
+                        photos: report.photos || []
+                    });
                 });
-            });
+            }
+            
+            // إرسال التقارير المحلية
+            for (const [zoneCode, zoneData] of Object.entries(window.zoneReports)) {
+                for (const report of zoneData.reports) {
+                    await window.notecamSupabase
+                        .from('reports')
+                        .upsert({
+                            id: report.id,
+                            employee: report.employee,
+                            employee_name: report.employeeName,
+                            number_before: report.numberBefore,
+                            number_after: report.numberAfter,
+                            date: report.date,
+                            location: report.location,
+                            area: report.area,
+                            area_code: report.areaCode,
+                            note_code: report.noteCode,
+                            status: report.status,
+                            step: report.step,
+                            completion_date: report.completionDate,
+                            photos: report.photos || []
+                        });
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ خطأ في مزامنة التقارير:', error);
         }
     }
 
-    // حفظ محلي في حالة فشل الاتصال
-    saveLocally(table, data) {
-        const pending = JSON.parse(localStorage.getItem('pending_sync') || '[]');
-        pending.push({
-            table: table,
-            data: data,
-            timestamp: new Date().toISOString()
-        });
-        localStorage.setItem('pending_sync', JSON.stringify(pending));
-    }
-
-    // معالجة قائمة الانتظار
-    async processQueue() {
-        const pending = JSON.parse(localStorage.getItem('pending_sync') || '[]');
+    // معالجة العناصر المنتظرة
+    async processPending() {
+        const pending = JSON.parse(localStorage.getItem('notecam_pending') || '[]');
         
         for (const item of pending) {
             try {
-                await this.saveToSupabase(item.table, item.data);
+                if (item.type === 'user') {
+                    await this.syncUsers();
+                } else if (item.type === 'area') {
+                    await this.syncAreas();
+                } else if (item.type === 'report') {
+                    await this.syncZoneReports();
+                }
                 
-                // إزالة من قائمة الانتظار بعد النجاح
                 pending.splice(pending.indexOf(item), 1);
             } catch (error) {
-                console.error('فشل في معالجة:', item);
+                console.error(`❌ فشل في معالجة ${item.type}:`, error);
             }
         }
         
-        localStorage.setItem('pending_sync', JSON.stringify(pending));
+        localStorage.setItem('notecam_pending', JSON.stringify(pending));
     }
 
-    // تحديث حالة المزامنة في الواجهة
-    updateSyncStatus(status) {
+    // تحديث واجهة المزامنة
+    updateSyncUI(status) {
         const syncElement = document.getElementById('syncStatus');
         if (!syncElement) return;
         
-        if (status === 'syncing') {
-            syncElement.innerHTML = '<i class="fas fa-sync fa-spin"></i> مزامنة...';
-        } else if (status === 'success') {
-            syncElement.innerHTML = `<i class="fas fa-check"></i> متزامن ${this.formatTime(this.lastSync)}`;
-        } else {
-            syncElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> خطأ';
+        const icon = syncElement.querySelector('.sync-icon') || 
+                     syncElement.querySelector('i') ||
+                     syncElement;
+        
+        const text = syncElement.querySelector('#syncText') || 
+                     syncElement.querySelector('span') ||
+                     syncElement;
+        
+        switch(status) {
+            case 'syncing':
+                icon.className = 'fas fa-sync fa-spin';
+                icon.style.animation = 'spin 1s linear infinite';
+                text.textContent = 'Synchronisation...';
+                break;
+            case 'success':
+                icon.className = 'fas fa-check-circle';
+                icon.style.animation = 'none';
+                text.textContent = `Synchro OK ${this.formatTime(this.lastSyncTime)}`;
+                break;
+            case 'error':
+                icon.className = 'fas fa-exclamation-circle';
+                icon.style.animation = 'none';
+                text.textContent = 'Erreur de sync';
+                break;
         }
     }
 
@@ -250,25 +245,38 @@ class SupabaseSync {
             minute: '2-digit' 
         });
     }
+
+    // حفظ عنصر في قائمة الانتظار
+    addToPending(type, data) {
+        const pending = JSON.parse(localStorage.getItem('notecam_pending') || '[]');
+        pending.push({
+            type: type,
+            data: data,
+            timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('notecam_pending', JSON.stringify(pending));
+    }
 }
 
 // إنشاء نسخة عالمية
-window.supabaseSync = new SupabaseSync();
+window.notecamSync = new NoteCamSync();
 
 // دالة المزامنة العامة
-window.syncData = async function() {
-    await window.supabaseSync.syncAll();
+window.syncNotecamData = function() {
+    return window.notecamSync.startSync();
 };
 
 // دالة التهيئة
-window.initSupabase = async function() {
-    await initializeSupabase();
-    await supabaseSync.syncAll();
-    
-    // بدء المزامنة التلقائية كل 30 ثانية
-    setInterval(() => {
-        if (navigator.onLine) {
-            supabaseSync.syncAll();
-        }
-    }, 30000);
+window.initNotecamSync = async function() {
+    await window.setupSupabase();
+    if (window.notecamSupabase) {
+        await window.notecamSync.startSync();
+        
+        // مزامنة تلقائية كل 30 ثانية
+        setInterval(() => {
+            if (navigator.onLine) {
+                window.notecamSync.startSync();
+            }
+        }, 30000);
+    }
 };
