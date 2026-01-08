@@ -1,251 +1,476 @@
-import { supabaseClient, TABLES, appState } from './config.js';
-import { showNotification } from '../utils/notifications.js';
-
-class SyncManager {
-    constructor() {
-        this.syncQueue = [];
-        this.isSyncing = false;
-        this.lastSyncTime = null;
-        this.syncInterval = 30000; // 30 ثانية
-        this.maxRetries = 3;
-    }
-
-    // بدء نظام المزامنة
-    startAutoSync() {
-        // مزامنة أولية
-        this.syncAll();
-        
-        // مزامنة دورية
-        setInterval(() => {
-            if (appState.isOnline && !this.isSyncing) {
-                this.syncAll();
-            }
-        }, this.syncInterval);
-        
-        // مراقبة حالة الاتصال
-        window.addEventListener('online', () => {
-            appState.isOnline = true;
-            showNotification('تم استعادة الاتصال بالإنترنت', 'success');
-            this.syncAll();
-        });
-        
-        window.addEventListener('offline', () => {
-            appState.isOnline = false;
-            showNotification('تم فقدان الاتصال بالإنترنت', 'warning');
-        });
-    }
-
-    // مزامنة جميع البيانات
-    async syncAll() {
-        if (this.isSyncing || !appState.isOnline) return;
-        
-        this.isSyncing = true;
-        showNotification('جاري مزامنة البيانات...', 'info');
-        
-        try {
-            // المزامنة من Supabase (جلب البيانات)
-            await this.syncFromSupabase();
-            
-            // المزامنة إلى Supabase (إرسال البيانات)
-            await this.syncToSupabase();
-            
-            // معالجة قائمة الانتظار
-            await this.processSyncQueue();
-            
-            this.lastSyncTime = new Date();
-            appState.lastSync = this.lastSyncTime;
-            
-            showNotification('تمت المزامنة بنجاح', 'success');
-            
-        } catch (error) {
-            console.error('خطأ في المزامنة:', error);
-            showNotification('خطأ في المزامنة', 'error');
-        } finally {
-            this.isSyncing = false;
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المزامنة والإحصائيات - NoteCam</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <style>
+        .sync-page {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
-    }
-
-    // جلب البيانات من Supabase
-    async syncFromSupabase() {
-        try {
-            // جلب التقارير الجديدة
-            const { data: reports, error: reportsError } = await supabaseClient
-                .from(TABLES.REPORTS)
-                .select('*, user:users(name)')
-                .order('created_at', { ascending: false })
-                .limit(50);
-
-            if (!reportsError && reports) {
-                localStorage.setItem('cached_reports', JSON.stringify(reports));
-            }
-
-            // جلب المناطق المخصصة
-            const { data: areas, error: areasError } = await supabaseClient
-                .from(TABLES.AREAS)
-                .select('*')
-                .order('assigned_date', { ascending: false });
-
-            if (!areasError && areas) {
-                localStorage.setItem('cached_areas', JSON.stringify(areas));
-            }
-
-            // تحديث وقت المزامنة
-            localStorage.setItem('last_sync_time', new Date().toISOString());
-
-        } catch (error) {
-            console.error('خطأ في جلب البيانات:', error);
-            throw error;
+        
+        .sync-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
         }
-    }
-
-    // إرسال البيانات إلى Supabase
-    async syncToSupabase() {
-        try {
-            // الحصول على البيانات المحلية
-            const localData = this.getLocalChanges();
+        
+        .sync-stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .sync-controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .sync-log {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid #e1e8ed;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry.success {
+            color: #2ea043;
+        }
+        
+        .log-entry.error {
+            color: #ff6b6b;
+        }
+        
+        .log-entry.warning {
+            color: #ffa500;
+        }
+        
+        .storage-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="status-bar">
+            <h1><i class="fas fa-sync-alt"></i> المزامنة والإحصائيات</h1>
+            <div class="admin-controls">
+                <button class="btn-sync" onclick="syncManager.manualSync()">
+                    <i class="fas fa-sync-alt"></i> مزامنة الآن
+                </button>
+                <button class="btn-logout" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> رجوع
+                </button>
+            </div>
+        </div>
+        
+        <div class="sync-page">
+            <!-- حالة المزامنة -->
+            <div class="sync-stat-card">
+                <h2><i class="fas fa-network-wired"></i> حالة المزامنة</h2>
+                <div class="sync-status-display">
+                    <div class="status-item">
+                        <span>الاتصال بالإنترنت:</span>
+                        <span id="onlineStatus" class="status-good">متصل</span>
+                    </div>
+                    <div class="status-item">
+                        <span>الاتصال بـ Supabase:</span>
+                        <span id="supabaseStatus" class="status-good">متصل</span>
+                    </div>
+                    <div class="status-item">
+                        <span>آخر مزامنة:</span>
+                        <span id="lastSyncDetail">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span>التقارير المنتظرة:</span>
+                        <span id="pendingReports">0</span>
+                    </div>
+                </div>
+            </div>
             
-            if (localData.reports.length === 0 && localData.photos.length === 0) {
-                return; // لا توجد تغييرات
+            <!-- عناصر التحكم -->
+            <div class="sync-controls">
+                <button class="btn-primary" onclick="forceSyncFromServer()">
+                    <i class="fas fa-download"></i> جلب من السيرفر
+                </button>
+                <button class="btn-primary" onclick="forceSyncToServer()">
+                    <i class="fas fa-upload"></i> إرسال إلى السيرفر
+                </button>
+                <button class="btn-secondary" onclick="clearLocalCache()">
+                    <i class="fas fa-trash"></i> مسح الذاكرة المؤقتة
+                </button>
+                <button class="btn-secondary" onclick="exportAllData()">
+                    <i class="fas fa-file-export"></i> تصدير جميع البيانات
+                </button>
+            </div>
+            
+            <!-- إحصائيات التخزين -->
+            <div class="storage-info">
+                <h2><i class="fas fa-database"></i> إحصائيات التخزين</h2>
+                <div class="sync-stats-grid">
+                    <div class="sync-stat-card">
+                        <h3>التقارير</h3>
+                        <div class="stat-value" id="totalReportsStat">0</div>
+                        <div class="stat-label">إجمالي التقارير</div>
+                    </div>
+                    <div class="sync-stat-card">
+                        <h3>الصور</h3>
+                        <div class="stat-value" id="totalPhotosStat">0</div>
+                        <div class="stat-label">إجمالي الصور</div>
+                    </div>
+                    <div class="sync-stat-card">
+                        <h3>المستخدمين</h3>
+                        <div class="stat-value" id="totalUsersStat">0</div>
+                        <div class="stat-label">إجمالي المستخدمين</div>
+                    </div>
+                    <div class="sync-stat-card">
+                        <h3>المناطق</h3>
+                        <div class="stat-value" id="totalAreasStat">0</div>
+                        <div class="stat-label">إجمالي المناطق</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- الرسوم البيانية -->
+            <div class="sync-stat-card">
+                <h2><i class="fas fa-chart-line"></i> النشاط الزمني</h2>
+                <canvas id="activityChart" height="100"></canvas>
+            </div>
+            
+            <!-- سجل المزامنة -->
+            <div class="sync-log">
+                <h2><i class="fas fa-history"></i> سجل المزامنة</h2>
+                <div id="syncLogEntries">
+                    <!-- سيتم ملؤها بالسجل -->
+                </div>
+            </div>
+            
+            <!-- معلومات النظام -->
+            <div class="sync-stat-card">
+                <h2><i class="fas fa-info-circle"></i> معلومات النظام</h2>
+                <div id="systemInfo"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { syncManager } from '../js/sync.js';
+        import { reportsManager } from '../js/reports.js';
+        import { authSystem } from '../js/auth.js';
+        import { showNotification } from '../utils/notifications.js';
+        
+        let activityChart = null;
+        
+        async function initializeSyncPage() {
+            // التحقق من الصلاحية
+            const hasSession = await authSystem.checkSession();
+            if (!hasSession) {
+                window.location.href = 'index.html';
+                return;
             }
-
-            // إرسال التقارير
-            for (const report of localData.reports) {
-                await this.syncReport(report);
-            }
-
-            // إرسال الصور
-            for (const photo of localData.photos) {
-                await this.syncPhoto(photo);
-            }
-
-            // تنظيف البيانات المحلية بعد المزامنة
-            this.clearSyncedData();
-
-        } catch (error) {
-            console.error('خطأ في إرسال البيانات:', error);
-            throw error;
+            
+            // تحديث حالة النظام
+            updateSystemStatus();
+            
+            // تحميل الإحصائيات
+            loadStatistics();
+            
+            // تحميل سجل المزامنة
+            loadSyncLog();
+            
+            // تحديث دوري
+            setInterval(updateSystemStatus, 30000);
+            setInterval(loadStatistics, 60000);
         }
-    }
-
-    // مزامنة تقرير واحد
-    async syncReport(report, retryCount = 0) {
-        try {
-            const { error } = await supabaseClient
-                .from(TABLES.REPORTS)
-                .upsert(report, { 
-                    onConflict: 'id',
-                    ignoreDuplicates: false 
-                });
-
-            if (error) throw error;
-
-            // وضع علامة على التقرير كمتم المزامنة
-            this.markAsSynced('report', report.id);
-
-        } catch (error) {
-            if (retryCount < this.maxRetries) {
-                console.log(`إعادة محاولة مزامنة التقرير ${report.id}...`);
-                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-                return this.syncReport(report, retryCount + 1);
+        
+        function updateSystemStatus() {
+            // حالة الاتصال
+            const onlineStatus = document.getElementById('onlineStatus');
+            const supabaseStatus = document.getElementById('supabaseStatus');
+            
+            if (navigator.onLine) {
+                onlineStatus.textContent = 'متصل';
+                onlineStatus.className = 'status-good';
             } else {
-                // إضافة إلى قائمة الانتظار
-                this.addToQueue('report', report);
-                throw error;
+                onlineStatus.textContent = 'غير متصل';
+                onlineStatus.className = 'status-bad';
             }
-        }
-    }
-
-    // مزامنة صورة
-    async syncPhoto(photoData, retryCount = 0) {
-        try {
-            // هنا سيتم التعامل مع رفع الصور
-            // يتم التعامل مع الصور بشكل منفصل في storage.js
-            console.log('مزامنة صورة:', photoData.id);
             
-        } catch (error) {
-            if (retryCount < this.maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-                return this.syncPhoto(photoData, retryCount + 1);
-            } else {
-                this.addToQueue('photo', photoData);
-                throw error;
+            // تحديث آخر مزامنة
+            const lastSync = localStorage.getItem('last_sync_time');
+            if (lastSync) {
+                const date = new Date(lastSync);
+                document.getElementById('lastSyncDetail').textContent = 
+                    date.toLocaleString('ar-SA');
             }
+            
+            // التقارير المنتظرة
+            const localReports = JSON.parse(localStorage.getItem('local_reports') || '[]');
+            const unsynced = localReports.filter(r => !r.synced).length;
+            document.getElementById('pendingReports').textContent = unsynced;
+            
+            // معلومات النظام
+            updateSystemInfo();
         }
-    }
-
-    // الحصول على التغييرات المحلية
-    getLocalChanges() {
-        const unsyncedReports = JSON.parse(localStorage.getItem('unsynced_reports') || '[]');
-        const unsyncedPhotos = JSON.parse(localStorage.getItem('unsynced_photos') || '[]');
         
-        return {
-            reports: unsyncedReports,
-            photos: unsyncedPhotos
-        };
-    }
-
-    // إضافة عنصر إلى قائمة الانتظار
-    addToQueue(type, data) {
-        this.syncQueue.push({ type, data, timestamp: new Date().toISOString() });
-        localStorage.setItem('sync_queue', JSON.stringify(this.syncQueue));
-    }
-
-    // معالجة قائمة الانتظار
-    async processSyncQueue() {
-        if (this.syncQueue.length === 0) return;
-        
-        const queue = [...this.syncQueue];
-        
-        for (const item of queue) {
+        async function loadStatistics() {
             try {
-                if (item.type === 'report') {
-                    await this.syncReport(item.data);
-                } else if (item.type === 'photo') {
-                    await this.syncPhoto(item.data);
+                // جلب إحصائيات التقارير
+                const stats = await reportsManager.getReportsStatistics('month');
+                
+                if (stats) {
+                    document.getElementById('totalReportsStat').textContent = stats.total;
+                    
+                    // تحديث الرسوم البيانية
+                    updateActivityChart(stats);
                 }
                 
-                // إزالة من قائمة الانتظار بعد النجاح
-                this.syncQueue = this.syncQueue.filter(q => q !== item);
+                // جلب إحصائيات من Supabase
+                // (يمكن إضافة المزيد من الاستعلامات هنا)
                 
             } catch (error) {
-                console.error(`فشل في معالجة ${item.type}:`, error);
+                console.error('خطأ في جلب الإحصائيات:', error);
             }
         }
         
-        localStorage.setItem('sync_queue', JSON.stringify(this.syncQueue));
-    }
-
-    // وضع علامة على البيانات كمتم المزامنة
-    markAsSynced(type, id) {
-        if (type === 'report') {
-            let unsynced = JSON.parse(localStorage.getItem('unsynced_reports') || '[]');
-            unsynced = unsynced.filter(item => item.id !== id);
-            localStorage.setItem('unsynced_reports', JSON.stringify(unsynced));
-        }
-    }
-
-    // تنظيف البيانات المزامنة
-    clearSyncedData() {
-        // يمكن إضافة منطق لتنظيف البيانات القديمة
-    }
-
-    // مزامنة يدوية
-    async manualSync() {
-        if (this.isSyncing) {
-            showNotification('جاري المزامنة بالفعل', 'warning');
-            return;
+        function updateActivityChart(stats) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            
+            if (activityChart) {
+                activityChart.destroy();
+            }
+            
+            const days = Object.keys(stats.byDay);
+            const counts = Object.values(stats.byDay);
+            
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'التقارير اليومية',
+                        data: counts,
+                        borderColor: '#1a5fb4',
+                        backgroundColor: 'rgba(26, 95, 180, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Cairo, Arial'
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
         }
         
-        showNotification('بدء المزامنة اليدوية...', 'info');
-        await this.syncAll();
-    }
-
-    // جلب أحدث البيانات
-    async forceRefresh() {
-        showNotification('جاري تحديث البيانات من السيرفر...', 'info');
-        await this.syncFromSupabase();
-        showNotification('تم تحديث البيانات', 'success');
-    }
-}
-
-export const syncManager = new SyncManager();
+        function loadSyncLog() {
+            const log = JSON.parse(localStorage.getItem('sync_log') || '[]');
+            const container = document.getElementById('syncLogEntries');
+            
+            container.innerHTML = '';
+            
+            log.slice(-20).reverse().forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${entry.type}`;
+                logEntry.textContent = `[${new Date(entry.timestamp).toLocaleTimeString('ar-SA')}] ${entry.message}`;
+                container.appendChild(logEntry);
+            });
+        }
+        
+        function addSyncLog(message, type = 'info') {
+            const log = JSON.parse(localStorage.getItem('sync_log') || '[]');
+            
+            log.push({
+                timestamp: new Date().toISOString(),
+                message: message,
+                type: type
+            });
+            
+            // حفظ فقط آخر 100 مدخلة
+            if (log.length > 100) {
+                log.splice(0, log.length - 100);
+            }
+            
+            localStorage.setItem('sync_log', JSON.stringify(log));
+            loadSyncLog();
+        }
+        
+        async function forceSyncFromServer() {
+            showNotification('جاري جلب البيانات من السيرفر...', 'info');
+            addSyncLog('بدء جلب البيانات من السيرفر', 'info');
+            
+            try {
+                await syncManager.syncFromSupabase();
+                showNotification('تم جلب البيانات بنجاح', 'success');
+                addSyncLog('تم جلب البيانات بنجاح', 'success');
+                
+                // تحديث العرض
+                loadStatistics();
+                updateSystemStatus();
+                
+            } catch (error) {
+                showNotification('خطأ في جلب البيانات', 'error');
+                addSyncLog(`خطأ في جلب البيانات: ${error.message}`, 'error');
+            }
+        }
+        
+        async function forceSyncToServer() {
+            showNotification('جاري إرسال البيانات إلى السيرفر...', 'info');
+            addSyncLog('بدء إرسال البيانات إلى السيرفر', 'info');
+            
+            try {
+                await syncManager.syncToSupabase();
+                showNotification('تم إرسال البيانات بنجاح', 'success');
+                addSyncLog('تم إرسال البيانات بنجاح', 'success');
+                
+                // تحديث العرض
+                updateSystemStatus();
+                
+            } catch (error) {
+                showNotification('خطأ في إرسال البيانات', 'error');
+                addSyncLog(`خطأ في إرسال البيانات: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearLocalCache() {
+            if (confirm('هل تريد مسح الذاكرة المؤقتة؟ سيتم حذف البيانات المحلية غير المزامنة.')) {
+                localStorage.removeItem('local_reports');
+                localStorage.removeItem('sync_log');
+                localStorage.removeItem('cached_reports');
+                localStorage.removeItem('cached_areas');
+                
+                showNotification('تم مسح الذاكرة المؤقتة', 'success');
+                addSyncLog('تم مسح الذاكرة المؤقتة', 'success');
+                
+                updateSystemStatus();
+            }
+        }
+        
+        async function exportAllData() {
+            try {
+                const reports = await reportsManager.getAllReports();
+                
+                const exportData = {
+                    exported_at: new Date().toISOString(),
+                    system: 'NoteCam v3.0',
+                    user: authSystem.currentSession?.name,
+                    reports: reports,
+                    statistics: {
+                        total_reports: reports.length,
+                        total_photos: reports.reduce((sum, r) => sum + (r.photos?.length || 0), 0)
+                    }
+                };
+                
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const url = URL.createObjectURL(dataBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `notecam_export_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('تم تصدير جميع البيانات', 'success');
+                addSyncLog('تم تصدير جميع البيانات', 'success');
+                
+            } catch (error) {
+                showNotification('خطأ في تصدير البيانات', 'error');
+                addSyncLog(`خطأ في تصدير البيانات: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateSystemInfo() {
+            const infoDiv = document.getElementById('systemInfo');
+            
+            const info = {
+                'نظام التشغيل': navigator.platform,
+                'المتصفح': navigator.userAgent.split(' ')[0],
+                'اللغة': navigator.language,
+                'الذاكرة المتاحة': navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'غير معروف',
+                'دعم اللمس': 'ontouchstart' in window ? 'نعم' : 'لا',
+                'الدقة': `${window.screen.width} × ${window.screen.height}`,
+                'الوقت المحلي': new Date().toLocaleString('ar-SA'),
+                'المنطقة الزمنية': Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+            
+            let html = '<table style="width: 100%;">';
+            for (const [key, value] of Object.entries(info)) {
+                html += `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #e1e8ed; color: #666;">${key}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #e1e8ed; font-weight: 600;">${value}</td>
+                    </tr>
+                `;
+            }
+            html += '</table>';
+            
+            infoDiv.innerHTML = html;
+        }
+        
+        function goBack() {
+            if (authSystem.currentSession?.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'employee.html';
+            }
+        }
+        
+        // تعريض الدوال للاستخدام العام
+        window.forceSyncFromServer = forceSyncFromServer;
+        window.forceSyncToServer = forceSyncToServer;
+        window.clearLocalCache = clearLocalCache;
+        window.exportAllData = exportAllData;
+        window.goBack = goBack;
+        
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', initializeSyncPage);
+    </script>
+</body>
+</html>
