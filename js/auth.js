@@ -1,181 +1,146 @@
-import { supabaseClient, TABLES, appState } from './config.js';
-import { showNotification, updateUIForUser } from '../utils/notifications.js';
+// نظام المصادقة مع Supabase
 
 class AuthSystem {
     constructor() {
-        this.currentSession = null;
+        this.currentUser = null;
     }
 
-    // تسجيل الدخول
+    // تسجيل الدخول مع Supabase
     async login(username, password) {
         try {
-            // البحث عن المستخدم في Supabase
-            const { data: user, error } = await supabaseClient
-                .from(TABLES.USERS)
-                .select('*')
-                .eq('username', username)
-                .single();
-
-            if (error || !user) {
-                showNotification('اسم المستخدم غير صحيح', 'error');
-                return false;
+            // البحث في Supabase أولاً
+            if (window.supabaseClient) {
+                const { data: users, error } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('username', username)
+                    .single();
+                
+                if (!error && users) {
+                    if (users.password === password) {
+                        this.currentUser = {
+                            username: users.username,
+                            role: users.role,
+                            name: users.name,
+                            assignedAreas: users.assigned_areas || []
+                        };
+                        
+                        // تحديث البيانات المحلية
+                        window.currentUser = this.currentUser;
+                        window.usersData[username] = {
+                            password: password,
+                            role: users.role,
+                            name: users.name,
+                            assignedAreas: users.assigned_areas || []
+                        };
+                        
+                        window.saveToLocalStorage();
+                        return true;
+                    }
+                }
             }
-
-            // التحقق من كلمة المرور (في production يجب استخدام hashing)
-            if (user.password !== password) {
-                showNotification('كلمة المرور غير صحيحة', 'error');
-                return false;
+            
+            // إذا فشل في Supabase، حاول بالمستخدمين المحليين
+            const user = window.usersData[username];
+            if (user && user.password === password) {
+                this.currentUser = {
+                    username: username,
+                    role: user.role,
+                    name: user.name,
+                    assignedAreas: user.assignedAreas || []
+                };
+                
+                window.currentUser = this.currentUser;
+                return true;
             }
-
-            // حفظ جلسة المستخدم
-            this.currentSession = {
-                id: user.id,
-                username: user.username,
-                role: user.role,
-                name: user.name,
-                lastLogin: new Date().toISOString()
-            };
-
-            appState.currentUser = this.currentSession;
-
-            // حفظ في localStorage للجلسات
-            localStorage.setItem('notecam_user', JSON.stringify(this.currentSession));
-            localStorage.setItem('notecam_last_login', new Date().toISOString());
-
-            showNotification(`مرحباً ${user.name}`, 'success');
-            return true;
-
+            
+            return false;
+            
         } catch (error) {
             console.error('خطأ في تسجيل الدخول:', error);
-            showNotification('خطأ في النظام، حاول لاحقاً', 'error');
+            
+            // استخدام النظام المحلي كبديل
+            const user = window.usersData[username];
+            if (user && user.password === password) {
+                this.currentUser = {
+                    username: username,
+                    role: user.role,
+                    name: user.name,
+                    assignedAreas: user.assignedAreas || []
+                };
+                
+                window.currentUser = this.currentUser;
+                return true;
+            }
+            
             return false;
         }
     }
 
     // تسجيل الخروج
     logout() {
-        this.currentSession = null;
-        appState.currentUser = null;
-        localStorage.removeItem('notecam_user');
-        localStorage.removeItem('notecam_last_login');
-        showNotification('تم تسجيل الخروج بنجاح', 'success');
+        this.currentUser = null;
+        window.currentUser = null;
+        window.saveToLocalStorage();
     }
 
-    // التحقق من الجلسة النشطة
+    // التحقق من الجلسة
     async checkSession() {
-        const savedUser = localStorage.getItem('notecam_user');
+        const savedUser = localStorage.getItem('currentUser');
         if (!savedUser) return false;
-
+        
         try {
             const user = JSON.parse(savedUser);
-            const { data, error } = await supabaseClient
-                .from(TABLES.USERS)
-                .select('id, username, role, name')
-                .eq('id', user.id)
-                .single();
-
-            if (error || !data) {
-                this.logout();
-                return false;
+            
+            // التحقق من Supabase
+            if (window.supabaseClient) {
+                const { data: remoteUser } = await supabaseClient
+                    .from('users')
+                    .select('username, role, name')
+                    .eq('username', user.username)
+                    .single();
+                
+                if (remoteUser) {
+                    this.currentUser = {
+                        ...user,
+                        role: remoteUser.role,
+                        name: remoteUser.name
+                    };
+                    window.currentUser = this.currentUser;
+                    return true;
+                }
             }
-
-            this.currentSession = { ...data, lastLogin: user.lastLogin };
-            appState.currentUser = this.currentSession;
-            return true;
-
+            
+            // استخدام المحلي
+            if (window.usersData[user.username]) {
+                this.currentUser = user;
+                window.currentUser = user;
+                return true;
+            }
+            
+            return false;
+            
         } catch (error) {
             console.error('خطأ في التحقق من الجلسة:', error);
             return false;
         }
     }
-
-    // إنشاء مستخدم جديد (للمشرف فقط)
-    async createUser(userData) {
-        try {
-            const { data, error } = await supabaseClient
-                .from(TABLES.USERS)
-                .insert([{
-                    username: userData.username,
-                    password: userData.password, // في production استخدم hashing
-                    role: userData.role || 'employee',
-                    name: userData.name,
-                    created_at: new Date().toISOString(),
-                    is_active: true
-                }])
-                .select()
-                .single();
-
-            if (error) throw error;
-            
-            showNotification(`تم إنشاء المستخدم ${userData.name} بنجاح`, 'success');
-            return data;
-
-        } catch (error) {
-            console.error('خطأ في إنشاء المستخدم:', error);
-            showNotification('خطأ في إنشاء المستخدم', 'error');
-            throw error;
-        }
-    }
-
-    // تحديث بيانات المستخدم
-    async updateUser(userId, updates) {
-        try {
-            const { data, error } = await supabaseClient
-                .from(TABLES.USERS)
-                .update(updates)
-                .eq('id', userId)
-                .select()
-                .single();
-
-            if (error) throw error;
-            
-            showNotification('تم تحديث بيانات المستخدم', 'success');
-            return data;
-
-        } catch (error) {
-            console.error('خطأ في تحديث المستخدم:', error);
-            showNotification('خطأ في تحديث المستخدم', 'error');
-            throw error;
-        }
-    }
-
-    // حذف المستخدم
-    async deleteUser(userId) {
-        try {
-            const { error } = await supabaseClient
-                .from(TABLES.USERS)
-                .delete()
-                .eq('id', userId);
-
-            if (error) throw error;
-            
-            showNotification('تم حذف المستخدم بنجاح', 'success');
-            return true;
-
-        } catch (error) {
-            console.error('خطأ في حذف المستخدم:', error);
-            showNotification('خطأ في حذف المستخدم', 'error');
-            throw error;
-        }
-    }
-
-    // جلب جميع المستخدمين
-    async getAllUsers() {
-        try {
-            const { data, error } = await supabaseClient
-                .from(TABLES.USERS)
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            return data || [];
-
-        } catch (error) {
-            console.error('خطأ في جلب المستخدمين:', error);
-            return [];
-        }
-    }
 }
 
-// تصدير نسخة واحدة من النظام
-export const authSystem = new AuthSystem();
+// إنشاء نسخة عالمية
+window.authSystem = new AuthSystem();
+
+// تعديل دالة login الأصلية
+const originalLogin = window.login;
+window.login = async function() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    const success = await window.authSystem.login(username, password);
+    
+    if (success) {
+        originalLogin();
+    } else {
+        showNotification("Nom d'utilisateur ou mot de passe incorrect", "error");
+    }
+};
