@@ -1,35 +1,36 @@
-// إعدادات Supabase - يجب تعبئتها بمعلوماتك
-const SUPABASE_CONFIG = {
-    URL: 'https://jxvnmcgfwlbswtkiglmh.supabase.co', // ضع رابط مشروعك
-    ANON_KEY: 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw', // ضع مفتاحك
-    STORAGE_BUCKET: 'notecam-photos'
+// إعدادات Supabase
+const SUPABASE_SETTINGS = {
+    URL: 'https://jxvnmcgfwlbswtkiglmh.supabase.co',
+    KEY: 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw',
+    BUCKET: 'notecam-photos'
 };
 
-// تهيئة Supabase Client
-let supabaseClient = null;
+// عميل Supabase
+let notecamSupabase = null;
 
-async function initializeSupabase() {
+// دالة التهيئة
+async function setupSupabase() {
     try {
         if (typeof supabase === 'undefined') {
-            console.error('Supabase SDK غير محمل');
+            console.warn('Supabase SDK غير محمل');
             return null;
         }
         
-        supabaseClient = supabase.createClient(
-            SUPABASE_CONFIG.URL, 
-            SUPABASE_CONFIG.ANON_KEY
+        notecamSupabase = supabase.createClient(
+            SUPABASE_SETTINGS.URL, 
+            SUPABASE_SETTINGS.KEY
         );
         
-        console.log('Supabase متصل بنجاح');
-        return supabaseClient;
+        console.log('✅ Supabase جاهز للاستخدام');
+        return notecamSupabase;
         
     } catch (error) {
-        console.error('خطأ في تهيئة Supabase:', error);
+        console.error('❌ خطأ في تهيئة Supabase:', error);
         return null;
     }
 }
 
-// تعريض للاستخدام العام
-window.supabaseClient = supabaseClient;
-window.initializeSupabase = initializeSupabase;
-window.SUPABASE_CONFIG = SUPABASE_CONFIG;
+// تصدير للاستخدام
+window.notecamSupabase = notecamSupabase;
+window.setupSupabase = setupSupabase;
+window.SUPABASE_SETTINGS = SUPABASE_SETTINGS;
