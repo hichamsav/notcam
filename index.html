@@ -1,1 +1,196 @@
-// ملف index.html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام NoteCam - تسجيل الدخول</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- الأنماط -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- شريط الحالة -->
+        <div class="status-bar" id="statusBar">
+            <div id="statusText">نظام NoteCam - جاهز</div>
+            <div class="sync-status" id="syncStatus">
+                <i class="fas fa-wifi" id="connectionIcon"></i>
+                <span id="connectionText">جارٍ الاتصال...</span>
+            </div>
+        </div>
+
+        <!-- صفحة تسجيل الدخول -->
+        <div class="login-page" id="loginPage">
+            <div class="login-card">
+                <div class="logo">
+                    <i class="fas fa-camera-retro"></i>
+                    <h1>نظام NoteCam</h1>
+                </div>
+                
+                <div class="login-form">
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i> اسم المستخدم
+                        </label>
+                        <input type="text" id="username" class="form-input" 
+                               placeholder="أدخل اسم المستخدم" autocomplete="username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock"></i> كلمة المرور
+                        </label>
+                        <input type="password" id="password" class="form-input" 
+                               placeholder="أدخل كلمة المرور" autocomplete="current-password">
+                    </div>
+                    
+                    <button class="login-btn" id="loginBtn" onclick="login()">
+                        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                    </button>
+                    
+                    <div class="login-info">
+                        <p>نسخة النظام: 3.0.0</p>
+                        <p>مزامنة مع Supabase</p>
+                        <p id="serverStatus">جاري الاتصال بالخادم...</p>
+                    </div>
+                </div>
+                
+                <div class="system-info">
+                    <h3>معلومات النظام:</h3>
+                    <ul>
+                        <li>يدعم جميع المستخدمين عالمياً</li>
+                        <li>تخزين الصور في السحابة</li>
+                        <li>مزامنة فورية</li>
+                        <li>تقارير مفصلة</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الإشعارات -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { initializeSupabase, appState } from './js/config.js';
+        import { authSystem } from './js/auth.js';
+        import { showNotification } from './js/utils/notifications.js';
+        import { syncManager } from './js/sync.js';
+
+        // تهيئة التطبيق
+        async function initializeApp() {
+            // تحديث حالة الاتصال
+            updateConnectionStatus();
+            
+            // تهيئة Supabase
+            const supabase = await initializeSupabase();
+            
+            if (supabase) {
+                document.getElementById('serverStatus').textContent = 'متصل بالخادم';
+                document.getElementById('serverStatus').style.color = '#2ea043';
+                
+                // التحقق من الجلسة النشطة
+                const hasSession = await authSystem.checkSession();
+                if (hasSession) {
+                    // توجيه المستخدم إلى الصفحة المناسبة
+                    redirectToDashboard();
+                }
+                
+                // بدء المزامنة التلقائية
+                syncManager.startAutoSync();
+            } else {
+                document.getElementById('serverStatus').textContent = 'غير متصل بالخادم';
+                document.getElementById('serverStatus').style.color = '#ff6b6b';
+                showNotification('العمل في الوضع المحلي', 'warning');
+            }
+        }
+
+        // تحديث حالة الاتصال
+        function updateConnectionStatus() {
+            const connectionIcon = document.getElementById('connectionIcon');
+            const connectionText = document.getElementById('connectionText');
+            const statusText = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                connectionIcon.className = 'fas fa-wifi';
+                connectionIcon.style.color = '#2ea043';
+                connectionText.textContent = 'متصل بالإنترنت';
+                statusText.textContent = 'نظام NoteCam - متصل';
+                appState.isOnline = true;
+            } else {
+                connectionIcon.className = 'fas fa-wifi-slash';
+                connectionIcon.style.color = '#ff6b6b';
+                connectionText.textContent = 'غير متصل';
+                statusText.textContent = 'نظام NoteCam - غير متصل';
+                appState.isOnline = false;
+            }
+        }
+
+        // تسجيل الدخول
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                showNotification('الرجاء ملء جميع الحقول', 'warning');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التسجيل...';
+            
+            try {
+                const success = await authSystem.login(username, password);
+                
+                if (success) {
+                    showNotification('تم تسجيل الدخول بنجاح', 'success');
+                    setTimeout(() => {
+                        redirectToDashboard();
+                    }, 1000);
+                }
+                
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
+            }
+        }
+
+        // توجيه إلى لوحة التحكم المناسبة
+        function redirectToDashboard() {
+            const user = authSystem.currentSession;
+            
+            if (user.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'employee.html';
+            }
+        }
+
+        // مراقبة حالة الاتصال
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // تفعيل زر الدخول عند الضغط على Enter
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        // تهيئة التطبيق عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', initializeApp);
+        
+        // تعريض الدوال للاستخدام العام
+        window.login = login;
+    </script>
+</body>
+</html>
