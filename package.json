@@ -1,0 +1,9 @@
+{
+  "name": "notecam-system",
+  "version": "1.0.0",
+  "description": "نظام NoteCam متعدد المستخدمين",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server"
+  }
+}
