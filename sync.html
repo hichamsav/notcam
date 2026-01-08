@@ -1,1 +1,251 @@
-// ملف sync.html
+import { supabaseClient, TABLES, appState } from './config.js';
+import { showNotification } from '../utils/notifications.js';
+
+class SyncManager {
+    constructor() {
+        this.syncQueue = [];
+        this.isSyncing = false;
+        this.lastSyncTime = null;
+        this.syncInterval = 30000; // 30 ثانية
+        this.maxRetries = 3;
+    }
+
+    // بدء نظام المزامنة
+    startAutoSync() {
+        // مزامنة أولية
+        this.syncAll();
+        
+        // مزامنة دورية
+        setInterval(() => {
+            if (appState.isOnline && !this.isSyncing) {
+                this.syncAll();
+            }
+        }, this.syncInterval);
+        
+        // مراقبة حالة الاتصال
+        window.addEventListener('online', () => {
+            appState.isOnline = true;
+            showNotification('تم استعادة الاتصال بالإنترنت', 'success');
+            this.syncAll();
+        });
+        
+        window.addEventListener('offline', () => {
+            appState.isOnline = false;
+            showNotification('تم فقدان الاتصال بالإنترنت', 'warning');
+        });
+    }
+
+    // مزامنة جميع البيانات
+    async syncAll() {
+        if (this.isSyncing || !appState.isOnline) return;
+        
+        this.isSyncing = true;
+        showNotification('جاري مزامنة البيانات...', 'info');
+        
+        try {
+            // المزامنة من Supabase (جلب البيانات)
+            await this.syncFromSupabase();
+            
+            // المزامنة إلى Supabase (إرسال البيانات)
+            await this.syncToSupabase();
+            
+            // معالجة قائمة الانتظار
+            await this.processSyncQueue();
+            
+            this.lastSyncTime = new Date();
+            appState.lastSync = this.lastSyncTime;
+            
+            showNotification('تمت المزامنة بنجاح', 'success');
+            
+        } catch (error) {
+            console.error('خطأ في المزامنة:', error);
+            showNotification('خطأ في المزامنة', 'error');
+        } finally {
+            this.isSyncing = false;
+        }
+    }
+
+    // جلب البيانات من Supabase
+    async syncFromSupabase() {
+        try {
+            // جلب التقارير الجديدة
+            const { data: reports, error: reportsError } = await supabaseClient
+                .from(TABLES.REPORTS)
+                .select('*, user:users(name)')
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (!reportsError && reports) {
+                localStorage.setItem('cached_reports', JSON.stringify(reports));
+            }
+
+            // جلب المناطق المخصصة
+            const { data: areas, error: areasError } = await supabaseClient
+                .from(TABLES.AREAS)
+                .select('*')
+                .order('assigned_date', { ascending: false });
+
+            if (!areasError && areas) {
+                localStorage.setItem('cached_areas', JSON.stringify(areas));
+            }
+
+            // تحديث وقت المزامنة
+            localStorage.setItem('last_sync_time', new Date().toISOString());
+
+        } catch (error) {
+            console.error('خطأ في جلب البيانات:', error);
+            throw error;
+        }
+    }
+
+    // إرسال البيانات إلى Supabase
+    async syncToSupabase() {
+        try {
+            // الحصول على البيانات المحلية
+            const localData = this.getLocalChanges();
+            
+            if (localData.reports.length === 0 && localData.photos.length === 0) {
+                return; // لا توجد تغييرات
+            }
+
+            // إرسال التقارير
+            for (const report of localData.reports) {
+                await this.syncReport(report);
+            }
+
+            // إرسال الصور
+            for (const photo of localData.photos) {
+                await this.syncPhoto(photo);
+            }
+
+            // تنظيف البيانات المحلية بعد المزامنة
+            this.clearSyncedData();
+
+        } catch (error) {
+            console.error('خطأ في إرسال البيانات:', error);
+            throw error;
+        }
+    }
+
+    // مزامنة تقرير واحد
+    async syncReport(report, retryCount = 0) {
+        try {
+            const { error } = await supabaseClient
+                .from(TABLES.REPORTS)
+                .upsert(report, { 
+                    onConflict: 'id',
+                    ignoreDuplicates: false 
+                });
+
+            if (error) throw error;
+
+            // وضع علامة على التقرير كمتم المزامنة
+            this.markAsSynced('report', report.id);
+
+        } catch (error) {
+            if (retryCount < this.maxRetries) {
+                console.log(`إعادة محاولة مزامنة التقرير ${report.id}...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                return this.syncReport(report, retryCount + 1);
+            } else {
+                // إضافة إلى قائمة الانتظار
+                this.addToQueue('report', report);
+                throw error;
+            }
+        }
+    }
+
+    // مزامنة صورة
+    async syncPhoto(photoData, retryCount = 0) {
+        try {
+            // هنا سيتم التعامل مع رفع الصور
+            // يتم التعامل مع الصور بشكل منفصل في storage.js
+            console.log('مزامنة صورة:', photoData.id);
+            
+        } catch (error) {
+            if (retryCount < this.maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                return this.syncPhoto(photoData, retryCount + 1);
+            } else {
+                this.addToQueue('photo', photoData);
+                throw error;
+            }
+        }
+    }
+
+    // الحصول على التغييرات المحلية
+    getLocalChanges() {
+        const unsyncedReports = JSON.parse(localStorage.getItem('unsynced_reports') || '[]');
+        const unsyncedPhotos = JSON.parse(localStorage.getItem('unsynced_photos') || '[]');
+        
+        return {
+            reports: unsyncedReports,
+            photos: unsyncedPhotos
+        };
+    }
+
+    // إضافة عنصر إلى قائمة الانتظار
+    addToQueue(type, data) {
+        this.syncQueue.push({ type, data, timestamp: new Date().toISOString() });
+        localStorage.setItem('sync_queue', JSON.stringify(this.syncQueue));
+    }
+
+    // معالجة قائمة الانتظار
+    async processSyncQueue() {
+        if (this.syncQueue.length === 0) return;
+        
+        const queue = [...this.syncQueue];
+        
+        for (const item of queue) {
+            try {
+                if (item.type === 'report') {
+                    await this.syncReport(item.data);
+                } else if (item.type === 'photo') {
+                    await this.syncPhoto(item.data);
+                }
+                
+                // إزالة من قائمة الانتظار بعد النجاح
+                this.syncQueue = this.syncQueue.filter(q => q !== item);
+                
+            } catch (error) {
+                console.error(`فشل في معالجة ${item.type}:`, error);
+            }
+        }
+        
+        localStorage.setItem('sync_queue', JSON.stringify(this.syncQueue));
+    }
+
+    // وضع علامة على البيانات كمتم المزامنة
+    markAsSynced(type, id) {
+        if (type === 'report') {
+            let unsynced = JSON.parse(localStorage.getItem('unsynced_reports') || '[]');
+            unsynced = unsynced.filter(item => item.id !== id);
+            localStorage.setItem('unsynced_reports', JSON.stringify(unsynced));
+        }
+    }
+
+    // تنظيف البيانات المزامنة
+    clearSyncedData() {
+        // يمكن إضافة منطق لتنظيف البيانات القديمة
+    }
+
+    // مزامنة يدوية
+    async manualSync() {
+        if (this.isSyncing) {
+            showNotification('جاري المزامنة بالفعل', 'warning');
+            return;
+        }
+        
+        showNotification('بدء المزامنة اليدوية...', 'info');
+        await this.syncAll();
+    }
+
+    // جلب أحدث البيانات
+    async forceRefresh() {
+        showNotification('جاري تحديث البيانات من السيرفر...', 'info');
+        await this.syncFromSupabase();
+        showNotification('تم تحديث البيانات', 'success');
+    }
+}
+
+export const syncManager = new SyncManager();
