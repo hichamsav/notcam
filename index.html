@@ -191,6 +191,145 @@
         
         // تعريض الدوال للاستخدام العام
         window.login = login;
+        // ========== إضافات Supabase ==========
+
+const SUPABASE_CONFIG = {
+    URL: 'https://jxvnmcgfwlbswtkiglmh.supabase.co',
+    ANON_KEY: 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw',
+    STORAGE_BUCKET: 'notecam-photos'
+};
+
+let supabaseClient = null;
+
+async function initializeSupabase() {
+    try {
+        supabaseClient = supabase.createClient(
+            SUPABASE_CONFIG.URL, 
+            SUPABASE_CONFIG.ANON_KEY
+        );
+        
+        console.log('Supabase connected');
+        return supabaseClient;
+    } catch (error) {
+        console.error('Supabase init error:', error);
+        return null;
+    }
+}
+
+// نظام المزامنة المبسط
+async function syncWithSupabase() {
+    if (!supabaseClient) return;
+    
+    try {
+        // مزامنة المستخدمين
+        const { data: users } = await supabaseClient
+            .from('users')
+            .select('*');
+        
+        if (users && users.length > 0) {
+            // تحديث البيانات المحلية
+            users.forEach(user => {
+                if (!usersData[user.username]) {
+                    usersData[user.username] = {
+                        password: user.password,
+                        role: user.role,
+                        name: user.name,
+                        assignedAreas: user.assigned_areas || []
+                    };
+                }
+            });
+        }
+        
+        // مزامنة التقارير
+        const { data: reports } = await supabaseClient
+            .from('reports')
+            .select('*')
+            .order('date', { ascending: false });
+        
+        if (reports) {
+            reports.forEach(report => {
+                const zoneCode = report.area_code;
+                if (!zoneReports[zoneCode]) {
+                    zoneReports[zoneCode] = {
+                        name: report.area,
+                        reports: [],
+                        photos: []
+                    };
+                }
+                
+                zoneReports[zoneCode].reports.push({
+                    id: report.id,
+                    employee: report.employee,
+                    employeeName: report.employee_name,
+                    numberBefore: report.number_before,
+                    numberAfter: report.number_after,
+                    date: report.date,
+                    location: report.location,
+                    area: report.area,
+                    areaCode: report.area_code,
+                    noteCode: report.note_code,
+                    status: report.status,
+                    step: report.step,
+                    completionDate: report.completion_date,
+                    photos: report.photos || []
+                });
+            });
+        }
+        
+        saveToLocalStorage();
+        showNotification('Données synchronisées', 'success');
+        
+    } catch (error) {
+        console.error('Sync error:', error);
+        showNotification('Erreur de synchronisation', 'error');
+    }
+}
+
+// تعديل دالة حفظ البيانات
+const originalSaveToLocalStorage = saveToLocalStorage;
+saveToLocalStorage = function() {
+    originalSaveToLocalStorage();
+    
+    // محاولة المزامنة مع Supabase
+    if (supabaseClient) {
+        setTimeout(syncWithSupabase, 1000);
+    }
+};
+
+// تهيئة Supabase عند البدء
+setTimeout(async () => {
+    await initializeSupabase();
+    if (supabaseClient) {
+        syncWithSupabase();
+        
+        // مزامنة دورية كل 30 ثانية
+        setInterval(syncWithSupabase, 30000);
+    }
+}, 2000);
+
+// إضافة زر مزامنة يدوية إلى المشرف
+function addSyncButtonToAdmin() {
+    const syncButton = document.createElement('button');
+    syncButton.className = 'action-btn';
+    syncButton.innerHTML = '<i class="fas fa-sync-alt"></i> Synchroniser avec Supabase';
+    syncButton.onclick = syncWithSupabase;
+    
+    // إضافة إلى لوحة المشرف
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminPanel) {
+        const firstSection = adminPanel.querySelector('.dashboard-section');
+        if (firstSection) {
+            firstSection.insertBefore(syncButton, firstSection.firstChild);
+        }
+    }
+}
+
+// تشغيل بعد تحميل الصفحة
+if (document.readyState === 'complete') {
+    addSyncButtonToAdmin();
+} else {
+    document.addEventListener('DOMContentLoaded', addSyncButtonToAdmin);
+}
     </script>
 </body>
 </html>
