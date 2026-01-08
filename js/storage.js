@@ -1,187 +1,121 @@
-import { supabaseClient, SUPABASE_CONFIG } from './config.js';
-import { showNotification } from '../utils/notifications.js';
+// تخزين الصور في Supabase Storage
 
 class PhotoStorage {
     constructor() {
-        this.bucketName = SUPABASE_CONFIG.STORAGE_BUCKET;
-        this.maxFileSize = 5 * 1024 * 1024; // 5MB
-    }
-
-    // تحميل صورة إلى Supabase Storage
-    async uploadPhoto(file, metadata) {
-        try {
-            // التحقق من حجم الملف
-            if (file.size > this.maxFileSize) {
-                throw new Error('حجم الصورة كبير جداً (الحد الأقصى 5MB)');
-            }
-
-            // إنشاء اسم فريد للملف
-            const fileName = `${metadata.reportId}_${metadata.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
-            const filePath = `${metadata.userId}/${metadata.zoneCode}/${fileName}`;
-
-            // رفع الملف إلى Supabase Storage
-            const { data, error } = await supabaseClient.storage
-                .from(this.bucketName)
-                .upload(filePath, file, {
-                    cacheControl: '3600',
-                    upsert: false,
-                    contentType: 'image/jpeg'
-                });
-
-            if (error) throw error;
-
-            // الحصول على رابط عام للصورة
-            const { data: urlData } = supabaseClient.storage
-                .from(this.bucketName)
-                .getPublicUrl(filePath);
-
-            // حفظ بيانات الصورة في قاعدة البيانات
-            const photoRecord = {
-                file_path: filePath,
-                public_url: urlData.publicUrl,
-                user_id: metadata.userId,
-                report_id: metadata.reportId,
-                zone_code: metadata.zoneCode,
-                photo_type: metadata.type,
-                photo_index: metadata.index,
-                location: metadata.location,
-                timestamp: metadata.timestamp,
-                file_size: file.size,
-                uploaded_at: new Date().toISOString()
-            };
-
-            const { data: dbData, error: dbError } = await supabaseClient
-                .from('photos_metadata')
-                .insert([photoRecord])
-                .select()
-                .single();
-
-            if (dbError) throw dbError;
-
-            showNotification('تم رفع الصورة بنجاح', 'success');
-            return dbData;
-
-        } catch (error) {
-            console.error('خطأ في رفع الصورة:', error);
-            showNotification('خطأ في رفع الصورة', 'error');
-            throw error;
-        }
-    }
-
-    // جلب الصور الخاصة بتقرير معين
-    async getReportPhotos(reportId) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('photos_metadata')
-                .select('*')
-                .eq('report_id', reportId)
-                .order('photo_index', { ascending: true });
-
-            if (error) throw error;
-            return data || [];
-
-        } catch (error) {
-            console.error('خطأ في جلب الصور:', error);
-            return [];
-        }
-    }
-
-    // حذف صورة
-    async deletePhoto(photoId) {
-        try {
-            // جلب معلومات الصورة أولاً
-            const { data: photo, error: fetchError } = await supabaseClient
-                .from('photos_metadata')
-                .select('file_path')
-                .eq('id', photoId)
-                .single();
-
-            if (fetchError) throw fetchError;
-
-            // حذف من Storage
-            const { error: storageError } = await supabaseClient.storage
-                .from(this.bucketName)
-                .remove([photo.file_path]);
-
-            if (storageError) throw storageError;
-
-            // حذف من قاعدة البيانات
-            const { error: dbError } = await supabaseClient
-                .from('photos_metadata')
-                .delete()
-                .eq('id', photoId);
-
-            if (dbError) throw dbError;
-
-            showNotification('تم حذف الصورة بنجاح', 'success');
-            return true;
-
-        } catch (error) {
-            console.error('خطأ في حذف الصورة:', error);
-            showNotification('خطأ في حذف الصورة', 'error');
-            throw error;
-        }
+        this.bucketName = 'notecam-photos';
     }
 
     // تحويل Blob إلى File
-    blobToFile(blob, fileName) {
-        return new File([blob], fileName, { 
+    blobToFile(blob, filename) {
+        return new File([blob], filename, { 
             type: 'image/jpeg',
             lastModified: Date.now()
         });
     }
 
-    // ضغط الصورة
-    async compressImage(file, quality = 0.8) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
+    // رفع صورة إلى Supabase
+    async uploadPhoto(photoBlob, metadata) {
+        if (!window.supabaseClient) {
+            // حفظ محلي في حالة عدم الاتصال
+            return this.savePhotoLocally(photoBlob, metadata);
+        }
+        
+        try {
+            // إنشاء اسم فريد للصورة
+            const filename = `photo_${metadata.userId}_${metadata.zoneCode}_${Date.now()}.jpg`;
+            const filepath = `${metadata.userId}/${metadata.zoneCode}/${filename}`;
             
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // تحديد الأبعاد
-                    const maxWidth = 1280;
-                    const maxHeight = 720;
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height *= maxWidth / width;
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width *= maxHeight / height;
-                            height = maxHeight;
-                        }
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    
-                    // رسم الصورة مع الضغط
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    canvas.toBlob(
-                        (blob) => resolve(blob),
-                        'image/jpeg',
-                        quality
-                    );
-                };
-                
-                img.onerror = reject;
+            // تحويل Blob إلى File
+            const file = this.blobToFile(photoBlob, filename);
+            
+            // رفع إلى Supabase Storage
+            const { data, error } = await supabaseClient.storage
+                .from(this.bucketName)
+                .upload(filepath, file);
+            
+            if (error) throw error;
+            
+            // الحصول على الرابط العام
+            const { data: urlData } = supabaseClient.storage
+                .from(this.bucketName)
+                .getPublicUrl(filepath);
+            
+            // حفظ بيانات الصورة في قاعدة البيانات
+            const photoData = {
+                user_id: metadata.userId,
+                report_id: metadata.reportId,
+                zone_code: metadata.zoneCode,
+                photo_type: metadata.type,
+                photo_index: metadata.index,
+                file_path: filepath,
+                public_url: urlData.publicUrl,
+                location: metadata.location,
+                timestamp: new Date().toISOString()
             };
             
-            reader.onerror = reject;
-        });
+            await supabaseClient
+                .from('photos_metadata')
+                .insert([photoData]);
+            
+            return urlData.publicUrl;
+            
+        } catch (error) {
+            console.error('خطأ في رفع الصورة:', error);
+            // حفظ محلي
+            return this.savePhotoLocally(photoBlob, metadata);
+        }
+    }
+
+    // حفظ الصورة محلياً (في حالة عدم الاتصال)
+    savePhotoLocally(photoBlob, metadata) {
+        const localPhotos = JSON.parse(localStorage.getItem('local_photos') || '[]');
+        const photoId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // تحويل Blob إلى Base64 للحفظ
+        const reader = new FileReader();
+        reader.readAsDataURL(photoBlob);
+        
+        reader.onloadend = () => {
+            localPhotos.push({
+                id: photoId,
+                data: reader.result,
+                metadata: metadata,
+                timestamp: new Date().toISOString()
+            });
+            
+            localStorage.setItem('local_photos', JSON.stringify(localPhotos));
+        };
+        
+        return `local://${photoId}`;
+    }
+
+    // مزامنة الصور المحلية
+    async syncLocalPhotos() {
+        if (!window.supabaseClient) return;
+        
+        const localPhotos = JSON.parse(localStorage.getItem('local_photos') || '[]');
+        
+        for (const photo of localPhotos) {
+            try {
+                // تحويل Base64 إلى Blob
+                const response = await fetch(photo.data);
+                const blob = await response.blob();
+                
+                // رفع الصورة
+                const url = await this.uploadPhoto(blob, photo.metadata);
+                
+                if (url && !url.startsWith('local://')) {
+                    // إزالة من القائمة المحلية بعد النجاح
+                    localPhotos.splice(localPhotos.indexOf(photo), 1);
+                }
+            } catch (error) {
+                console.error('فشل في مزامنة الصورة:', error);
+            }
+        }
+        
+        localStorage.setItem('local_photos', JSON.stringify(localPhotos));
     }
 }
 
-export const photoStorage = new PhotoStorage();
+// إنشاء نسخة عالمية
+window.photoStorage = new PhotoStorage();
