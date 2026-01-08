@@ -1,1 +1,397 @@
-// ملف admin.html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المشرف - NoteCam</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- شريط الحالة -->
+        <div class="status-bar">
+            <div id="adminStatusText">لوحة تحكم المشرف</div>
+            <div class="admin-controls">
+                <button class="btn-sync" onclick="syncManager.manualSync()">
+                    <i class="fas fa-sync-alt"></i> مزامنة
+                </button>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> خروج
+                </button>
+            </div>
+        </div>
+
+        <!-- التنقل -->
+        <nav class="admin-nav">
+            <ul>
+                <li><a href="#dashboard" class="active"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a></li>
+                <li><a href="#users"><i class="fas fa-users"></i> المستخدمين</a></li>
+                <li><a href="#areas"><i class="fas fa-map-marked-alt"></i> المناطق</a></li>
+                <li><a href="#reports"><i class="fas fa-file-alt"></i> التقارير</a></li>
+                <li><a href="#statistics"><i class="fas fa-chart-bar"></i> الإحصائيات</a></li>
+                <li><a href="#settings"><i class="fas fa-cog"></i> الإعدادات</a></li>
+            </ul>
+        </nav>
+
+        <!-- المحتوى -->
+        <main class="admin-content">
+            <!-- لوحة التحكم -->
+            <section id="dashboard" class="dashboard-section active">
+                <h2><i class="fas fa-tachometer-alt"></i> نظرة عامة</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>المستخدمين</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalAreas">0</h3>
+                            <p>المناطق</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalReports">0</h3>
+                            <p>التقارير</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalPhotos">0</h3>
+                            <p>الصور</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- التقارير الحديثة -->
+                <div class="recent-activity">
+                    <h3><i class="fas fa-history"></i> النشاط الأخير</h3>
+                    <div id="recentActivities"></div>
+                </div>
+            </section>
+
+            <!-- إدارة المستخدمين -->
+            <section id="users" class="dashboard-section">
+                <h2><i class="fas fa-users"></i> إدارة المستخدمين</h2>
+                
+                <div class="action-bar">
+                    <button class="btn-primary" onclick="showAddUserModal()">
+                        <i class="fas fa-user-plus"></i> إضافة مستخدم
+                    </button>
+                    <button class="btn-secondary" onclick="refreshUsers()">
+                        <i class="fas fa-sync"></i> تحديث
+                    </button>
+                </div>
+                
+                <div class="users-table-container">
+                    <table class="users-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>اسم المستخدم</th>
+                                <th>الاسم الكامل</th>
+                                <th>الدور</th>
+                                <th>الحالة</th>
+                                <th>آخر دخول</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- سيتم ملؤها بالبيانات -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- إدارة المناطق -->
+            <section id="areas" class="dashboard-section">
+                <h2><i class="fas fa-map-marked-alt"></i> إدارة المناطق</h2>
+                
+                <div class="areas-management">
+                    <div class="assign-area-form">
+                        <h3>تعيين منطقة</h3>
+                        <div class="form-group">
+                            <select id="areaEmployeeSelect" class="form-select">
+                                <option value="">اختر الموظف</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="areaName" class="form-input" placeholder="اسم المنطقة">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="areaCode" class="form-input" placeholder="كود المنطقة (مثال: ZN001)">
+                        </div>
+                        <button class="btn-primary" onclick="assignArea()">
+                            <i class="fas fa-map-pin"></i> تعيين المنطقة
+                        </button>
+                    </div>
+                    
+                    <div class="areas-list">
+                        <h3>المناطق المعينة</h3>
+                        <div id="assignedAreasList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- التقارير -->
+            <section id="reports" class="dashboard-section">
+                <h2><i class="fas fa-file-alt"></i> التقارير</h2>
+                
+                <div class="reports-controls">
+                    <div class="filter-controls">
+                        <select id="reportFilter" class="form-select">
+                            <option value="all">جميع التقارير</option>
+                            <option value="complete">المكتملة فقط</option>
+                            <option value="pending">المنتظرة</option>
+                        </select>
+                        <input type="date" id="reportDateFilter" class="form-input">
+                        <button class="btn-secondary" onclick="filterReports()">
+                            <i class="fas fa-filter"></i> تصفية
+                        </button>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="exportAllReports()">
+                        <i class="fas fa-download"></i> تصدير الكل
+                    </button>
+                </div>
+                
+                <div class="reports-list" id="reportsList"></div>
+            </section>
+
+            <!-- الإحصائيات -->
+            <section id="statistics" class="dashboard-section">
+                <h2><i class="fas fa-chart-bar"></i> الإحصائيات</h2>
+                
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>التقارير حسب الشهر</h3>
+                        <canvas id="reportsChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3>النشاط حسب الموظف</h3>
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="statistics-summary">
+                    <h3>ملخص الإحصائيات</h3>
+                    <div id="statisticsSummary"></div>
+                </div>
+            </section>
+
+            <!-- الإعدادات -->
+            <section id="settings" class="dashboard-section">
+                <h2><i class="fas fa-cog"></i> إعدادات النظام</h2>
+                
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>إعدادات المزامنة</h3>
+                        <div class="setting-item">
+                            <label>فترة المزامنة التلقائية</label>
+                            <select id="syncInterval" class="form-select">
+                                <option value="15000">15 ثانية</option>
+                                <option value="30000" selected>30 ثانية</option>
+                                <option value="60000">60 ثانية</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>حجم الصور</label>
+                            <select id="imageQuality" class="form-select">
+                                <option value="0.7">عالية الجودة</option>
+                                <option value="0.8" selected>متوسطة</option>
+                                <option value="0.9">منخفضة</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h3>حالة النظام</h3>
+                        <div class="system-status">
+                            <div class="status-item">
+                                <span>الاتصال بالخادم:</span>
+                                <span id="serverStatus" class="status-good">متصل</span>
+                            </div>
+                            <div class="status-item">
+                                <span>آخر مزامنة:</span>
+                                <span id="lastSyncTime">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span>عدد الصور المخزنة:</span>
+                                <span id="storedPhotos">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span>المساحة المستخدمة:</span>
+                                <span id="storageUsed">--</span>
+                            </div>
+                        </div>
+                        <button class="btn-secondary" onclick="clearCache()">
+                            <i class="fas fa-trash"></i> مسح الذاكرة المؤقتة
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- النماذج المنبثقة -->
+    <div id="addUserModal" class="modal">
+        <!-- محتوى النموذج -->
+    </div>
+    
+    <div id="reportDetailsModal" class="modal">
+        <!-- تفاصيل التقرير -->
+    </div>
+
+    <!-- الإشعارات -->
+    <div class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { authSystem } from './js/auth.js';
+        import { syncManager } from './js/sync.js';
+        import { adminDashboard } from './js/admin.js';
+        import { showNotification } from './js/utils/notifications.js';
+        
+        // التحقق من الجلسة
+        async function checkAdminSession() {
+            const hasSession = await authSystem.checkSession();
+            if (!hasSession || authSystem.currentSession.role !== 'admin') {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+        
+        // تسجيل الخروج
+        async function logout() {
+            if (confirm('هل تريد تسجيل الخروج؟')) {
+                authSystem.logout();
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // تهيئة لوحة التحكم
+        async function initializeAdminDashboard() {
+            const isAuthenticated = await checkAdminSession();
+            if (!isAuthenticated) return;
+            
+            // تحديث حالة النظام
+            updateSystemStatus();
+            
+            // تحميل البيانات
+            await adminDashboard.loadDashboardData();
+            
+            // إعداد التنقل
+            setupNavigation();
+            
+            // تحديث دوري للبيانات
+            setInterval(() => {
+                adminDashboard.updateStats();
+            }, 30000);
+        }
+        
+        // تحديث حالة النظام
+        function updateSystemStatus() {
+            const lastSync = localStorage.getItem('last_sync_time');
+            if (lastSync) {
+                const date = new Date(lastSync);
+                document.getElementById('lastSyncTime').textContent = 
+                    date.toLocaleString('ar-SA');
+            }
+            
+            // تحديث حالة الاتصال
+            const serverStatus = document.getElementById('serverStatus');
+            if (navigator.onLine) {
+                serverStatus.textContent = 'متصل';
+                serverStatus.className = 'status-good';
+            } else {
+                serverStatus.textContent = 'غير متصل';
+                serverStatus.className = 'status-bad';
+            }
+        }
+        
+        // إعداد التنقل
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.admin-nav a');
+            const sections = document.querySelectorAll('.dashboard-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    
+                    // تحديث الروابط النشطة
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    // إظهار القسم المطلوب
+                    sections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        }
+                    });
+                    
+                    // تحميل بيانات القسم إذا لزم
+                    switch(targetId) {
+                        case 'users':
+                            adminDashboard.loadUsers();
+                            break;
+                        case 'areas':
+                            adminDashboard.loadAreas();
+                            break;
+                        case 'reports':
+                            adminDashboard.loadReports();
+                            break;
+                        case 'statistics':
+                            adminDashboard.loadStatistics();
+                            break;
+                    }
+                });
+            });
+        }
+        
+        // تفعيل زر المزامنة
+        document.querySelector('.btn-sync').addEventListener('click', () => {
+            syncManager.manualSync();
+        });
+        
+        // تهيئة عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', initializeAdminDashboard);
+        
+        // تعريض الدوال للاستخدام العام
+        window.logout = logout;
+        window.syncManager = syncManager;
+        window.adminDashboard = adminDashboard;
+    </script>
+    
+    <!-- Chart.js للإحصائيات -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
