@@ -201,7 +201,8 @@
             admin: {
                 password: "admin123",
                 role: "admin",
-                name: "Superviseur Principal"
+                name: "Superviseur Principal",
+                assignedAreas: []
             }
         };
 
@@ -318,6 +319,38 @@
             }
         }
 
+        function validateDataTransfer() {
+            const savedData = localStorage.getItem('noteCamSystemData');
+            if (!savedData) {
+                const initialData = {
+                    usersData: defaultUsersData,
+                    assignedAreas: [],
+                    zoneReports: {}
+                };
+                localStorage.setItem('noteCamSystemData', JSON.stringify(initialData));
+            } else {
+                const data = JSON.parse(savedData);
+                if (!data.usersData || !data.assignedAreas || !data.zoneReports) {
+                    const initialData = {
+                        usersData: data.usersData || defaultUsersData,
+                        assignedAreas: data.assignedAreas || [],
+                        zoneReports: data.zoneReports || {}
+                    };
+                    localStorage.setItem('noteCamSystemData', JSON.stringify(initialData));
+                }
+            }
+            
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                } catch (e) {
+                    console.error('Erreur parsing user:', e);
+                    currentUser = null;
+                }
+            }
+        }
+
         function loadFromLocalStorage() {
             try {
                 const savedData = localStorage.getItem('noteCamSystemData');
@@ -326,15 +359,36 @@
                     usersData = {...defaultUsersData, ...data.usersData};
                     assignedAreas = data.assignedAreas || assignedAreas;
                     zoneReports = data.zoneReports || {};
+                    
+                    // التأكد من أن كل مستخدم لديه assignedAreas
+                    Object.keys(usersData).forEach(username => {
+                        if (!usersData[username].assignedAreas) {
+                            usersData[username].assignedAreas = [];
+                        }
+                    });
+                } else {
+                    // تهيئة البيانات إذا لم تكن موجودة
+                    usersData = JSON.parse(JSON.stringify(defaultUsersData));
+                    assignedAreas = [];
+                    zoneReports = {};
+                    saveToLocalStorage();
                 }
                 
                 const savedUser = localStorage.getItem('currentUser');
                 if (savedUser) {
-                    currentUser = JSON.parse(savedUser);
+                    try {
+                        currentUser = JSON.parse(savedUser);
+                    } catch (e) {
+                        console.error('Erreur chargement utilisateur:', e);
+                        currentUser = null;
+                    }
                 }
                 
             } catch (error) {
                 console.error('Erreur chargement données:', error);
+                usersData = JSON.parse(JSON.stringify(defaultUsersData));
+                assignedAreas = [];
+                zoneReports = {};
             }
         }
 
@@ -359,7 +413,13 @@
             const user = usersData[username];
             
             if (user && user.password === password) {
-                currentUser = {username, ...user};
+                currentUser = {
+                    username, 
+                    password: user.password,
+                    role: user.role,
+                    name: user.name,
+                    assignedAreas: user.assignedAreas || []
+                };
                 updateStatusBar(`Bienvenue ${user.name}`);
                 
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -400,6 +460,7 @@
         }
 
         function initializeApp() {
+            validateDataTransfer();
             loadFromLocalStorage();
             updateStatusBar("Prêt à l'utilisation");
             
