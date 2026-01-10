@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NoteCam - Connexion</title>
+    <title>NoteCam - Panneau Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -14,75 +15,229 @@
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f7fafc;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
         }
         
-        .login-container {
+        .navbar {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
-            padding: 40px;
-            text-align: center;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .logo {
-            font-size: 48px;
+            font-size: 24px;
+            font-weight: 700;
             color: #4a5568;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        h1 {
-            color: #2d3748;
-            margin-bottom: 10px;
-            font-size: 28px;
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
         
-        .subtitle {
-            color: #718096;
+        .logout-btn {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+        }
+        
+        .container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
-            font-size: 16px;
         }
         
-        .login-input {
-            width: 100%;
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .card-icon {
+            font-size: 30px;
+            color: #667eea;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-item {
+            text-align: center;
             padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid #e2e8f0;
+            background: #f8f9fa;
             border-radius: 10px;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 16px;
             transition: all 0.3s;
         }
         
-        .login-input:focus {
+        .form-input:focus {
             border-color: #667eea;
             outline: none;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn {
+            background: #667eea;
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
+            padding: 12px 25px;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 600;
             transition: all 0.3s;
-            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .login-btn:hover {
+        .btn:hover {
+            background: #5a67d8;
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-danger {
+            background: #f56565;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .badge-warning {
+            background: #feebc8;
+            color: #744210;
+        }
+        
+        .badge-danger {
+            background: #fed7d7;
+            color: #742a2a;
         }
         
         .notification {
@@ -102,81 +257,312 @@
             background: #f56565;
         }
         
-        .notification.warning {
-            background: #ed8936;
-        }
-        
-        .loading {
+        .modal {
             display: none;
-            text-align: center;
-            margin-top: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
         }
         
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .footer {
-            margin-top: 30px;
-            color: #718096;
-            font-size: 14px;
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
     <div class="notification" id="notification"></div>
     
-    <div class="login-container">
+    <!-- Modal pour les détails -->
+    <div class="modal" id="photoModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Détails des photos</h3>
+                <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            <div id="photoDetails"></div>
+        </div>
+    </div>
+    
+    <nav class="navbar">
         <div class="logo">
-            📸
+            <i class="fas fa-camera"></i>
+            NoteCam Admin
         </div>
-        <h1>Système NoteCam</h1>
-        <p class="subtitle">Connexion sécurisée</p>
-        
-        <input type="text" id="username" class="login-input" placeholder="Nom d'utilisateur" autocomplete="username">
-        <input type="password" id="password" class="login-input" placeholder="Mot de passe" autocomplete="current-password">
-        
-        <button class="login-btn" onclick="login()">Se connecter</button>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Connexion en cours...</p>
+        <div class="user-info">
+            <span id="adminName">Chargement...</span>
+            <button class="logout-btn" id="logoutButton">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Statistiques -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Utilisateurs</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="adminCount">0</div>
+                        <div class="stat-label">Administrateurs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="employeeCount">0</div>
+                        <div class="stat-label">Employés</div>
+                    </div>
+                </div>
+                <button class="btn" id="manageUsersBtn">
+                    <i class="fas fa-user-plus"></i> Gérer les utilisateurs
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Rapports</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalReports">0</div>
+                        <div class="stat-label">Total rapports</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="completeReports">0</div>
+                        <div class="stat-label">Complets</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="pendingReports">0</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                </div>
+                <button class="btn" id="viewReportsBtn">
+                    <i class="fas fa-eye"></i> Voir tous les rapports
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Photos</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalPhotos">0</div>
+                        <div class="stat-label">Total photos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="beforePhotos">0</div>
+                        <div class="stat-label">Photos AVANT</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="afterPhotos">0</div>
+                        <div class="stat-label">Photos APRÈS</div>
+                    </div>
+                </div>
+                <button class="btn" id="managePhotosBtn">
+                    <i class="fas fa-image"></i> Gérer les photos
+                </button>
+            </div>
         </div>
         
-        <div class="footer">
-            © 2024 NoteCam System | Version 2.0
+        <!-- Gestion des utilisateurs (caché par défaut) -->
+        <div class="card" id="userManagement" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des utilisateurs</h3>
+                <button class="btn-success" id="addUserBtn">
+                    <i class="fas fa-plus"></i> Ajouter utilisateur
+                </button>
+            </div>
+            
+            <div id="addUserForm" style="display: none; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Nom d'utilisateur</label>
+                    <input type="text" id="newUsername" class="form-input" placeholder="username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" id="newPassword" class="form-input" placeholder="********">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nom complet</label>
+                    <input type="text" id="newFullName" class="form-input" placeholder="Nom Prénom">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rôle</label>
+                    <select id="newRole" class="form-input">
+                        <option value="employee">Employé</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-success" id="saveUserBtn">
+                        <i class="fas fa-save"></i> Ajouter
+                    </button>
+                    <button class="btn-danger" id="cancelAddUserBtn">
+                        <i class="fas fa-times"></i> Annuler
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Nom d'utilisateur</th>
+                            <th>Nom complet</th>
+                            <th>Rôle</th>
+                            <th>Date création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList">
+                        <!-- Les utilisateurs seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Gestion des rapports (caché par défaut) -->
+        <div class="card" id="reportsManagement" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des rapports</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="searchReport" class="form-input" placeholder="Rechercher..." style="width: 300px;">
+                    <button class="btn" id="searchReportsBtn">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="reportsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Employé</th>
+                            <th>Zone</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsList">
+                        <!-- Les rapports seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Gestion des photos (caché par défaut) -->
+        <div class="card" id="photosManagement" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des photos</h3>
+                <select id="photoTypeFilter" class="form-input" style="width: 200px;">
+                    <option value="all">Toutes les photos</option>
+                    <option value="before">Photos AVANT</option>
+                    <option value="after">Photos APRÈS</option>
+                </select>
+            </div>
+            
+            <div id="photosGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                <!-- Les photos seront chargées ici -->
+            </div>
         </div>
     </div>
     
     <script>
-        // Configuration Supabase
+        // Configuration
         const SUPABASE_URL = 'https://jxvnmcgfwlbswtkiglmh.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw';
         
         let supabase;
+        let currentUser;
+        let allUsers = [];
+        let allReports = [];
+        let allPhotos = [];
         
-        // Initialiser Supabase
-        document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Vérifier si l'utilisateur est connecté
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            currentUser = JSON.parse(userData);
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Afficher le nom de l'admin
+            document.getElementById('adminName').textContent = currentUser.name || currentUser.username;
+            
+            // Initialiser Supabase
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase initialisé');
+                console.log('Supabase initialisé pour admin');
             } catch (error) {
                 showNotification('Erreur de connexion à la base de données', 'error');
                 console.error('Erreur Supabase:', error);
+                return;
             }
+            
+            // Ajouter les écouteurs d'événements
+            setupEventListeners();
+            
+            // Charger les données
+            await loadDashboardData();
+            await loadAllData();
         });
         
+        // Configurer les écouteurs d'événements
+        function setupEventListeners() {
+            // Boutons de navigation
+            document.getElementById('manageUsersBtn').addEventListener('click', showUserManagement);
+            document.getElementById('viewReportsBtn').addEventListener('click', showReports);
+            document.getElementById('managePhotosBtn').addEventListener('click', showPhotos);
+            document.getElementById('logoutButton').addEventListener('click', logout);
+            
+            // Gestion des utilisateurs
+            document.getElementById('addUserBtn').addEventListener('click', showAddUserForm);
+            document.getElementById('saveUserBtn').addEventListener('click', addUser);
+            document.getElementById('cancelAddUserBtn').addEventListener('click', cancelAddUser);
+            
+            // Gestion des rapports
+            document.getElementById('searchReportsBtn').addEventListener('click', searchReports);
+            
+            // Gestion des photos
+            document.getElementById('photoTypeFilter').addEventListener('change', loadPhotos);
+        }
+        
+        // Fonctions d'affichage
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -188,56 +574,486 @@
             }, 3000);
         }
         
-        async function login() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const loading = document.getElementById('loading');
+        function showModal() {
+            document.getElementById('photoModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('photoModal').style.display = 'none';
+        }
+        
+        // Chargement des données
+        async function loadDashboardData() {
+            try {
+                // Compter les utilisateurs
+                const { data: users, error: usersError } = await supabase
+                    .from('users')
+                    .select('*');
+                
+                if (!usersError) {
+                    const totalUsers = users.length;
+                    const adminCount = users.filter(u => u.role === 'admin').length;
+                    const employeeCount = users.filter(u => u.role === 'employee').length;
+                    
+                    document.getElementById('totalUsers').textContent = totalUsers;
+                    document.getElementById('adminCount').textContent = adminCount;
+                    document.getElementById('employeeCount').textContent = employeeCount;
+                }
+                
+                // Compter les rapports
+                const { data: reports, error: reportsError } = await supabase
+                    .from('reports')
+                    .select('*');
+                
+                if (!reportsError) {
+                    const totalReports = reports.length;
+                    const completeReports = reports.filter(r => r.status === 'complete').length;
+                    const pendingReports = reports.filter(r => r.status === 'before_only').length;
+                    
+                    document.getElementById('totalReports').textContent = totalReports;
+                    document.getElementById('completeReports').textContent = completeReports;
+                    document.getElementById('pendingReports').textContent = pendingReports;
+                }
+                
+                // Compter les photos
+                const { data: photos, error: photosError } = await supabase
+                    .from('photos')
+                    .select('*');
+                
+                if (!photosError) {
+                    const totalPhotos = photos.length;
+                    const beforePhotos = photos.filter(p => p.type === 'before').length;
+                    const afterPhotos = photos.filter(p => p.type === 'after').length;
+                    
+                    document.getElementById('totalPhotos').textContent = totalPhotos;
+                    document.getElementById('beforePhotos').textContent = beforePhotos;
+                    document.getElementById('afterPhotos').textContent = afterPhotos;
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement dashboard:', error);
+                showNotification('Erreur de chargement des données', 'error');
+            }
+        }
+        
+        async function loadAllData() {
+            try {
+                // Charger tous les utilisateurs
+                const { data: users, error: usersError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (!usersError) {
+                    allUsers = users;
+                }
+                
+                // Charger tous les rapports
+                const { data: reports, error: reportsError } = await supabase
+                    .from('reports')
+                    .select('*, users(name)')
+                    .order('created_at', { ascending: false });
+                
+                if (!reportsError) {
+                    allReports = reports;
+                }
+                
+                // Charger toutes les photos
+                const { data: photos, error: photosError } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (!photosError) {
+                    allPhotos = photos;
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement données:', error);
+            }
+        }
+        
+        // Gestion des sections
+        function showUserManagement() {
+            document.getElementById('userManagement').style.display = 'block';
+            document.getElementById('reportsManagement').style.display = 'none';
+            document.getElementById('photosManagement').style.display = 'none';
+            loadUsersTable();
+        }
+        
+        function showReports() {
+            document.getElementById('userManagement').style.display = 'none';
+            document.getElementById('reportsManagement').style.display = 'block';
+            document.getElementById('photosManagement').style.display = 'none';
+            loadReportsTable();
+        }
+        
+        function showPhotos() {
+            document.getElementById('userManagement').style.display = 'none';
+            document.getElementById('reportsManagement').style.display = 'none';
+            document.getElementById('photosManagement').style.display = 'block';
+            loadPhotos();
+        }
+        
+        // Gestion des utilisateurs
+        function showAddUserForm() {
+            document.getElementById('addUserForm').style.display = 'block';
+        }
+        
+        function cancelAddUser() {
+            document.getElementById('addUserForm').style.display = 'none';
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newFullName').value = '';
+            document.getElementById('newRole').value = 'employee';
+        }
+        
+        async function addUser() {
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value.trim();
+            const fullName = document.getElementById('newFullName').value.trim();
+            const role = document.getElementById('newRole').value;
             
-            if (!username || !password) {
+            if (!username || !password || !fullName) {
                 showNotification('Veuillez remplir tous les champs', 'error');
                 return;
             }
             
-            loading.style.display = 'block';
-            
             try {
-                // Vérifier dans Supabase
-                const { data: user, error } = await supabase
+                const { data, error } = await supabase
                     .from('users')
-                    .select('*')
-                    .eq('username', username)
-                    .eq('password', password)
-                    .single();
+                    .insert([
+                        {
+                            username: username,
+                            password: password,
+                            name: fullName,
+                            role: role,
+                            created_at: new Date().toISOString(),
+                            is_active: true
+                        }
+                    ]);
                 
-                if (error || !user) {
-                    showNotification('Identifiants incorrects', 'error');
-                    loading.style.display = 'none';
+                if (error) {
+                    showNotification('Erreur lors de l\'ajout: ' + error.message, 'error');
                     return;
                 }
                 
-                // Sauvegarder les infos utilisateur
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                
-                // Redirection selon le rôle
-                if (user.role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'employee.html';
-                }
+                showNotification('Utilisateur ajouté avec succès');
+                cancelAddUser();
+                await loadAllData();
+                await loadDashboardData();
+                loadUsersTable();
                 
             } catch (error) {
-                console.error('Erreur de connexion:', error);
-                showNotification('Erreur de connexion au serveur', 'error');
-                loading.style.display = 'none';
+                console.error('Erreur ajout utilisateur:', error);
+                showNotification('Erreur lors de l\'ajout', 'error');
             }
         }
         
-        // Permettre la connexion avec Entrée
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
+        function loadUsersTable() {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            
+            allUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.name || '-'}</td>
+                    <td>
+                        <span class="badge ${user.role === 'admin' ? 'badge-success' : 'badge-warning'}">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td>${new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="btn btn-small" onclick="viewUser('${user.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-small" onclick="editUser('${user.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-danger btn-small" onclick="deleteUser('${user.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                usersList.appendChild(row);
+            });
+        }
+        
+        async function deleteUser(userId) {
+            if (!confirm('Voulez-vous vraiment supprimer cet utilisateur ?')) {
+                return;
             }
-        });
+            
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .delete()
+                    .eq('id', userId);
+                
+                if (error) {
+                    showNotification('Erreur lors de la suppression', 'error');
+                    return;
+                }
+                
+                showNotification('Utilisateur supprimé avec succès');
+                await loadAllData();
+                await loadDashboardData();
+                loadUsersTable();
+                
+            } catch (error) {
+                console.error('Erreur suppression utilisateur:', error);
+                showNotification('Erreur lors de la suppression', 'error');
+            }
+        }
+        
+        // Gestion des rapports
+        function loadReportsTable() {
+            const reportsList = document.getElementById('reportsList');
+            reportsList.innerHTML = '';
+            
+            allReports.forEach(report => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${report.id.substring(0, 8)}...</td>
+                    <td>${report.users?.name || report.employee_name}</td>
+                    <td>${report.area || '-'}</td>
+                    <td>${new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <span class="badge ${report.status === 'complete' ? 'badge-success' : 'badge-warning'}">
+                            ${report.status === 'complete' ? 'Complet' : 'En attente'}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="btn btn-small" onclick="viewReport('${report.id}')">
+                                <i class="fas fa-eye"></i> Voir
+                            </button>
+                        </div>
+                    </td>
+                `;
+                reportsList.appendChild(row);
+            });
+        }
+        
+        async function viewReport(reportId) {
+            try {
+                // Récupérer le rapport avec ses photos
+                const { data: report, error: reportError } = await supabase
+                    .from('reports')
+                    .select('*, users(name)')
+                    .eq('id', reportId)
+                    .single();
+                
+                if (reportError) {
+                    showNotification('Erreur chargement rapport', 'error');
+                    return;
+                }
+                
+                const { data: photos, error: photosError } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .eq('report_id', reportId)
+                    .order('type', { ascending: true });
+                
+                if (photosError) {
+                    showNotification('Erreur chargement photos', 'error');
+                    return;
+                }
+                
+                // Afficher les détails dans le modal
+                const photoDetails = document.getElementById('photoDetails');
+                photoDetails.innerHTML = `
+                    <h4>Rapport #${report.id.substring(0, 8)}</h4>
+                    <p><strong>Employé:</strong> ${report.users?.name || report.employee_name}</p>
+                    <p><strong>Zone:</strong> ${report.area || '-'}</p>
+                    <p><strong>Date:</strong> ${new Date(report.created_at).toLocaleString('fr-FR')}</p>
+                    <p><strong>Statut:</strong> ${report.status}</p>
+                    <p><strong>Nombre AVANT:</strong> ${report.number_before || '-'}</p>
+                    <p><strong>Nombre APRÈS:</strong> ${report.number_after || '-'}</p>
+                    
+                    <div style="margin-top: 20px;">
+                        <h5>Photos (${photos.length})</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px;">
+                            ${photos.map(photo => `
+                                <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                    <img src="${photo.image_data || '#'}" alt="Photo" style="width: 100%; height: 120px; object-fit: cover;">
+                                    <div style="padding: 5px; font-size: 12px; text-align: center;">
+                                        <span class="badge ${photo.type === 'before' ? 'badge-success' : 'badge-warning'}">
+                                            ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}
+                                        </span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                showModal();
+                
+            } catch (error) {
+                console.error('Erreur visualisation rapport:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        function searchReports() {
+            const searchTerm = document.getElementById('searchReport').value.toLowerCase();
+            const reportsList = document.getElementById('reportsList');
+            reportsList.innerHTML = '';
+            
+            const filteredReports = allReports.filter(report => 
+                (report.users?.name?.toLowerCase() || report.employee_name?.toLowerCase() || '').includes(searchTerm) ||
+                (report.area?.toLowerCase() || '').includes(searchTerm) ||
+                (report.id?.toLowerCase() || '').includes(searchTerm)
+            );
+            
+            filteredReports.forEach(report => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${report.id.substring(0, 8)}...</td>
+                    <td>${report.users?.name || report.employee_name}</td>
+                    <td>${report.area || '-'}</td>
+                    <td>${new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <span class="badge ${report.status === 'complete' ? 'badge-success' : 'badge-warning'}">
+                            ${report.status === 'complete' ? 'Complet' : 'En attente'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-small" onclick="viewReport('${report.id}')">
+                            <i class="fas fa-eye"></i> Voir
+                        </button>
+                    </td>
+                `;
+                reportsList.appendChild(row);
+            });
+        }
+        
+        // Gestion des photos
+        async function loadPhotos() {
+            const typeFilter = document.getElementById('photoTypeFilter').value;
+            const photosGrid = document.getElementById('photosGrid');
+            photosGrid.innerHTML = '';
+            
+            try {
+                let query = supabase
+                    .from('photos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (typeFilter !== 'all') {
+                    query = query.eq('type', typeFilter);
+                }
+                
+                const { data: photos, error } = await query;
+                
+                if (error) {
+                    showNotification('Erreur chargement photos', 'error');
+                    return;
+                }
+                
+                photos.forEach(photo => {
+                    const photoCard = document.createElement('div');
+                    photoCard.className = 'photo-card';
+                    photoCard.style.cssText = `
+                        border: 1px solid #e2e8f0;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        background: white;
+                    `;
+                    
+                    photoCard.innerHTML = `
+                        <img src="${photo.image_data || '#'}" 
+                             alt="Photo" 
+                             style="width: 100%; height: 150px; object-fit: cover; cursor: pointer;"
+                             onclick="viewPhoto('${photo.id}')"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9IiNlMWU4ZWQiPjx0ZXh0IHg9IjEwMCIgeT0iNzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2NjYiPkltYWdlIE5vbiBEaXNwb25pYmxlPC90ZXh0Pjwvc3ZnPg=='">
+                        <div style="padding: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span class="badge ${photo.type === 'before' ? 'badge-success' : 'badge-warning'}" style="font-size: 10px;">
+                                    ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}
+                                </span>
+                                <span style="font-size: 10px; color: #718096;">
+                                    ${new Date(photo.created_at).toLocaleDateString('fr-FR')}
+                                </span>
+                            </div>
+                            <div style="font-size: 11px; color: #4a5568; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                Rapport: ${photo.report_id?.substring(0, 8) || '-'}
+                            </div>
+                        </div>
+                    `;
+                    
+                    photosGrid.appendChild(photoCard);
+                });
+                
+            } catch (error) {
+                console.error('Erreur chargement photos:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        async function viewPhoto(photoId) {
+            try {
+                const { data: photo, error } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .eq('id', photoId)
+                    .single();
+                
+                if (error || !photo) {
+                    showNotification('Photo non trouvée', 'error');
+                    return;
+                }
+                
+                const photoDetails = document.getElementById('photoDetails');
+                photoDetails.innerHTML = `
+                    <h4>Photo ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}</h4>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="${photo.image_data}" 
+                             alt="Photo" 
+                             style="max-width: 100%; max-height: 400px; border-radius: 10px; border: 1px solid #e2e8f0;"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9IiNlMWU4ZWQiPjx0ZXh0IHg9IjIwMCIgeT0iMTUwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2Ij5JbWFnZSBub24gZGlzcG9uaWJsZTwvdGV4dD48L3N2Zz4='">
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <p><strong>Type:</strong> ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}</p>
+                        <p><strong>Date:</strong> ${new Date(photo.created_at).toLocaleString('fr-FR')}</p>
+                        <p><strong>Rapport ID:</strong> ${photo.report_id || '-'}</p>
+                        ${photo.zone_code ? `<p><strong>Zone:</strong> ${photo.zone_code}</p>` : ''}
+                        ${photo.employee ? `<p><strong>Employé:</strong> ${photo.employee}</p>` : ''}
+                        ${photo.location ? `<p><strong>Localisation:</strong> ${photo.location}</p>` : ''}
+                    </div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <a href="${photo.image_data}" target="_blank" class="btn" style="text-decoration: none;">
+                            <i class="fas fa-external-link-alt"></i> Ouvrir en grand
+                        </a>
+                    </div>
+                `;
+                
+                showModal();
+                
+            } catch (error) {
+                console.error('Erreur visualisation photo:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+        
+        // Rafraîchir les données toutes les 30 secondes
+        setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                await loadDashboardData();
+                await loadAllData();
+            }
+        }, 30000);
     </script>
 </body>
 </html>
