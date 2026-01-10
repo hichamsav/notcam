@@ -3,48 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Système NoteCam - Supabase</title>
-    
-    <!-- Supabase JS -->
+    <title>NoteCam - Connexion</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- مكتبات مساعدة -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 48px;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .login-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        
+        .notification.error {
+            background: #f56565;
+        }
+        
+        .notification.warning {
+            background: #ed8936;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            margin-top: 30px;
+            color: #718096;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <!-- شاشة التحميل -->
-    <div id="loadingScreen">
-        <div class="loader">
-            <div class="spinner"></div>
-            <p>Chargement du système sécurisé...</p>
-        </div>
-    </div>
-
-    <!-- إشعارات -->
     <div class="notification" id="notification"></div>
     
-    <!-- التطبيق الرئيسي -->
-    <div id="app" style="display: none;">
-        <!-- محتوى التطبيق سيتم تحميله ديناميكياً -->
+    <div class="login-container">
+        <div class="logo">
+            📸
+        </div>
+        <h1>Système NoteCam</h1>
+        <p class="subtitle">Connexion sécurisée</p>
+        
+        <input type="text" id="username" class="login-input" placeholder="Nom d'utilisateur" autocomplete="username">
+        <input type="password" id="password" class="login-input" placeholder="Mot de passe" autocomplete="current-password">
+        
+        <button class="login-btn" onclick="login()">Se connecter</button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Connexion en cours...</p>
+        </div>
+        
+        <div class="footer">
+            © 2024 NoteCam System | Version 2.0
+        </div>
     </div>
-
-    <!-- المودال للصور -->
-    <div id="imageModal" class="modal">
-        <span class="close-modal">&times;</span>
-        <img class="modal-content" id="modalImage">
-        <div id="modalCaption"></div>
-    </div>
-
-    <!-- السكريبتات -->
-    <script src="js/config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/supabase-client.js"></script>
-    <script src="js/admin.js"></script>
-    <script src="js/employee.js"></script>
-    <script src="js/reports.js"></script>
-    <script src="js/camera.js"></script>
-    <script src="js/sync.js"></script>
-    <script src="js/main.js"></script>
+    
+    <script>
+        // Configuration Supabase
+        const SUPABASE_URL = 'https://jxvnmcgfwlbswtkiglmh.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw';
+        
+        let supabase;
+        
+        // Initialiser Supabase
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialisé');
+            } catch (error) {
+                showNotification('Erreur de connexion à la base de données', 'error');
+                console.error('Erreur Supabase:', error);
+            }
+        });
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + (type !== 'success' ? type : '');
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const loading = document.getElementById('loading');
+            
+            if (!username || !password) {
+                showNotification('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            loading.style.display = 'block';
+            
+            try {
+                // Vérifier dans Supabase
+                const { data: user, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('username', username)
+                    .eq('password', password)
+                    .single();
+                
+                if (error || !user) {
+                    showNotification('Identifiants incorrects', 'error');
+                    loading.style.display = 'none';
+                    return;
+                }
+                
+                // Sauvegarder les infos utilisateur
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                // Redirection selon le rôle
+                if (user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'employee.html';
+                }
+                
+            } catch (error) {
+                console.error('Erreur de connexion:', error);
+                showNotification('Erreur de connexion au serveur', 'error');
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Permettre la connexion avec Entrée
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
 </body>
 </html>
