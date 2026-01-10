@@ -593,7 +593,40 @@
                 }, 5000);
             }
         }
+async function createTablesIfNotExist() {
+    try {
+        // التحقق من وجود الجداول
+        const tables = ['users', 'assigned_areas', 'reports'];
+        
+        for (const table of tables) {
+            try {
+                const { error } = await supabaseClient
+                    .from(table)
+                    .select('count', { count: 'exact', head: true });
+                
+                if (error && error.message.includes('does not exist')) {
+                    console.log(`Table ${table} n'existe pas, création...`);
+                    await createTable(table);
+                }
+            } catch (err) {
+                console.warn(`Erreur vérification table ${table}:`, err.message);
+            }
+        }
+    } catch (error) {
+        console.error('Erreur création tables:', error);
+    }
+}
 
+async function createTable(tableName) {
+    // إرسال طلب لإنشاء الجدول (يتطلب صلاحيات)
+    try {
+        // يمكنك استخدام REST API لإنشاء الجداول
+        console.log(`Veuillez créer manuellement la table "${tableName}" dans Supabase`);
+        showNotification(`Veuillez créer la table ${tableName} dans Supabase`, "warning");
+    } catch (error) {
+        console.error(`Erreur création table ${tableName}:`, error);
+    }
+}
         function initSyncSystem() {
             updateSyncStatus('Initialisation...');
             
