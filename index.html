@@ -413,12 +413,29 @@
                 this.supabase = null;
                 this.offlineMode = !navigator.onLine;
                 this.localData = {
-                    reports: JSON.parse(localStorage.getItem('notecam_reports') || '[]'),
-                    photos: JSON.parse(localStorage.getItem('notecam_photos') || '[]'),
-                    users: JSON.parse(localStorage.getItem('notecam_users') || '[]')
+                    reports: [],
+                    photos: [],
+                    users: []
                 };
                 
+                this.loadLocalData();
                 this.initialize();
+            }
+            
+            loadLocalData() {
+                try {
+                    this.localData.reports = JSON.parse(localStorage.getItem('notecam_reports') || '[]');
+                    this.localData.photos = JSON.parse(localStorage.getItem('notecam_photos') || '[]');
+                    this.localData.users = JSON.parse(localStorage.getItem('notecam_users') || '[]');
+                } catch (e) {
+                    console.log('Error loading local data:', e);
+                    // إعادة تعيين البيانات إذا كان هناك خطأ
+                    this.localData = {
+                        reports: [],
+                        photos: [],
+                        users: []
+                    };
+                }
             }
             
             async initialize() {
@@ -468,21 +485,31 @@
             }
             
             async checkSavedUser() {
-                const savedUser = localStorage.getItem('notecam_current_user');
-                if (savedUser) {
-                    this.currentUser = JSON.parse(savedUser);
-                    await this.showDashboard();
+                try {
+                    const savedUser = localStorage.getItem('notecam_current_user');
+                    if (savedUser) {
+                        this.currentUser = JSON.parse(savedUser);
+                        await this.showDashboard();
+                    }
+                } catch (e) {
+                    console.log('Error loading saved user:', e);
                 }
             }
             
             setupEventListeners() {
                 // زر تسجيل الدخول
-                document.getElementById('login-btn')?.addEventListener('click', () => this.login());
+                const loginBtn = document.getElementById('login-btn');
+                if (loginBtn) {
+                    loginBtn.addEventListener('click', () => this.login());
+                }
                 
                 // يمكن إضافة Enter لتسجيل الدخول
-                document.getElementById('password')?.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.login();
-                });
+                const passwordInput = document.getElementById('password');
+                if (passwordInput) {
+                    passwordInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.login();
+                    });
+                }
             }
             
             async login() {
@@ -528,8 +555,14 @@
                     // حفظ في localStorage
                     localStorage.setItem('notecam_current_user', JSON.stringify(user));
                     
+                    // تأكد أن users هو array
+                    if (!Array.isArray(this.localData.users)) {
+                        this.localData.users = [];
+                    }
+                    
                     // إضافة إلى قاعدة البيانات المحلية
-                    if (!this.localData.users.find(u => u.email === email)) {
+                    const userExists = this.localData.users.some(u => u.email === email);
+                    if (!userExists) {
                         this.localData.users.push(user);
                         localStorage.setItem('notecam_users', JSON.stringify(this.localData.users));
                     }
@@ -648,10 +681,10 @@
                                 <div id="photo-section" style="display: none;">
                                     <h4>Sélectionnez le type de photo:</h4>
                                     <div style="display: flex; gap: 10px; margin: 15px 0;">
-                                        <button class="btn" onclick="app.capturePhoto('before')">
+                                        <button class="btn btn-primary" onclick="app.capturePhoto('before')">
                                             <i class="fas fa-arrow-left"></i> Photo AVANT
                                         </button>
-                                        <button class="btn" onclick="app.capturePhoto('after')">
+                                        <button class="btn btn-danger" onclick="app.capturePhoto('after')">
                                             <i class="fas fa-arrow-right"></i> Photo APRÈS
                                         </button>
                                     </div>
@@ -686,7 +719,10 @@
                 const photoTypes = ['before_1', 'before_2', 'before_3', 'before_4', 'before_5'];
                 
                 photoTypes.forEach(type => {
-                    const hasPhoto = this.localData.photos.some(p => 
+                    // تأكد أن this.localData.photos هو array
+                    const photos = Array.isArray(this.localData.photos) ? this.localData.photos : [];
+                    
+                    const hasPhoto = photos.some(p => 
                         p.type === type && p.userId === this.currentUser.id
                     );
                     
@@ -696,7 +732,7 @@
                                 `<img src="#" alt="${type}" class="photo-preview">` :
                                 `<i class="fas fa-camera"></i>`
                             }
-                            <div class="photo-label">${type.toUpperCase()}</div>
+                            <div class="photo-label">${type.toUpperCase().replace('_', ' ')}</div>
                         </div>
                     `;
                 });
@@ -706,10 +742,16 @@
             
             setupDashboardEvents() {
                 // زر تسجيل الخروج
-                document.getElementById('logout-btn')?.addEventListener('click', () => this.logout());
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => this.logout());
+                }
                 
                 // زر المزامنة
-                document.getElementById('sync-btn')?.addEventListener('click', () => this.syncData());
+                const syncBtn = document.getElementById('sync-btn');
+                if (syncBtn) {
+                    syncBtn.addEventListener('click', () => this.syncData());
+                }
                 
                 // زر تشغيل الكاميرا (للموظفين)
                 const cameraBtn = document.getElementById('start-camera-btn');
@@ -718,14 +760,24 @@
                 }
                 
                 // أزرار الإدارة (للمشرفين)
-                document.getElementById('manage-users-btn')?.addEventListener('click', () => this.manageUsers());
-                document.getElementById('view-reports-btn')?.addEventListener('click', () => this.viewReports());
+                const manageUsersBtn = document.getElementById('manage-users-btn');
+                if (manageUsersBtn) {
+                    manageUsersBtn.addEventListener('click', () => this.manageUsers());
+                }
+                
+                const viewReportsBtn = document.getElementById('view-reports-btn');
+                if (viewReportsBtn) {
+                    viewReportsBtn.addEventListener('click', () => this.viewReports());
+                }
             }
             
             async toggleCamera() {
                 const cameraContainer = document.getElementById('camera-container');
                 const photoSection = document.getElementById('photo-section');
                 const cameraBtn = document.getElementById('start-camera-btn');
+                const captureBtn = document.getElementById('capture-btn');
+                
+                if (!cameraContainer || !cameraBtn) return;
                 
                 if (cameraContainer.style.display === 'none') {
                     // تشغيل الكاميرا
@@ -735,18 +787,20 @@
                         });
                         
                         const preview = document.getElementById('camera-preview');
-                        preview.innerHTML = '<video autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
-                        
-                        const video = preview.querySelector('video');
-                        video.srcObject = stream;
-                        
-                        cameraContainer.style.display = 'block';
-                        photoSection.style.display = 'block';
-                        cameraBtn.innerHTML = '<i class="fas fa-video-slash"></i> Désactiver la caméra';
-                        cameraBtn.classList.remove('btn-primary');
-                        cameraBtn.classList.add('btn-danger');
-                        
-                        document.getElementById('capture-btn').disabled = false;
+                        if (preview) {
+                            preview.innerHTML = '<video autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+                            
+                            const video = preview.querySelector('video');
+                            video.srcObject = stream;
+                            
+                            cameraContainer.style.display = 'block';
+                            if (photoSection) photoSection.style.display = 'block';
+                            cameraBtn.innerHTML = '<i class="fas fa-video-slash"></i> Désactiver la caméra';
+                            cameraBtn.classList.remove('btn-primary');
+                            cameraBtn.classList.add('btn-danger');
+                            
+                            if (captureBtn) captureBtn.disabled = false;
+                        }
                         
                     } catch (error) {
                         this.showNotification('Erreur d\'accès à la caméra: ' + error.message, 'error');
@@ -754,10 +808,12 @@
                 } else {
                     // إيقاف الكاميرا
                     const preview = document.getElementById('camera-preview');
-                    const video = preview.querySelector('video');
-                    
-                    if (video && video.srcObject) {
-                        video.srcObject.getTracks().forEach(track => track.stop());
+                    if (preview) {
+                        const video = preview.querySelector('video');
+                        
+                        if (video && video.srcObject) {
+                            video.srcObject.getTracks().forEach(track => track.stop());
+                        }
                     }
                     
                     cameraContainer.style.display = 'none';
@@ -765,16 +821,20 @@
                     cameraBtn.classList.remove('btn-danger');
                     cameraBtn.classList.add('btn-primary');
                     
-                    document.getElementById('capture-btn').disabled = true;
+                    if (captureBtn) captureBtn.disabled = true;
                 }
             }
             
             async capturePhoto(type) {
                 const preview = document.getElementById('camera-preview');
-                const video = preview.querySelector('video');
-                
-                if (!video) {
+                if (!preview) {
                     this.showNotification('Veuillez d\'abord activer la caméra', 'warning');
+                    return;
+                }
+                
+                const video = preview.querySelector('video');
+                if (!video) {
+                    this.showNotification('Caméra non disponible', 'error');
                     return;
                 }
                 
@@ -802,10 +862,15 @@
                             id: photoId,
                             type: type,
                             userId: this.currentUser.id,
-                            blob: blob,
+                            blob: URL.createObjectURL(blob), // حفظ كـ URL بدلاً من Blob
                             timestamp: new Date().toISOString(),
                             synced: false
                         };
+                        
+                        // تأكد أن photos هو array
+                        if (!Array.isArray(this.localData.photos)) {
+                            this.localData.photos = [];
+                        }
                         
                         this.localData.photos.push(photoData);
                         localStorage.setItem('notecam_photos', JSON.stringify(this.localData.photos));
@@ -830,7 +895,9 @@
             }
             
             getUserReports() {
-                return this.localData.reports.filter(r => r.userId === this.currentUser.id);
+                // تأكد أن reports هو array
+                const reports = Array.isArray(this.localData.reports) ? this.localData.reports : [];
+                return reports.filter(r => r.userId === this.currentUser.id);
             }
             
             async syncData() {
@@ -838,16 +905,20 @@
                 
                 // محاكاة المزامنة
                 setTimeout(() => {
-                    const pendingCount = this.localData.photos.filter(p => !p.synced).length +
-                                       this.localData.reports.filter(r => !r.synced).length;
+                    // تأكد أن البيانات هي arrays
+                    const photos = Array.isArray(this.localData.photos) ? this.localData.photos : [];
+                    const reports = Array.isArray(this.localData.reports) ? this.localData.reports : [];
+                    
+                    const pendingCount = photos.filter(p => !p.synced).length +
+                                       reports.filter(r => !r.synced).length;
                     
                     if (pendingCount > 0) {
                         // تحديث حالة المزامنة
-                        this.localData.photos.forEach(p => p.synced = true);
-                        this.localData.reports.forEach(r => r.synced = true);
+                        photos.forEach(p => p.synced = true);
+                        reports.forEach(r => r.synced = true);
                         
-                        localStorage.setItem('notecam_photos', JSON.stringify(this.localData.photos));
-                        localStorage.setItem('notecam_reports', JSON.stringify(this.localData.reports));
+                        localStorage.setItem('notecam_photos', JSON.stringify(photos));
+                        localStorage.setItem('notecam_reports', JSON.stringify(reports));
                         
                         this.showNotification(`${pendingCount} éléments synchronisés`, 'success');
                     } else {
@@ -863,15 +934,18 @@
             viewReports() {
                 let reportsHtml = '<h3><i class="fas fa-file-alt"></i> Tous les Rapports</h3>';
                 
-                if (this.localData.reports.length === 0) {
+                // تأكد أن reports هو array
+                const reports = Array.isArray(this.localData.reports) ? this.localData.reports : [];
+                
+                if (reports.length === 0) {
                     reportsHtml += '<p>Aucun rapport disponible.</p>';
                 } else {
-                    this.localData.reports.forEach(report => {
+                    reports.forEach(report => {
                         reportsHtml += `
                             <div class="report-card">
-                                <h4>Rapport #${report.id}</h4>
+                                <h4>Rapport #${report.id || 'N/A'}</h4>
                                 <p>Employé: ${report.userName || 'Inconnu'}</p>
-                                <p>Date: ${new Date(report.date).toLocaleDateString()}</p>
+                                <p>Date: ${report.date ? new Date(report.date).toLocaleDateString() : 'Non spécifiée'}</p>
                                 <p>Photos: ${report.photosCount || 0}</p>
                             </div>
                         `;
@@ -881,7 +955,7 @@
                 const dashboard = document.querySelector('.dashboard');
                 if (dashboard) {
                     dashboard.innerHTML = reportsHtml + 
-                        `<button onclick="app.showDashboard()" class="btn btn-primary">
+                        `<button onclick="app.showDashboard()" class="btn btn-primary" style="margin-top: 20px;">
                             <i class="fas fa-arrow-left"></i> Retour
                         </button>`;
                 }
@@ -921,6 +995,12 @@
                             
                             <div class="connection-status status-online" id="connection-status">
                                 <i class="fas fa-wifi"></i> En ligne
+                            </div>
+                            
+                            <div style="margin-top: 20px; color: var(--gray); font-size: 14px;">
+                                <p><strong>Utilisateurs de test:</strong></p>
+                                <p>Admin: admin@notecam.com / admin123</p>
+                                <p>Employé: employe@notecam.com / pass123</p>
                             </div>
                         </div>
                     `;
