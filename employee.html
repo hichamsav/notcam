@@ -958,7 +958,8 @@
             admin: {
                 password: "admin123",
                 role: "admin",
-                name: "Superviseur Principal"
+                name: "Superviseur Principal",
+                assignedAreas: []
             }
         };
 
@@ -1327,6 +1328,26 @@
             await syncAllData();
         }
 
+        function validateEmployeeData() {
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            if (!currentUser.assignedAreas) {
+                currentUser.assignedAreas = [];
+            }
+            
+            if (usersData[currentUser.username]) {
+                usersData[currentUser.username] = {
+                    ...usersData[currentUser.username],
+                    assignedAreas: currentUser.assignedAreas
+                };
+            }
+            
+            return true;
+        }
+
         function saveUserProgress() {
             if (!currentUser || currentUser.role !== 'employee') return;
             
@@ -1442,11 +1463,27 @@
                     usersData = {...defaultUsersData, ...data.usersData};
                     assignedAreas = data.assignedAreas || assignedAreas;
                     zoneReports = data.zoneReports || {};
+                    
+                    Object.keys(usersData).forEach(username => {
+                        if (!usersData[username].assignedAreas) {
+                            usersData[username].assignedAreas = [];
+                        }
+                    });
+                } else {
+                    usersData = JSON.parse(JSON.stringify(defaultUsersData));
+                    assignedAreas = [];
+                    zoneReports = {};
+                    saveToLocalStorage();
                 }
                 
                 const savedUser = localStorage.getItem('currentUser');
                 if (savedUser) {
-                    currentUser = JSON.parse(savedUser);
+                    try {
+                        currentUser = JSON.parse(savedUser);
+                    } catch (e) {
+                        console.error('Erreur chargement utilisateur:', e);
+                        currentUser = null;
+                    }
                 }
                 
                 const savedSync = localStorage.getItem('lastSyncTime');
@@ -1456,6 +1493,9 @@
                 
             } catch (error) {
                 console.error('Erreur chargement données:', error);
+                usersData = JSON.parse(JSON.stringify(defaultUsersData));
+                assignedAreas = [];
+                zoneReports = {};
             }
         }
 
@@ -1586,20 +1626,23 @@
             setupNumberButtons();
             setupPhotoBoxes();
             
-            if (currentUser) {
-                document.getElementById('employeeName').textContent = `Employé : ${currentUser.name}`;
-                loadEmployeeAreas();
-                populateAreaSelect();
-                
-                const progress = loadUserProgress();
-                applyUserProgress(progress);
-                
-                setTimeout(() => {
-                    activateCameraAutomatically();
-                }, 1000);
-            } else {
+            if (!currentUser || currentUser.role !== 'employee') {
                 window.location.href = 'index.html';
+                return;
             }
+            
+            document.getElementById('employeeName').textContent = `Employé : ${currentUser.name}`;
+            
+            validateEmployeeData();
+            loadEmployeeAreas();
+            populateAreaSelect();
+            
+            const progress = loadUserProgress();
+            applyUserProgress(progress);
+            
+            setTimeout(() => {
+                activateCameraAutomatically();
+            }, 1000);
             
             updateStepDisplay();
             
@@ -1760,6 +1803,9 @@
         function setupPhotoBoxes() {
             const photoBoxesContainer = document.getElementById('photoBoxesContainer');
             const afterPhotoBoxesContainer = document.getElementById('afterPhotoBoxesContainer');
+            
+            photoBoxesContainer.innerHTML = '';
+            afterPhotoBoxesContainer.innerHTML = '';
             
             for (let i = 1; i <= 5; i++) {
                 const photoBox = createPhotoBox(i, 'before');
@@ -2028,13 +2074,15 @@
             zoneReports[zoneCode].reports.push(beforeReport);
             
             beforeReport.beforePhotos.forEach((photo, index) => {
-                zoneReports[zoneCode].photos.push({
-                    type: 'before',
-                    index: index,
-                    url: photo.url,
-                    timestamp: photo.timestamp,
-                    reportId: beforeReport.id
-                });
+                if (photo) {
+                    zoneReports[zoneCode].photos.push({
+                        type: 'before',
+                        index: index,
+                        url: photo.url,
+                        timestamp: photo.timestamp,
+                        reportId: beforeReport.id
+                    });
+                }
             });
             
             saveToLocalStorage();
@@ -2087,12 +2135,12 @@
             }
             
             const zoneCode = selectedArea.code;
-            const zoneData = zoneReports[zoneCode];
-            if (!zoneData) {
+            if (!zoneReports[zoneCode]) {
                 alert("Erreur : zone non trouvée");
                 return;
             }
             
+            const zoneData = zoneReports[zoneCode];
             const existingReportIndex = zoneData.reports.findIndex(r => r.id === tempReport.id);
             if (existingReportIndex === -1) {
                 alert("Erreur : rapport AVANT non trouvé");
