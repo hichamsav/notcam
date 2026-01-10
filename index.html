@@ -954,6 +954,17 @@
             margin-top: 10px;
             font-size: 14px;
         }
+        
+        .storage-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 12px;
+            text-align: center;
+        }
     </style>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1002,6 +1013,7 @@
                         <div id="syncStatusDetail" class="sync-success">Prêt</div>
                     </div>
                 </div>
+                <div id="storageInfo" class="storage-warning" style="display: none;"></div>
             </div>
 
             <div class="dashboard-section">
@@ -1037,6 +1049,9 @@
                     <button class="control-btn" onclick="exportAllData()">
                         <i class="fas fa-download"></i> Exporter toutes les données
                     </button>
+                    <button class="control-btn danger" onclick="clearLocalStorage()">
+                        <i class="fas fa-trash"></i> Nettoyer cache
+                    </button>
                 </div>
                 <div class="reports-container" id="reportsListMini"></div>
             </div>
@@ -1061,6 +1076,7 @@
                         <div id="employeeSyncStatus" class="sync-success">Connecté</div>
                     </div>
                 </div>
+                <div id="employeeStorageInfo" class="storage-warning" style="display: none;"></div>
             </div>
 
             <div class="employee-area">
@@ -1317,6 +1333,7 @@
         let lastSyncTime = null;
         let isSyncing = false;
         const SYNC_INTERVAL = 30000;
+        const MAX_LOCAL_STORAGE_SIZE = 4 * 1024 * 1024; // 4MB الحد الأقصى
 
         const statusBar = document.getElementById('statusBar');
         const loginPage = document.getElementById('loginPage');
@@ -1330,12 +1347,184 @@
         const syncIcon = document.getElementById('syncIcon');
         const lastSyncTimeEl = document.getElementById('lastSyncTime');
         const syncStatusDetail = document.getElementById('syncStatusDetail');
+        const storageInfo = document.getElementById('storageInfo');
+        const employeeStorageInfo = document.getElementById('employeeStorageInfo');
 
-        // دالة جديدة: تحويل الصور إلى Base64
+        // ========== الدوال الجديدة لحل مشكلة الذاكرة ==========
+
+        // دالة لضغط الصور وتقليل حجمها
+        function compressImage(base64String, quality = 0.5, maxWidth = 800) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // تقليل الحجم إذا كان أكبر من الحد الأقصى
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // تحويل إلى jpeg بجودة مخفضة
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedBase64);
+                };
+                
+                img.onerror = reject;
+                img.src = base64String;
+            });
+        }
+
+        // دالة لحساب حجم LocalStorage المستخدم
+        function getLocalStorageUsage() {
+            let total = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    total += ((localStorage[key].length * 2) / 1024 / 1024); // بالميجابايت
+                }
+            }
+            return total.toFixed(2);
+        }
+
+        // دالة لعرض معلومات الذاكرة
+        function updateStorageInfo() {
+            const usage = getLocalStorageUsage();
+            const maxSize = (MAX_LOCAL_STORAGE_SIZE / 1024 / 1024).toFixed(2);
+            const warning = `Utilisation du stockage local: ${usage}MB / ${maxSize}MB`;
+            
+            if (storageInfo) {
+                storageInfo.textContent = warning;
+                storageInfo.style.display = 'block';
+                
+                if (parseFloat(usage) > parseFloat(maxSize) * 0.8) {
+                    storageInfo.style.background = '#f8d7da';
+                    storageInfo.style.color = '#721c24';
+                    storageInfo.style.borderColor = '#f5c6cb';
+                }
+            }
+            
+            if (employeeStorageInfo && currentUser && currentUser.role === 'employee') {
+                employeeStorageInfo.textContent = warning;
+                employeeStorageInfo.style.display = 'block';
+                
+                if (parseFloat(usage) > parseFloat(maxSize) * 0.8) {
+                    employeeStorageInfo.style.background = '#f8d7da';
+                    employeeStorageInfo.style.color = '#721c24';
+                    employeeStorageInfo.style.borderColor = '#f5c6cb';
+                }
+            }
+        }
+
+        // دالة لتنظيف LocalStorage من البيانات القديمة
+        function cleanupLocalStorage() {
+            const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 أيام
+            const now = Date.now();
+            let cleaned = 0;
+            
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    // حذف الصور المؤقتة القديمة
+                    if (key.startsWith('photo_') || key.startsWith('tempReport_')) {
+                        try {
+                            localStorage.removeItem(key);
+                            cleaned++;
+                        } catch (e) {
+                            console.warn(`Impossible de supprimer ${key}:`, e);
+                        }
+                    }
+                }
+            }
+            
+            console.log(`Nettoyage: ${cleaned} éléments supprimés du LocalStorage`);
+            return cleaned;
+        }
+
+        // دالة لتنظيف الذاكرة المحلية يدوياً
+        function clearLocalStorage() {
+            if (!confirm("Voulez-vous vraiment nettoyer le cache local ? Les photos non synchronisées seront perdues.")) {
+                return;
+            }
+            
+            // حفظ المستخدم الحالي
+            const currentUserBackup = localStorage.getItem('currentUser');
+            const noteCamDataBackup = localStorage.getItem('noteCamSystemData');
+            
+            // مسح كل شيء
+            localStorage.clear();
+            
+            // استعادة البيانات الأساسية
+            if (currentUserBackup) {
+                localStorage.setItem('currentUser', currentUserBackup);
+            }
+            if (noteCamDataBackup) {
+                localStorage.setItem('noteCamSystemData', noteCamDataBackup);
+            }
+            
+            showNotification("Cache local nettoyé avec succès", "success");
+            updateStorageInfo();
+            
+            // إعادة تحميل الصفحة إذا كان المستخدم موظفاً
+            if (currentUser && currentUser.role === 'employee') {
+                location.reload();
+            }
+        }
+
+        // دالة للتحقق من سعة التخزين قبل الحفظ
+        function canSaveToLocalStorage(dataSize) {
+            const currentUsage = getLocalStorageUsage() * 1024 * 1024; // تحويل إلى بايت
+            const projectedUsage = currentUsage + dataSize;
+            return projectedUsage < MAX_LOCAL_STORAGE_SIZE;
+        }
+
+        // دالة لحفظ البيانات بحجم محدد
+        function saveToLocalStorageSafely(key, data, maxSize = 100 * 1024) { // 100KB كحد أقصى
+            try {
+                const dataStr = typeof data === 'string' ? data : JSON.stringify(data);
+                if (dataStr.length * 2 > maxSize) {
+                    console.warn(`Données trop volumineuses pour ${key}: ${dataStr.length * 2} bytes`);
+                    return false;
+                }
+                
+                if (!canSaveToLocalStorage(dataStr.length * 2)) {
+                    console.warn(`Stockage local plein, impossible de sauvegarder ${key}`);
+                    cleanupLocalStorage();
+                    
+                    // المحاولة مرة أخرى بعد التنظيف
+                    if (!canSaveToLocalStorage(dataStr.length * 2)) {
+                        return false;
+                    }
+                }
+                
+                localStorage.setItem(key, dataStr);
+                return true;
+            } catch (error) {
+                console.error(`Erreur de sauvegarde pour ${key}:`, error);
+                return false;
+            }
+        }
+
+        // دالة لتحويل الصورة إلى Base64 مع الضغط
         function blobToBase64(blob) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
+                reader.onloadend = async () => {
+                    try {
+                        // ضغط الصورة
+                        const compressedImage = await compressImage(reader.result);
+                        resolve(compressedImage);
+                    } catch (error) {
+                        // في حالة فشل الضغط، استخدم الصورة الأصلية
+                        resolve(reader.result);
+                    }
+                };
                 reader.onerror = reject;
                 reader.readAsDataURL(blob);
             });
@@ -1457,6 +1646,10 @@
         function initSyncSystem() {
             updateSyncStatus('Initialisation...');
             
+            // تنظيف الذاكرة المحلية عند بدء التشغيل
+            cleanupLocalStorage();
+            updateStorageInfo();
+            
             setTimeout(() => {
                 syncAllData();
             }, 2000);
@@ -1516,6 +1709,7 @@
                 showNotification("Erreur de synchronisation", "error");
             } finally {
                 isSyncing = false;
+                updateStorageInfo();
             }
         }
 
@@ -1765,7 +1959,7 @@
                 lastUpdated: new Date().toISOString()
             };
             
-            localStorage.setItem(`userProgress_${currentUser.username}`, JSON.stringify(progressData));
+            saveToLocalStorageSafely(`userProgress_${currentUser.username}`, progressData);
         }
 
         function loadUserProgress() {
@@ -1866,50 +2060,6 @@
                     usersData = {...defaultUsersData, ...data.usersData};
                     assignedAreas = data.assignedAreas || assignedAreas;
                     zoneReports = data.zoneReports || {};
-                    
-                    // تحميل الصور المخزنة محلياً
-                    for (const zoneCode in zoneReports) {
-                        if (zoneReports[zoneCode].photos) {
-                            for (let i = 0; i < zoneReports[zoneCode].photos.length; i++) {
-                                const photo = zoneReports[zoneCode].photos[i];
-                                if (photo && typeof photo.url === 'string' && !photo.url.startsWith('data:')) {
-                                    // محاولة استعادة الصورة من LocalStorage
-                                    const savedPhoto = localStorage.getItem(`photo_${photo.reportId}_${photo.type}_${photo.index}`);
-                                    if (savedPhoto) {
-                                        zoneReports[zoneCode].photos[i].url = savedPhoto;
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (zoneReports[zoneCode].reports) {
-                            for (let i = 0; i < zoneReports[zoneCode].reports.length; i++) {
-                                const report = zoneReports[zoneCode].reports[i];
-                                if (report.beforePhotos) {
-                                    for (let j = 0; j < report.beforePhotos.length; j++) {
-                                        const photo = report.beforePhotos[j];
-                                        if (photo && typeof photo.url === 'string' && !photo.url.startsWith('data:')) {
-                                            const savedPhoto = localStorage.getItem(`photo_${report.id}_before_${j}`);
-                                            if (savedPhoto) {
-                                                zoneReports[zoneCode].reports[i].beforePhotos[j].url = savedPhoto;
-                                            }
-                                        }
-                                    }
-                                }
-                                if (report.afterPhotos) {
-                                    for (let j = 0; j < report.afterPhotos.length; j++) {
-                                        const photo = report.afterPhotos[j];
-                                        if (photo && typeof photo.url === 'string' && !photo.url.startsWith('data:')) {
-                                            const savedPhoto = localStorage.getItem(`photo_${report.id}_after_${j}`);
-                                            if (savedPhoto) {
-                                                zoneReports[zoneCode].reports[i].afterPhotos[j].url = savedPhoto;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
                 
                 const savedUser = localStorage.getItem('currentUser');
@@ -1933,10 +2083,18 @@
                 assignedAreas,
                 zoneReports
             };
-            localStorage.setItem('noteCamSystemData', JSON.stringify(data));
+            
+            // استخدام الدالة الآمنة للحفظ
+            if (!saveToLocalStorageSafely('noteCamSystemData', data, 2 * 1024 * 1024)) { // 2MB كحد أقصى
+                console.warn('Impossible de sauvegarder toutes les données, nettoyage en cours...');
+                cleanupLocalStorage();
+                
+                // محاولة الحفظ بعد التنظيف
+                saveToLocalStorageSafely('noteCamSystemData', data, 2 * 1024 * 1024);
+            }
             
             if (lastSyncTime) {
-                localStorage.setItem('lastSyncTime', lastSyncTime.toISOString());
+                saveToLocalStorageSafely('lastSyncTime', lastSyncTime.toISOString(), 1024); // 1KB
             }
         }
 
@@ -2045,7 +2203,7 @@
                 currentUser = {username, ...user};
                 updateStatusBar(`Bienvenue ${user.name}`);
                 
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                saveToLocalStorageSafely('currentUser', currentUser, 1024); // 1KB
                 
                 loginPage.style.display = 'none';
                 
@@ -2141,6 +2299,9 @@
             updateStepDisplay();
             
             initializeSupabase();
+            
+            // تحديث معلومات التخزين كل 30 ثانية
+            setInterval(updateStorageInfo, 30000);
         }
 
         function addEmployee() {
@@ -2477,6 +2638,7 @@
             displayMiniReports();
             updateCounters();
             updateEmployeeSelect();
+            updateStorageInfo();
         }
 
         function updateCounters() {
@@ -2659,7 +2821,7 @@
                 canvas.toBlob(async (blob) => {
                     const imageUrl = URL.createObjectURL(blob);
                     
-                    // تحويل الصورة إلى Base64 لحفظها
+                    // تحويل الصورة إلى Base64 مع الضغط
                     const base64Image = await blobToBase64(blob);
                     
                     if (type === 'before') {
@@ -2865,6 +3027,7 @@
             
             zoneReports[zoneCode].reports.push(beforeReport);
             
+            // حفظ الصور في قاعدة البيانات مباشرة دون LocalStorage
             beforeReport.beforePhotos.forEach((photo, index) => {
                 zoneReports[zoneCode].photos.push({
                     type: 'before',
@@ -2873,9 +3036,6 @@
                     timestamp: photo.timestamp,
                     reportId: beforeReport.id
                 });
-                
-                // حفظ الصورة في LocalStorage بشكل منفصل
-                localStorage.setItem(`photo_${beforeReport.id}_before_${index}`, photo.url);
             });
             
             saveToLocalStorage();
@@ -2894,7 +3054,8 @@
                 status: 'awaiting_after'
             };
             
-            localStorage.setItem(`tempReport_${currentUser.username}`, JSON.stringify(tempReport));
+            // حفظ التقرير المؤقت بحجم محدود
+            saveToLocalStorageSafely(`tempReport_${currentUser.username}`, tempReport, 100 * 1024);
             
             currentStep = 2;
             updateUIForCurrentStep();
@@ -2902,6 +3063,9 @@
             
             showNotification("Photos AVANT envoyées avec succès !", "success");
             updateStatusBar("Photos AVANT envoyées avec succès");
+            
+            // تحديث معلومات التخزين
+            updateStorageInfo();
         }
 
         function showAfterPhotos() {
@@ -2918,7 +3082,7 @@
 
         function sendAfterPhotos() {
             if (!checkSendAfterStatus()) {
-                alert("Veuillez compléter toutes les informations avant d'envoyer les photos APRÈS");
+                alert("Voulez-vous compléter toutes les informations avant d'envoyer les photos APRÈS");
                 return;
             }
             
@@ -2968,24 +3132,21 @@
                     timestamp: photo.timestamp,
                     reportId: tempReport.id
                 });
-                
-                // حفظ الصورة في LocalStorage بشكل منفصل
-                localStorage.setItem(`photo_${tempReport.id}_after_${index}`, photo.url);
             });
             
             saveToLocalStorage();
             
-            generateZoneFile(zoneCode);
-            
-            tempReport = null;
+            // حذف التقرير المؤقت
             localStorage.removeItem(`tempReport_${currentUser.username}`);
+            tempReport = null;
             
             resetForm();
             
             showNotification("Rapport complet envoyé avec succès !", "success");
-            updateStatusBar("Rapport complet envoyé et fichier généré");
+            updateStatusBar("Rapport complet envoyé");
             
             updateCounters();
+            updateStorageInfo();
         }
 
         function resetForm() {
@@ -3540,17 +3701,12 @@
             zoneData.reports.splice(reportIndex, 1);
             zoneData.photos = zoneData.photos.filter(photo => photo.reportId !== reportId);
             
-            // حذف الصور من LocalStorage
-            for (let i = 0; i < 5; i++) {
-                localStorage.removeItem(`photo_${reportId}_before_${i}`);
-                localStorage.removeItem(`photo_${reportId}_after_${i}`);
-            }
-            
             saveToLocalStorage();
             displayFullReports();
             
             showNotification("Rapport supprimé avec succès", "success");
             updateCounters();
+            updateStorageInfo();
         }
 
         function generateZoneFile(zoneCode) {
