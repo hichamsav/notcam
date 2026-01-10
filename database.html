@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteCam - Gestion Base de Données</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #1a202c;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: #2d3748;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #81e6d9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: #cbd5e0;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: #4a5568;
+            color: white;
+        }
+        
+        .nav-link.active {
+            background: #3182ce;
+            color: white;
+        }
+        
+        .container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            color: #81e6d9;
+        }
+        
+        .refresh-btn {
+            background: #38b2ac;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #319795;
+            transform: translateY(-2px);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #cbd5e0;
+            cursor: pointer;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: #4a5568;
+        }
+        
+        .tab.active {
+            background: #3182ce;
+            color: white;
+        }
+        
+        .card {
+            background: #2d3748;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            color: #81e6d9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: #4a5568;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #81e6d9;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #cbd5e0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background: #1a202c;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #2d3748;
+            color: #81e6d9;
+            font-weight: 600;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #4a5568;
+            color: #cbd5e0;
+        }
+        
+        tr:hover {
+            background: #4a5568;
+        }
+        
+        .btn {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .btn:hover {
+            background: #2b6cb0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        
+        .btn-success {
+            background: #38a169;
+        }
+        
+        .btn-success:hover {
+            background: #2f855a;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+        
+        .code-block {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #38a169;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        
+        .notification.error {
+            background: #e53e3e;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: #2d3748;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            color: #81e6d9;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #cbd5e0;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .json-viewer {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e0;
+            font-weight: 600;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 16px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #4a5568;
+            border-top: 4px solid #81e6d9;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .status-connected {
+            background: rgba(56, 161, 105, 0.2);
+            color: #9ae6b4;
+            border: 1px solid #38a169;
+        }
+        
+        .status-disconnected {
+            background: rgba(229, 62, 62, 0.2);
+            color: #fc8181;
+            border: 1px solid #e53e3e;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .status-dot.connected {
+            background: #38a169;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.disconnected {
+            background: #e53e3e;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .sql-editor {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .sql-textarea {
+            width: 100%;
+            min-height: 100px;
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .sql-textarea:focus {
+            outline: none;
+            border-color: #81e6d9;
+        }
+        
+        .query-results {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+    
+    <!-- Modal pour afficher les données -->
+    <div class="modal" id="dataModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Données</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="json-viewer" id="modalData"></div>
+        </div>
+    </div>
+    
+    <!-- Modal pour les requêtes SQL -->
+    <div class="modal" id="sqlModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Requête SQL</h3>
+                <button class="close-modal" onclick="closeSqlModal()">&times;</button>
+            </div>
+            <div class="sql-editor">
+                <textarea class="sql-textarea" id="sqlQuery" placeholder="Entrez votre requête SQL ici...">SELECT * FROM users LIMIT 10;</textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" onclick="executeQuery()">
+                        <i class="fas fa-play"></i> Exécuter
+                    </button>
+                    <button class="btn-success" onclick="saveQuery()">
+                        <i class="fas fa-save"></i> Sauvegarder
+                    </button>
+                    <button class="btn-danger" onclick="closeSqlModal()">
+                        <i class="fas fa-times"></i> Annuler
+                    </button>
+                </div>
+                <div class="query-results" id="queryResults"></div>
+            </div>
+        </div>
+    </div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-database"></i>
+            NoteCam Database
+        </div>
+        <div class="nav-links">
+            <a href="admin.html" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Admin
+            </a>
+            <a href="database.html" class="nav-link active">
+                <i class="fas fa-database"></i> Base de données
+            </a>
+            <button class="btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Statut de connexion -->
+        <div class="connection-status" id="connectionStatus">
+            <div class="status-dot connected"></div>
+            <span>Connecté à Supabase</span>
+        </div>
+        
+        <div class="header">
+            <h1 class="header-title">Gestion de la Base de Données</h1>
+            <button class="refresh-btn" onclick="refreshAllData()">
+                <i class="fas fa-sync-alt"></i> Rafraîchir
+            </button>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">0</div>
+                <div class="stat-label">Utilisateurs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalReports">0</div>
+                <div class="stat-label">Rapports</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPhotos">0</div>
+                <div class="stat-label">Photos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalZones">0</div>
+                <div class="stat-label">Zones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="dbSize">0 MB</div>
+                <div class="stat-label">Taille DB</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="lastSync">-</div>
+                <div class="stat-label">Dernière sync</div>
+            </div>
+        </div>
+        
+        <!-- Onglets -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('users')">
+                <i class="fas fa-users"></i> Utilisateurs
+            </button>
+            <button class="tab" onclick="showTab('reports')">
+                <i class="fas fa-file-alt"></i> Rapports
+            </button>
+            <button class="tab" onclick="showTab('photos')">
+                <i class="fas fa-images"></i> Photos
+            </button>
+            <button class="tab" onclick="showTab('zones')">
+                <i class="fas fa-map-marker-alt"></i> Zones
+            </button>
+            <button class="tab" onclick="showTab('settings')">
+                <i class="fas fa-cog"></i> Paramètres
+            </button>
+            <button class="tab" onclick="showSqlEditor()">
+                <i class="fas fa-terminal"></i> SQL Editor
+            </button>
+        </div>
+        
+        <!-- Contenu des onglets -->
+        
+        <!-- Onglet Utilisateurs -->
+        <div class="tab-content" id="usersTab">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users"></i> Liste des Utilisateurs
+                    </h3>
+                    <button class="btn-success" onclick="createUser()">
+                        <i class="fas fa-plus"></i> Nouvel utilisateur
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Nom</th>
+                                <th>Rôle</th>
+                                <th>Créé le</th>
+                                <th>Dernière connexion</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersList">
+                            <!-- Les utilisateurs seront chargés ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Rapports -->
+        <div class="tab-content" id="reportsTab" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt"></i> Tous les Rapports
+                    </h3>
+                    <button class="btn" onclick="exportReports()">
+                        <i class="fas fa-download"></i> Exporter JSON
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="reportsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Employé</th>
+                                <th>Zone</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Photos</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsList">
+                            <!-- Les rapports seront chargés ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Photos -->
+        <div class="tab-content" id="photosTab" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-images"></i> Gestion des Photos
+                    </h3>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="photoFilter" class="form-input" style="width: 200px;" onchange="filterPhotos()">
+                            <option value="all">Toutes les photos</option>
+                            <option value="before">Photos AVANT</option>
+                            <option value="after">Photos APRÈS</option>
+                        </select>
+                        <button class="btn-danger" onclick="cleanupPhotos()">
+                            <i class="fas fa-trash"></i> Nettoyer
+                        </button>
+                    </div>
+                </div>
+                <div id="photosStats" class="stats-grid" style="margin-bottom: 25px;"></div>
+                <div class="table-container">
+                    <table id="photosTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Rapport</th>
+                                <th>Zone</th>
+                                <th>Date</th>
+                                <th>Taille</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="photosList">
+                            <!-- Les photos seront chargées ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Zones -->
+        <div class="tab-content" id="zonesTab" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-map-marker-alt"></i> Zones Géographiques
+                    </h3>
+                    <button class="btn-success" onclick="addZone()">
+                        <i class="fas fa-plus"></i> Nouvelle zone
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="zonesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Code</th>
+                                <th>Employé</th>
+                                <th>Assignée le</th>
+                                <th>Statut</th>
+                                <th>Rapports</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zonesList">
+                            <!-- Les zones seront chargées ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Paramètres -->
+        <div class="tab-content" id="settingsTab" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-cog"></i> Paramètres de la Base de Données
+                    </h3>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Configuration Supabase</label>
+                    <div class="code-block">
+                        URL: https://jxvnmcgfwlbswtkiglmh.supabase.co<br>
+                        Clé: sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Structure des Tables</label>
+                    <select id="tableSelect" class="form-input" onchange="showTableStructure()">
+                        <option value="">Sélectionnez une table...</option>
+                        <option value="users">users</option>
+                        <option value="reports">reports</option>
+                        <option value="photos">photos</option>
+                        <option value="zones">zones</option>
+                    </select>
+                </div>
+                
+                <div id="tableStructure" class="code-block" style="display: none;"></div>
+                
+                <div class="form-group" style="margin-top: 30px;">
+                    <label class="form-label">Sauvegarde & Restauration</label>
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn-success" onclick="backupDatabase()">
+                            <i class="fas fa-save"></i> Sauvegarder DB
+                        </button>
+                        <button class="btn" onclick="restoreDatabase()">
+                            <i class="fas fa-upload"></i> Restaurer DB
+                        </button>
+                        <button class="btn-danger" onclick="resetDatabase()">
+                            <i class="fas fa-trash"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Maintenance</label>
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn" onclick="optimizeDatabase()">
+                            <i class="fas fa-tools"></i> Optimiser DB
+                        </button>
+                        <button class="btn" onclick="vacuumDatabase()">
+                            <i class="fas fa-broom"></i> VACUUM DB
+                        </button>
+                        <button class="btn" onclick="updateStatistics()">
+                            <i class="fas fa-chart-bar"></i> Mettre à jour stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration
+        const SUPABASE_URL = 'https://jxvnmcgfwlbswtkiglmh.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw';
+        
+        let supabase;
+        let currentUser;
+        let currentTab = 'users';
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Vérifier si l'utilisateur est connecté
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            currentUser = JSON.parse(userData);
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Initialiser Supabase
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialisé');
+                updateConnectionStatus(true);
+            } catch (error) {
+                showNotification('Erreur de connexion à la base de données', 'error');
+                console.error('Erreur Supabase:', error);
+                updateConnectionStatus(false);
+                return;
+            }
+            
+            // Charger les données initiales
+            await refreshAllData();
+            
+            // Charger les utilisateurs par défaut
+            loadUsers();
+            
+            // Vérifier la connexion périodiquement
+            setInterval(checkConnection, 30000);
+        });
+        
+        // Fonctions d'affichage
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + (type !== 'success' ? type : '');
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            const dot = statusEl.querySelector('.status-dot');
+            
+            if (connected) {
+                statusEl.className = 'connection-status status-connected';
+                dot.className = 'status-dot connected';
+                statusEl.innerHTML = '<div class="status-dot connected"></div><span>Connecté à Supabase</span>';
+            } else {
+                statusEl.className = 'connection-status status-disconnected';
+                dot.className = 'status-dot disconnected';
+                statusEl.innerHTML = '<div class="status-dot disconnected"></div><span>Déconnecté de Supabase</span>';
+            }
+        }
+        
+        async function checkConnection() {
+            try {
+                // Tester la connexion avec une simple requête
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('count')
+                    .limit(1);
+                
+                updateConnectionStatus(!error);
+                
+            } catch (error) {
+                updateConnectionStatus(false);
+            }
+        }
+        
+        // Gestion des onglets
+        function showTab(tabName) {
+            // Masquer tous les onglets
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Désactiver tous les boutons d'onglet
+            document.querySelectorAll('.tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            
+            // Activer l'onglet sélectionné
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Charger les données de l'onglet
+            switch (tabName) {
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'reports':
+                    loadReports();
+                    break;
+                case 'photos':
+                    loadPhotos();
+                    break;
+                case 'zones':
+                    loadZones();
+                    break;
+            }
+        }
+        
+        // Rafraîchir toutes les données
+        async function refreshAllData() {
+            try {
+                // Charger les statistiques
+                await loadStats();
+                
+                // Charger les données de l'onglet actuel
+                switch (currentTab) {
+                    case 'users':
+                        await loadUsers();
+                        break;
+                    case 'reports':
+                        await loadReports();
+                        break;
+                    case 'photos':
+                        await loadPhotos();
+                        break;
+                    case 'zones':
+                        await loadZones();
+                        break;
+                }
+                
+                // Mettre à jour le timestamp
+                document.getElementById('lastSync').textContent = new Date().toLocaleTimeString('fr-FR');
+                
+                showNotification('Données rafraîchies');
+                
+            } catch (error) {
+                console.error('Erreur rafraîchissement:', error);
+                showNotification('Erreur de rafraîchissement', 'error');
+            }
+        }
+        
+        // Charger les statistiques
+        async function loadStats() {
+            try {
+                // Utilisateurs
+                const { count: usersCount } = await supabase
+                    .from('users')
+                    .select('*', { count: 'exact', head: true });
+                
+                // Rapports
+                const { count: reportsCount } = await supabase
+                    .from('reports')
+                    .select('*', { count: 'exact', head: true });
+                
+                // Photos
+                const { count: photosCount } = await supabase
+                    .from('photos')
+                    .select('*', { count: 'exact', head: true });
+                
+                // Zones
+                const { count: zonesCount } = await supabase
+                    .from('zones')
+                    .select('*', { count: 'exact', head: true });
+                
+                // Mettre à jour l'affichage
+                document.getElementById('totalUsers').textContent = usersCount || 0;
+                document.getElementById('totalReports').textContent = reportsCount || 0;
+                document.getElementById('totalPhotos').textContent = photosCount || 0;
+                document.getElementById('totalZones').textContent = zonesCount || 0;
+                
+                // Calculer la taille approximative
+                const estimatedSize = ((usersCount * 0.1) + (reportsCount * 0.5) + (photosCount * 10) + (zonesCount * 0.2)) / 1024;
+                document.getElementById('dbSize').textContent = estimatedSize.toFixed(2) + ' MB';
+                
+            } catch (error) {
+                console.error('Erreur statistiques:', error);
+            }
+        }
+        
+        // Charger les utilisateurs
+        async function loadUsers() {
+            try {
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    showNotification('Erreur chargement utilisateurs', 'error');
+                    return;
+                }
+                
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = '';
+                
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.id.substring(0, 8)}...</td>
+                        <td>${user.username}</td>
+                        <td>${user.name || '-'}</td>
+                        <td>
+                            <span style="background: ${user.role === 'admin' ? '#3182ce' : '#38a169'}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">
+                                ${user.role}
+                            </span>
+                        </td>
+                        <td>${new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
+                        <td>${user.last_login ? new Date(user.last_login).toLocaleDateString('fr-FR') : 'Jamais'}</td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-small" onclick="viewUser('${user.id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-small" onclick="editUser('${user.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-danger btn-small" onclick="deleteUser('${user.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    usersList.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Erreur utilisateurs:', error);
+            }
+        }
+        
+        // Charger les rapports
+        async function loadReports() {
+            try {
+                const { data: reports, error } = await supabase
+                    .from('reports')
+                    .select('*, users(username, name), zones(name, code)')
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+                
+                if (error) {
+                    showNotification('Erreur chargement rapports', 'error');
+                    return;
+                }
+                
+                const reportsList = document.getElementById('reportsList');
+                reportsList.innerHTML = '';
+                
+                reports.forEach(report => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${report.id.substring(0, 8)}...</td>
+                        <td>${report.users?.name || report.employee_name}</td>
+                        <td>${report.zones?.name || report.zone_name} (${report.zones?.code || report.zone_code})</td>
+                        <td>${new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
+                        <td>
+                            <span style="background: ${report.status === 'complete' ? '#38a169' : '#ed8936'}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">
+                                ${report.status}
+                            </span>
+                        </td>
+                        <td>${report.photos_count || 0}</td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-small" onclick="viewReport('${report.id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-danger btn-small" onclick="deleteReport('${report.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    reportsList.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Erreur rapports:', error);
+            }
+        }
+        
+        // Charger les photos
+        async function loadPhotos() {
+            try {
+                const { data: photos, error } = await supabase
+                    .from('photos')
+                    .select('*, reports(zone_name, zone_code)')
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+                
+                if (error) {
+                    showNotification('Erreur chargement photos', 'error');
+                    return;
+                }
+                
+                // Mettre à jour les statistiques
+                const beforeCount = photos.filter(p => p.type === 'before').length;
+                const afterCount = photos.filter(p => p.type === 'after').length;
+                
+                document.getElementById('photosStats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${photos.length}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${beforeCount}</div>
+                        <div class="stat-label">AVANT</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${afterCount}</div>
+                        <div class="stat-label">APRÈS</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${(photos.length * 100 / 1024).toFixed(1)} MB</div>
+                        <div class="stat-label">Stockage</div>
+                    </div>
+                `;
+                
+                const photosList = document.getElementById('photosList');
+                photosList.innerHTML = '';
+                
+                photos.forEach(photo => {
+                    const sizeKB = (photo.image_data?.length || 0) / 1024;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${photo.id.substring(0, 8)}...</td>
+                        <td>
+                            <span style="background: ${photo.type === 'before' ? '#3182ce' : '#ed8936'}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">
+                                ${photo.type}
+                            </span>
+                        </td>
+                        <td>${photo.report_id?.substring(0, 8) || '-'}</td>
+                        <td>${photo.reports?.zone_code || '-'}</td>
+                        <td>${new Date(photo.created_at).toLocaleDateString('fr-FR')}</td>
+                        <td>${sizeKB.toFixed(1)} KB</td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-small" onclick="viewPhoto('${photo.id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-danger btn-small" onclick="deletePhoto('${photo.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    photosList.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Erreur photos:', error);
+            }
+        }
+        
+        // Charger les zones
+        async function loadZones() {
+            try {
+                const { data: zones, error } = await supabase
+                    .from('zones')
+                    .select('*, users(name), reports(count)')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    showNotification('Erreur chargement zones', 'error');
+                    return;
+                }
+                
+                const zonesList = document.getElementById('zonesList');
+                zonesList.innerHTML = '';
+                
+                zones.forEach(zone => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${zone.id}</td>
+                        <td>${zone.name}</td>
+                        <td>${zone.code}</td>
+                        <td>${zone.users?.name || zone.employee_id}</td>
+                        <td>${new Date(zone.assigned_date).toLocaleDateString('fr-FR')}</td>
+                        <td>
+                            <span style="background: ${zone.is_active ? '#38a169' : '#e53e3e'}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">
+                                ${zone.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>${zone.reports?.length || 0}</td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-small" onclick="viewZone('${zone.id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-small" onclick="editZone('${zone.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    zonesList.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Erreur zones:', error);
+            }
+        }
+        
+        // Filtrer les photos
+        async function filterPhotos() {
+            const filter = document.getElementById('photoFilter').value;
+            
+            try {
+                let query = supabase
+                    .from('photos')
+                    .select('*, reports(zone_name, zone_code)')
+                    .order('created_at', { ascending: false });
+                
+                if (filter !== 'all') {
+                    query = query.eq('type', filter);
+                }
+                
+                const { data: photos, error } = await query;
+                
+                if (error) return;
+                
+                const photosList = document.getElementById('photosList');
+                photosList.innerHTML = '';
+                
+                photos.forEach(photo => {
+                    const sizeKB = (photo.image_data?.length || 0) / 1024;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${photo.id.substring(0, 8)}...</td>
+                        <td>
+                            <span style="background: ${photo.type === 'before' ? '#3182ce' : '#ed8936'}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">
+                                ${photo.type}
+                            </span>
+                        </td>
+                        <td>${photo.report_id?.substring(0, 8) || '-'}</td>
+                        <td>${photo.reports?.zone_code || '-'}</td>
+                        <td>${new Date(photo.created_at).toLocaleDateString('fr-FR')}</td>
+                        <td>${sizeKB.toFixed(1)} KB</td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-small" onclick="viewPhoto('${photo.id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-danger btn-small" onclick="deletePhoto('${photo.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    photosList.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Erreur filtrage photos:', error);
+            }
+        }
+        
+        // Fonctions de visualisation
+        async function viewUser(userId) {
+            try {
+                const { data: user, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+                
+                if (error || !user) {
+                    showNotification('Utilisateur non trouvé', 'error');
+                    return;
+                }
+                
+                document.getElementById('modalTitle').textContent = `Utilisateur: ${user.username}`;
+                document.getElementById('modalData').textContent = JSON.stringify(user, null, 2);
+                document.getElementById('dataModal').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Erreur visualisation utilisateur:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        async function viewReport(reportId) {
+            try {
+                const { data: report, error } = await supabase
+                    .from('reports')
+                    .select('*, users(*), zones(*), photos(*)')
+                    .eq('id', reportId)
+                    .single();
+                
+                if (error || !report) {
+                    showNotification('Rapport non trouvé', 'error');
+                    return;
+                }
+                
+                document.getElementById('modalTitle').textContent = `Rapport: ${reportId.substring(0, 12)}`;
+                document.getElementById('modalData').textContent = JSON.stringify(report, null, 2);
+                document.getElementById('dataModal').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Erreur visualisation rapport:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        async function viewPhoto(photoId) {
+            try {
+                const { data: photo, error } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .eq('id', photoId)
+                    .single();
+                
+                if (error || !photo) {
+                    showNotification('Photo non trouvée', 'error');
+                    return;
+                }
+                
+                document.getElementById('modalTitle').textContent = `Photo: ${photo.type} ${photoId.substring(0, 12)}`;
+                
+                const photoData = {
+                    id: photo.id,
+                    type: photo.type,
+                    report_id: photo.report_id,
+                    sequence: photo.sequence,
+                    created_at: photo.created_at,
+                    size: (photo.image_data?.length || 0) + ' bytes',
+                    preview: photo.image_data?.substring(0, 100) + '...'
+                };
+                
+                document.getElementById('modalData').textContent = JSON.stringify(photoData, null, 2);
+                document.getElementById('dataModal').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Erreur visualisation photo:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        async function viewZone(zoneId) {
+            try {
+                const { data: zone, error } = await supabase
+                    .from('zones')
+                    .select('*, users(*), reports(*)')
+                    .eq('id', zoneId)
+                    .single();
+                
+                if (error || !zone) {
+                    showNotification('Zone non trouvée', 'error');
+                    return;
+                }
+                
+                document.getElementById('modalTitle').textContent = `Zone: ${zone.name}`;
+                document.getElementById('modalData').textContent = JSON.stringify(zone, null, 2);
+                document.getElementById('dataModal').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Erreur visualisation zone:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        // Fermer le modal
+        function closeModal() {
+            document.getElementById('dataModal').style.display = 'none';
+        }
+        
+        // Éditeur SQL
+        function showSqlEditor() {
+            document.getElementById('sqlModal').style.display = 'flex';
+        }
+        
+        function closeSqlModal() {
+            document.getElementById('sqlModal').style.display = 'none';
+        }
+        
+        async function executeQuery() {
+            const query = document.getElementById('sqlQuery').value.trim();
+            const resultsDiv = document.getElementById('queryResults');
+            
+            if (!query) {
+                showNotification('Veuillez entrer une requête SQL', 'error');
+                return;
+            }
+            
+            try {
+                // Exécuter la requête
+                const { data, error } = await supabase.rpc('exec_sql', { query: query });
+                
+                if (error) {
+                    resultsDiv.innerHTML = `
+                        <div style="background: rgba(229, 62, 62, 0.1); border: 1px solid #e53e3e; border-radius: 6px; padding: 15px; color: #fc8181; margin-top: 15px;">
+                            <strong>Erreur SQL:</strong><br>
+                            ${error.message}
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Afficher les résultats
+                if (data && data.length > 0) {
+                    let html = '<div style="margin-top: 15px;">';
+                    html += `<p><strong>${data.length} résultats trouvés</strong></p>`;
+                    html += '<div style="overflow-x: auto;">';
+                    html += '<table style="width: 100%; border-collapse: collapse;">';
+                    
+                    // En-têtes
+                    html += '<tr>';
+                    Object.keys(data[0]).forEach(key => {
+                        html += `<th style="padding: 8px; border: 1px solid #4a5568; text-align: left;">${key}</th>`;
+                    });
+                    html += '</tr>';
+                    
+                    // Lignes
+                    data.forEach(row => {
+                        html += '<tr>';
+                        Object.values(row).forEach(value => {
+                            const val = value === null ? 'NULL' : 
+                                      typeof value === 'object' ? JSON.stringify(value) : 
+                                      String(value);
+                            html += `<td style="padding: 8px; border: 1px solid #4a5568; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${val}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    
+                    html += '</table></div></div>';
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div style="background: rgba(56, 161, 105, 0.1); border: 1px solid #38a169; border-radius: 6px; padding: 15px; color: #9ae6b4; margin-top: 15px;">
+                            Requête exécutée avec succès. Aucun résultat à afficher.
+                        </div>
+                    `;
+                }
+                
+                showNotification('Requête exécutée avec succès');
+                
+            } catch (error) {
+                console.error('Erreur requête SQL:', error);
+                resultsDiv.innerHTML = `
+                    <div style="background: rgba(229, 62, 62, 0.1); border: 1px solid #e53e3e; border-radius: 6px; padding: 15px; color: #fc8181; margin-top: 15px;">
+                        <strong>Erreur:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+                showNotification('Erreur d\'exécution', 'error');
+            }
+        }
+        
+        // Sauvegarder la requête
+        function saveQuery() {
+            const query = document.getElementById('sqlQuery').value;
+            localStorage.setItem('savedSqlQuery', query);
+            showNotification('Requête sauvegardée');
+        }
+        
+        // Charger la requête sauvegardée
+        function loadSavedQuery() {
+            const savedQuery = localStorage.getItem('savedSqlQuery');
+            if (savedQuery) {
+                document.getElementById('sqlQuery').value = savedQuery;
+            }
+        }
+        
+        // Structure des tables
+        async function showTableStructure() {
+            const tableName = document.getElementById('tableSelect').value;
+            
+            if (!tableName) {
+                document.getElementById('tableStructure').style.display = 'none';
+                return;
+            }
+            
+            // Structures prédéfinies (pour l'exemple)
+            const structures = {
+                'users': `CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password VARCHAR(100) NOT NULL,
+  name VARCHAR(100),
+  role VARCHAR(20) DEFAULT 'employee',
+  created_at TIMESTAMP DEFAULT NOW(),
+  last_login TIMESTAMP,
+  is_active BOOLEAN DEFAULT true
+);`,
+                'reports': `CREATE TABLE reports (
+  id VARCHAR(50) PRIMARY KEY,
+  employee_id UUID REFERENCES users(id),
+  employee_name VARCHAR(100),
+  zone_id UUID REFERENCES zones(id),
+  zone_name VARCHAR(100),
+  zone_code VARCHAR(50),
+  number_before INTEGER,
+  number_after INTEGER,
+  status VARCHAR(20) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW(),
+  completed_at TIMESTAMP,
+  location JSONB,
+  metadata JSONB
+);`,
+                'photos': `CREATE TABLE photos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  report_id VARCHAR(50) REFERENCES reports(id),
+  type VARCHAR(10) CHECK (type IN ('before', 'after')),
+  image_data TEXT NOT NULL,
+  sequence INTEGER,
+  employee_id UUID REFERENCES users(id),
+  zone_id UUID REFERENCES zones(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  location JSONB,
+  metadata JSONB
+);`,
+                'zones': `CREATE TABLE zones (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name VARCHAR(100) NOT NULL,
+  code VARCHAR(50) UNIQUE NOT NULL,
+  employee_id UUID REFERENCES users(id),
+  assigned_date TIMESTAMP DEFAULT NOW(),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  metadata JSONB
+);`
+            };
+            
+            const structureDiv = document.getElementById('tableStructure');
+            structureDiv.textContent = structures[tableName] || 'Structure non disponible';
+            structureDiv.style.display = 'block';
+        }
+        
+        // Exporter les rapports
+        async function exportReports() {
+            try {
+                const { data: reports, error } = await supabase
+                    .from('reports')
+                    .select('*, users(*), zones(*), photos(*)')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    showNotification('Erreur export', 'error');
+                    return;
+                }
+                
+                const exportData = {
+                    exported_at: new Date().toISOString(),
+                    total_reports: reports.length,
+                    reports: reports
+                };
+                
+                const jsonData = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `notecam_reports_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                
+                showNotification('Export terminé');
+                
+            } catch (error) {
+                console.error('Erreur export:', error);
+                showNotification('Erreur d\'export', 'error');
+            }
+        }
+        
+        // Nettoyer les photos
+        async function cleanupPhotos() {
+            if (!confirm('Voulez-vous nettoyer les photos orphelines ? Cette action est irréversible.')) {
+                return;
+            }
+            
+            try {
+                // Trouver les photos sans rapport
+                const { data: orphanPhotos, error } = await supabase
+                    .from('photos')
+                    .select('id')
+                    .is('report_id', null);
+                
+                if (error || !orphanPhotos || orphanPhotos.length === 0) {
+                    showNotification('Aucune photo orpheline trouvée');
+                    return;
+                }
+                
+                // Supprimer les photos orphelines
+                const photoIds = orphanPhotos.map(p => p.id);
+                const { error: deleteError } = await supabase
+                    .from('photos')
+                    .delete()
+                    .in('id', photoIds);
+                
+                if (deleteError) {
+                    throw deleteError;
+                }
+                
+                showNotification(`${photoIds.length} photos orphelines supprimées`);
+                await loadPhotos();
+                
+            } catch (error) {
+                console.error('Erreur nettoyage:', error);
+                showNotification('Erreur de nettoyage', 'error');
+            }
+        }
+        
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+        
+        // Charger la requête sauvegardée au démarrage
+        window.onload = function() {
+            loadSavedQuery();
+        };
+    </script>
+</body>
+</html>
