@@ -4,11 +4,375 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Système NoteCam - Panneau Admin</title>
-    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* ========== جميع الأنماط الأصلية بالكامل ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+            color: #333333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            background: #ffffff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 100, 200, 0.15);
+            border: 1px solid #e1e8ed;
+        }
+
+        .status-bar {
+            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
+            padding: 12px 20px;
+            font-size: 13px;
+            color: #ffffff;
+            text-align: center;
+            border-bottom: 3px solid #ff6b6b;
+            width: 100%;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sync-status {
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sync-icon {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .admin-panel {
+            display: block;
+        }
+
+        .panel-header {
+            background: linear-gradient(90deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 18px 25px;
+            border-bottom: 2px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .panel-title {
+            font-size: 22px;
+            color: #1a5fb4;
+            font-weight: 700;
+        }
+
+        .logout-btn, .back-btn {
+            padding: 10px 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Segoe UI', sans-serif;
+            margin-left: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover, .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .back-btn {
+            background: #2ea043;
+        }
+
+        .dashboard-section {
+            padding: 25px;
+            margin: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e1e8ed;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .dashboard-section h3 {
+            margin-bottom: 20px;
+            color: #1a5fb4;
+            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .employee-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .form-input {
+            padding: 12px;
+            background: #ffffff;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            color: #333;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #1a5fb4;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.1);
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 95, 180, 0.3);
+        }
+
+        .employee-list {
+            margin-top: 25px;
+        }
+
+        .employee-card {
+            background: #ffffff;
+            padding: 18px;
+            margin: 12px 0;
+            border-radius: 10px;
+            border-left: 5px solid #1a5fb4;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .employee-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn {
+            padding: 12px 24px;
+            background: #ffffff;
+            border: 2px solid #e1e8ed;
+            color: #333;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            min-width: 140px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
+            color: white;
+            border: none;
+        }
+
+        .control-btn.danger {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 100%);
+            color: white;
+            border: none;
+        }
+
+        .areas-list {
+            margin-top: 25px;
+        }
+
+        .reports-container {
+            margin-top: 25px;
+        }
+
+        .report-card {
+            background: #ffffff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #1a5fb4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .badge-blue {
+            background: #1a5fb4;
+            color: white;
+        }
+
+        .badge-green {
+            background: #2ea043;
+            color: white;
+        }
+
+        .badge-red {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .sync-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border: 1px solid #1a5fb4;
+        }
+
+        .sync-btn {
+            padding: 8px 15px;
+            background: #1a5fb4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sync-btn:hover {
+            background: #154a8a;
+        }
+
+        .sync-info {
+            font-size: 12px;
+            color: #666;
+            flex-grow: 1;
+        }
+
+        .sync-success {
+            color: #2ea043;
+        }
+
+        .sync-error {
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 768px) {
+            .employee-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-btn {
+                min-width: 120px;
+                padding: 10px 15px;
+            }
+            
+            .sync-controls {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .panel-title {
+                font-size: 18px;
+            }
+            
+            .dashboard-section {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .control-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ea043;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="notification" id="notification"></div>
+
     <div class="app-container">
         <div class="status-bar" id="statusBar">
             <div>Système NoteCam ● Admin ●</div>
@@ -84,10 +448,841 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-client.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/sync.js"></script>
-    <script src="js/admin.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://jxvnmcgfwlbswtkiglmh.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw';
+        
+        let supabaseClient;
+        let isSupabaseInitialized = false;
+        
+        const defaultUsersData = {
+            admin: {
+                password: "admin123",
+                role: "admin",
+                name: "Superviseur Principal"
+            }
+        };
+
+        for (let i = 1; i <= 11; i++) {
+            defaultUsersData[`user${i}`] = {
+                password: "pass123",
+                role: "employee",
+                name: `Employé ${i}`,
+                assignedAreas: []
+            };
+        }
+
+        let usersData = JSON.parse(JSON.stringify(defaultUsersData));
+        let assignedAreas = [];
+        let zoneReports = {};
+
+        let currentUser = null;
+
+        let syncInterval;
+        let lastSyncTime = null;
+        let isSyncing = false;
+        const SYNC_INTERVAL = 30000;
+
+        const statusBar = document.getElementById('statusBar');
+        const notification = document.getElementById('notification');
+        const syncStatus = document.getElementById('syncStatus');
+        const syncText = document.getElementById('syncText');
+        const syncIcon = document.getElementById('syncIcon');
+        const lastSyncTimeEl = document.getElementById('lastSyncTime');
+        const syncStatusDetail = document.getElementById('syncStatusDetail');
+
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? '#2ea043' : 
+                                           type === 'warning' ? '#ffa500' : '#ff6b6b';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Jamais';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        function formatTimeShort(date) {
+            if (!date) return '';
+            const now = new Date();
+            const diffMs = now - new Date(date);
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'à l\'instant';
+            if (diffMins < 60) return `il y a ${diffMins} min`;
+            if (diffMins < 1440) return `il y a ${Math.floor(diffMins/60)} h`;
+            return formatDate(date);
+        }
+
+        function updateStatusBar(message) {
+            const statusText = statusBar.querySelector('div:first-child');
+            if (statusText) {
+                statusText.textContent = `Système NoteCam ● ${message} ●`;
+            }
+        }
+
+        function updateSyncStatus(status, message = '') {
+            syncText.textContent = status;
+            if (syncStatusDetail) {
+                syncStatusDetail.textContent = message;
+                syncStatusDetail.className = status === 'Synchro OK' ? 'sync-success' : 
+                                            status === 'Erreur' ? 'sync-error' : '';
+            }
+            
+            if (lastSyncTimeEl && lastSyncTime) {
+                lastSyncTimeEl.textContent = formatTimeShort(lastSyncTime);
+            }
+            
+            if (status === 'Synchronisation...') {
+                syncIcon.style.animation = 'spin 1s linear infinite';
+                syncStatus.style.background = 'rgba(255, 165, 0, 0.3)';
+            } else if (status === 'Synchro OK') {
+                syncIcon.style.animation = 'none';
+                syncIcon.className = 'fas fa-check-circle';
+                syncStatus.style.background = 'rgba(46, 160, 67, 0.3)';
+            } else if (status === 'Erreur') {
+                syncIcon.style.animation = 'none';
+                syncIcon.className = 'fas fa-exclamation-circle';
+                syncStatus.style.background = 'rgba(255, 107, 107, 0.3)';
+            } else {
+                syncIcon.style.animation = 'spin 2s linear infinite';
+                syncStatus.style.background = 'rgba(26, 95, 180, 0.3)';
+            }
+        }
+
+        async function initializeSupabase() {
+            try {
+                console.log('Initialisation de Supabase...');
+                
+                if (typeof supabase === 'undefined') {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: { persistSession: false }
+                });
+                
+                isSupabaseInitialized = true;
+                console.log('Supabase initialisé avec succès');
+                updateSyncStatus('Connecté', 'Prêt à synchroniser');
+                
+                initSyncSystem();
+                
+                showNotification("Supabase connecté avec succès", "success");
+                
+            } catch (error) {
+                console.error('Erreur initialisation Supabase:', error);
+                updateSyncStatus('Erreur', 'Connexion échouée');
+                showNotification("Mode hors ligne - Données locales", "warning");
+                
+                setTimeout(() => {
+                    if (!isSupabaseInitialized) {
+                        initializeSupabase();
+                    }
+                }, 5000);
+            }
+        }
+
+        function initSyncSystem() {
+            updateSyncStatus('Initialisation...');
+            
+            setTimeout(() => {
+                syncAllData();
+            }, 2000);
+            
+            syncInterval = setInterval(() => {
+                if (document.visibilityState === 'visible' && !isSyncing) {
+                    syncAllData();
+                }
+            }, SYNC_INTERVAL);
+            
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && !isSyncing) {
+                    syncAllData();
+                }
+            });
+            
+            window.addEventListener('online', () => {
+                showNotification("Connexion Internet rétablie - Synchronisation en cours", "success");
+                syncAllData();
+            });
+            
+            window.addEventListener('offline', () => {
+                showNotification("Mode hors ligne - Synchronisation suspendue", "warning");
+                updateSyncStatus('Hors ligne', 'Connexion perdue');
+            });
+        }
+
+        async function syncAllData() {
+            if (isSyncing || !isSupabaseInitialized) return;
+            if (!navigator.onLine) {
+                updateSyncStatus('Hors ligne', 'Attente de connexion');
+                return;
+            }
+            
+            isSyncing = true;
+            updateSyncStatus('Synchronisation...', 'Mise à jour des données');
+            
+            try {
+                await syncFromSupabase();
+                await syncToSupabase();
+                
+                lastSyncTime = new Date();
+                updateSyncStatus('Synchro OK', `Dernière sync: ${formatTimeShort(lastSyncTime)}`);
+                
+                if (currentUser) {
+                    updateAdminDashboard();
+                }
+                
+            } catch (error) {
+                console.error('Erreur synchronisation:', error);
+                updateSyncStatus('Erreur', 'Échec de synchronisation');
+                showNotification("Erreur de synchronisation", "error");
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        async function syncFromSupabase() {
+            try {
+                const { data: users, error: usersError } = await supabaseClient
+                    .from('users')
+                    .select('*');
+                
+                if (!usersError && users && users.length > 0) {
+                    const remoteUserCount = users.length;
+                    usersData = { ...defaultUsersData };
+                    
+                    users.forEach(user => {
+                        usersData[user.username] = {
+                            password: user.password,
+                            role: user.role,
+                            name: user.name,
+                            assignedAreas: user.assigned_areas || []
+                        };
+                    });
+                    
+                    console.log(`${remoteUserCount} utilisateurs chargés depuis Supabase`);
+                }
+                
+                const { data: areas, error: areasError } = await supabaseClient
+                    .from('assigned_areas')
+                    .select('*')
+                    .order('date', { ascending: false });
+                
+                if (!areasError && areas && areas.length > 0) {
+                    assignedAreas = areas.map(area => ({
+                        id: area.id,
+                        employee: area.employee,
+                        name: area.name,
+                        code: area.code,
+                        date: area.date,
+                        isActive: area.is_active
+                    }));
+                    
+                    console.log(`${areas.length} zones chargées depuis Supabase`);
+                }
+                
+                const { data: reports, error: reportsError } = await supabaseClient
+                    .from('reports')
+                    .select('*')
+                    .order('date', { ascending: false });
+                
+                if (!reportsError && reports && reports.length > 0) {
+                    zoneReports = {};
+                    reports.forEach(report => {
+                        const zoneCode = report.area_code;
+                        if (!zoneReports[zoneCode]) {
+                            zoneReports[zoneCode] = {
+                                name: report.area,
+                                reports: [],
+                                photos: []
+                            };
+                        }
+                        
+                        zoneReports[zoneCode].reports.push({
+                            id: report.id,
+                            employee: report.employee,
+                            employeeName: report.employee_name,
+                            numberBefore: report.number_before,
+                            numberAfter: report.number_after,
+                            date: report.date,
+                            location: report.location,
+                            area: report.area,
+                            areaCode: report.area_code,
+                            noteCode: report.note_code,
+                            status: report.status,
+                            step: report.step,
+                            completionDate: report.completion_date,
+                            photos: report.photos || []
+                        });
+                    });
+                    
+                    console.log(`${reports.length} rapports chargés depuis Supabase`);
+                }
+                
+                saveToLocalStorage();
+                
+            } catch (error) {
+                console.error('Erreur syncFromSupabase:', error);
+                throw error;
+            }
+        }
+
+        async function syncToSupabase() {
+            try {
+                for (const [username, userData] of Object.entries(usersData)) {
+                    if (username.startsWith('user') && username.match(/^user\d+$/)) continue;
+                    
+                    const userToSend = {
+                        username: username,
+                        password: userData.password,
+                        role: userData.role,
+                        name: userData.name,
+                        assigned_areas: userData.assignedAreas || []
+                    };
+                    
+                    const { error } = await supabaseClient
+                        .from('users')
+                        .upsert(userToSend, { onConflict: 'username' });
+                    
+                    if (error) console.error(`Erreur sync user ${username}:`, error.message);
+                }
+                
+                for (const area of assignedAreas) {
+                    const areaToSend = {
+                        id: area.id,
+                        employee: area.employee,
+                        name: area.name,
+                        code: area.code,
+                        date: area.date,
+                        is_active: area.isActive
+                    };
+                    
+                    const { error } = await supabaseClient
+                        .from('assigned_areas')
+                        .upsert(areaToSend, { onConflict: 'id' });
+                    
+                    if (error) console.error(`Erreur sync area ${area.code}:`, error.message);
+                }
+                
+                for (const [zoneCode, zoneData] of Object.entries(zoneReports)) {
+                    for (const report of zoneData.reports) {
+                        const reportToSend = {
+                            id: report.id,
+                            employee: report.employee,
+                            employee_name: report.employeeName,
+                            number_before: report.numberBefore,
+                            number_after: report.numberAfter,
+                            date: report.date,
+                            location: report.location,
+                            area: report.area,
+                            area_code: report.areaCode,
+                            note_code: report.noteCode,
+                            status: report.status,
+                            step: report.step,
+                            completion_date: report.completionDate,
+                            photos: report.photos || []
+                        };
+                        
+                        const { error } = await supabaseClient
+                            .from('reports')
+                            .upsert(reportToSend, { onConflict: 'id' });
+                        
+                        if (error) console.error(`Erreur sync report ${report.id}:`, error.message);
+                    }
+                }
+                
+                console.log('Données envoyées à Supabase avec succès');
+                
+            } catch (error) {
+                console.error('Erreur syncToSupabase:', error);
+                throw error;
+            }
+        }
+
+        async function manualSync() {
+            if (isSyncing) {
+                showNotification("Synchronisation déjà en cours", "warning");
+                return;
+            }
+            
+            showNotification("Synchronisation manuelle démarrée", "success");
+            await syncAllData();
+        }
+
+        async function forceSyncFromSupabase() {
+            showNotification("Chargement depuis Supabase...", "success");
+            updateSyncStatus('Chargement...', 'Récupération des données');
+            
+            try {
+                await syncFromSupabase();
+                showNotification("Données chargées depuis Supabase", "success");
+                updateSyncStatus('Chargé OK', 'Données mises à jour');
+                
+                if (currentUser && currentUser.role === 'admin') {
+                    updateAdminDashboard();
+                }
+                
+            } catch (error) {
+                showNotification("Erreur chargement Supabase", "error");
+                updateSyncStatus('Erreur', 'Échec chargement');
+            }
+        }
+
+        async function forceSyncToSupabase() {
+            showNotification("Envoi vers Supabase...", "success");
+            updateSyncStatus('Envoi...', 'Transfert des données');
+            
+            try {
+                await syncToSupabase();
+                showNotification("Données envoyées à Supabase", "success");
+                updateSyncStatus('Envoyé OK', 'Données transférées');
+                
+            } catch (error) {
+                showNotification("Erreur envoi Supabase", "error");
+                updateSyncStatus('Erreur', 'Échec envoi');
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('noteCamSystemData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    usersData = {...defaultUsersData, ...data.usersData};
+                    assignedAreas = data.assignedAreas || assignedAreas;
+                    zoneReports = data.zoneReports || {};
+                }
+                
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    currentUser = JSON.parse(savedUser);
+                }
+                
+                const savedSync = localStorage.getItem('lastSyncTime');
+                if (savedSync) {
+                    lastSyncTime = new Date(savedSync);
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement données:', error);
+            }
+        }
+
+        function saveToLocalStorage() {
+            const data = {
+                usersData,
+                assignedAreas,
+                zoneReports
+            };
+            localStorage.setItem('noteCamSystemData', JSON.stringify(data));
+            
+            if (lastSyncTime) {
+                localStorage.setItem('lastSyncTime', lastSyncTime.toISOString());
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        function initializeApp() {
+            loadFromLocalStorage();
+            updateStatusBar("Panneau Admin");
+            updateAdminDashboard();
+            updateCounters();
+            updateEmployeeSelect();
+            
+            initializeSupabase();
+        }
+
+        function addEmployee() {
+            const username = document.getElementById('empUsername').value;
+            const password = document.getElementById('empPassword').value;
+            const name = document.getElementById('empName').value;
+            
+            if (!username || !password || !name) {
+                alert("Veuillez remplir tous les champs");
+                return;
+            }
+            
+            if (usersData[username]) {
+                alert("Le nom d'utilisateur existe déjà");
+                return;
+            }
+            
+            usersData[username] = {
+                password: password,
+                role: "employee",
+                name: name,
+                assignedAreas: []
+            };
+            
+            updateEmployeeSelect();
+            displayEmployees();
+            updateCounters();
+            saveToLocalStorage();
+            
+            document.getElementById('empUsername').value = '';
+            document.getElementById('empPassword').value = '';
+            document.getElementById('empName').value = '';
+            
+            showNotification("Employé ajouté avec succès", "success");
+        }
+
+        function displayEmployees() {
+            const employeesList = document.getElementById('employeesList');
+            employeesList.innerHTML = '';
+            
+            let employeeCount = 0;
+            
+            Object.entries(usersData).forEach(([username, data]) => {
+                if (data.role === "employee") {
+                    employeeCount++;
+                    const employeeCard = document.createElement('div');
+                    employeeCard.className = 'employee-card';
+                    
+                    const areasCount = (data.assignedAreas || []).length;
+                    
+                    employeeCard.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div style="font-weight: 700; color: #1a5fb4; font-size: 16px; margin-bottom: 5px;">
+                                    ${data.name}
+                                </div>
+                                <div style="color: #666; font-size: 14px; margin-bottom: 8px;">
+                                    Nom d'utilisateur : ${username}
+                                </div>
+                                <div style="display: flex; gap: 15px;">
+                                    <span style="background: #e3f2fd; padding: 3px 10px; border-radius: 15px; font-size: 12px; color: #1a5fb4;">
+                                        <i class="fas fa-map-marker-alt"></i> ${areasCount} zones
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="control-btn danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteEmployee('${username}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    employeesList.appendChild(employeeCard);
+                }
+            });
+            
+            if (employeeCount === 0) {
+                employeesList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucun employé enregistré</p>';
+            }
+        }
+
+        function deleteEmployee(username) {
+            if (!confirm(`Voulez-vous vraiment supprimer l'employé ${username} ?`)) {
+                return;
+            }
+            
+            if (usersData[username]) {
+                delete usersData[username];
+            }
+            
+            assignedAreas = assignedAreas.filter(area => area.employee !== username);
+            
+            localStorage.removeItem(`userProgress_${username}`);
+            localStorage.removeItem(`tempReport_${username}`);
+            
+            updateEmployeeSelect();
+            displayEmployees();
+            updateCounters();
+            saveToLocalStorage();
+            
+            showNotification("Employé supprimé avec succès", "success");
+        }
+
+        function assignArea() {
+            const employeeUsername = document.getElementById('employeeSelect').value;
+            const areaName = document.getElementById('areaName').value;
+            const areaCode = document.getElementById('areaCode').value;
+            
+            if (!employeeUsername || !areaName || !areaCode) {
+                alert("Veuillez remplir tous les champs");
+                return;
+            }
+            
+            if (assignedAreas.some(area => area.code === areaCode)) {
+                alert("Ce code de zone existe déjà");
+                return;
+            }
+            
+            const area = {
+                id: Date.now(),
+                employee: employeeUsername,
+                name: areaName,
+                code: areaCode,
+                date: new Date().toISOString(),
+                isActive: true
+            };
+            
+            assignedAreas.push(area);
+            
+            if (usersData[employeeUsername]) {
+                if (!usersData[employeeUsername].assignedAreas) {
+                    usersData[employeeUsername].assignedAreas = [];
+                }
+                usersData[employeeUsername].assignedAreas.push(area);
+            }
+            
+            if (!zoneReports[areaCode]) {
+                zoneReports[areaCode] = {
+                    name: areaName,
+                    reports: [],
+                    photos: []
+                };
+            }
+            
+            saveToLocalStorage();
+            
+            displayAssignedAreasList();
+            updateCounters();
+            
+            document.getElementById('areaName').value = '';
+            document.getElementById('areaCode').value = '';
+            
+            showNotification("Zone attribuée avec succès", "success");
+        }
+
+        function displayAssignedAreasList() {
+            const assignedAreasList = document.getElementById('assignedAreasList');
+            if (assignedAreas.length === 0) {
+                assignedAreasList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune zone attribuée</p>';
+                return;
+            }
+            
+            const areasByEmployee = {};
+            assignedAreas.forEach(area => {
+                if (!areasByEmployee[area.employee]) {
+                    areasByEmployee[area.employee] = [];
+                }
+                areasByEmployee[area.employee].push(area);
+            });
+            
+            assignedAreasList.innerHTML = '';
+            
+            Object.keys(areasByEmployee).forEach(employeeUsername => {
+                const employee = usersData[employeeUsername];
+                if (!employee) return;
+                
+                const employeeSection = document.createElement('div');
+                employeeSection.className = 'employee-card';
+                
+                let areasHTML = '';
+                areasByEmployee[employeeUsername].forEach(area => {
+                    const reportCount = zoneReports[area.code]?.reports?.length || 0;
+                    
+                    areasHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #ffffff; border-radius: 8px; margin: 5px 0; border: 1px solid #e1e8ed;">
+                            <div>
+                                <div style="font-weight: 700; color: #333;">${area.name}</div>
+                                <div style="font-size: 12px; color: #666;">Code: ${area.code} • ${formatDate(area.date)}</div>
+                            </div>
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <span style="background: #f0fff4; padding: 2px 8px; border-radius: 12px; font-size: 11px; color: #2ea043;">
+                                    ${reportCount} rapports
+                                </span>
+                                <button class="control-btn danger" style="padding: 3px 8px; font-size: 11px;" onclick="deleteArea(${area.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                employeeSection.innerHTML = `
+                    <div style="color: #1a5fb4; font-weight: 700; margin-bottom: 10px; font-size: 16px;">
+                        ${employee.name} <span style="font-size: 12px; color: #666;">(${employeeUsername})</span>
+                    </div>
+                    ${areasHTML}
+                `;
+                
+                assignedAreasList.appendChild(employeeSection);
+            });
+        }
+
+        function deleteArea(areaId) {
+            if (!confirm("Voulez-vous vraiment supprimer cette zone ?")) {
+                return;
+            }
+            
+            const areaIndex = assignedAreas.findIndex(a => a.id === areaId);
+            if (areaIndex === -1) return;
+            
+            const area = assignedAreas[areaIndex];
+            const areaCode = area.code;
+            
+            assignedAreas.splice(areaIndex, 1);
+            
+            if (usersData[area.employee] && usersData[area.employee].assignedAreas) {
+                const userAreaIndex = usersData[area.employee].assignedAreas.findIndex(a => a.id === areaId);
+                if (userAreaIndex !== -1) {
+                    usersData[area.employee].assignedAreas.splice(userAreaIndex, 1);
+                }
+            }
+            
+            if (zoneReports[areaCode]) {
+                delete zoneReports[areaCode];
+            }
+            
+            saveToLocalStorage();
+            displayAssignedAreasList();
+            updateCounters();
+            
+            showNotification("Zone supprimée avec succès", "success");
+        }
+
+        function updateEmployeeSelect() {
+            const employeeSelect = document.getElementById('employeeSelect');
+            employeeSelect.innerHTML = '<option value="">Sélectionner un employé</option>';
+            
+            Object.entries(usersData).forEach(([username, data]) => {
+                if (data.role === "employee") {
+                    const option = document.createElement('option');
+                    option.value = username;
+                    option.textContent = `${data.name} (${username})`;
+                    employeeSelect.appendChild(option);
+                }
+            });
+        }
+
+        function updateAdminDashboard() {
+            displayEmployees();
+            displayAssignedAreasList();
+            displayMiniReports();
+            updateCounters();
+            updateEmployeeSelect();
+        }
+
+        function updateCounters() {
+            let employeeCount = 0;
+            Object.entries(usersData).forEach(([username, data]) => {
+                if (data.role === "employee") {
+                    employeeCount++;
+                }
+            });
+            document.getElementById('employeesCount').textContent = employeeCount;
+            document.getElementById('areasCount').textContent = assignedAreas.length;
+            
+            let totalReports = 0;
+            Object.values(zoneReports).forEach(zone => {
+                totalReports += zone.reports.length;
+            });
+            document.getElementById('reportsCount').textContent = totalReports;
+        }
+
+        function displayMiniReports() {
+            const reportsListMini = document.getElementById('reportsListMini');
+            reportsListMini.innerHTML = '';
+            
+            let totalReports = 0;
+            Object.values(zoneReports).forEach(zone => {
+                totalReports += zone.reports.length;
+            });
+            
+            if (totalReports === 0) {
+                reportsListMini.innerHTML = `
+                    <div style="text-align: center; padding: 30px; background: #f8f9fa; border-radius: 8px;">
+                        <i class="fas fa-inbox" style="font-size: 48px; color: #e1e8ed; margin-bottom: 15px;"></i>
+                        <h4 style="color: #666; margin-bottom: 10px;">Aucun rapport reçu</h4>
+                        <p style="color: #999; font-size: 14px;">Les rapports apparaîtront ici lorsque les employés les enverront</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let allReports = [];
+            Object.values(zoneReports).forEach(zone => {
+                zone.reports.forEach(report => {
+                    allReports.push({...report, zoneData: zone});
+                });
+            });
+            
+            allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const recentReports = allReports.slice(0, 5);
+            
+            recentReports.forEach(report => {
+                const beforeCount = report.beforePhotos?.length || 0;
+                const afterCount = report.afterPhotos?.length || 0;
+                const statusColor = report.status === 'complete' ? '#2ea043' : '#1a5fb4';
+                const statusText = report.status === 'complete' ? 'Complet' : 'AVANT seulement';
+                
+                const reportCard = document.createElement('div');
+                reportCard.className = 'report-card';
+                
+                reportCard.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <div style="font-weight: 700; color: #1a5fb4; font-size: 16px;">${report.employeeName}</div>
+                            <div style="font-size: 12px; color: #666;">${formatDate(report.date)}</div>
+                        </div>
+                        <span style="background: ${statusColor}; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 700;">
+                            ${statusText}
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 10px; font-size: 12px; color: #666; margin-bottom: 8px;">
+                        ${report.numberBefore !== undefined ? 
+                            `<span><i class="fas fa-hashtag" style="color: #1a5fb4;"></i> AVANT: ${report.numberBefore}</span>` : ''}
+                        ${report.numberAfter !== undefined ? 
+                            `<span><i class="fas fa-hashtag" style="color: #ff6b6b;"></i> APRÈS: ${report.numberAfter}</span>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 15px; font-size: 12px; color: #666; margin-bottom: 10px;">
+                        <span><i class="fas fa-map-marker-alt"></i> ${report.area}</span>
+                        <span><i class="fas fa-images"></i> ${beforeCount + afterCount} photos</span>
+                    </div>
+                    <a href="reports.html" class="control-btn primary" style="width: 100%; padding: 8px; text-align: center; display: inline-block; text-decoration: none;">
+                        <i class="fas fa-eye"></i> Voir le rapport complet
+                    </a>
+                `;
+                
+                reportsListMini.appendChild(reportCard);
+            });
+        }
+
+        function exportAllData() {
+            const exportData = {
+                exportedAt: new Date().toISOString(),
+                users: Object.keys(usersData).length,
+                zones: assignedAreas.length,
+                zoneReports: zoneReports
+            };
+            
+            const jsonData = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `NoteCam_Export_Complet_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            
+            showNotification("Toutes les données exportées", "success");
+            updateStatusBar("Toutes les données exportées");
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
 </body>
 </html>
