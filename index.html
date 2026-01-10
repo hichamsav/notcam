@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système NoteCam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // تهيئة متغيرات البيئة
+        window.SUPABASE_CONFIG = {
+            url: window.location.hostname.includes('netlify') 
+                ? '' // ستضاف عبر Netlify Environment Variables
+                : localStorage.getItem('supabase_url') || '',
+            key: window.location.hostname.includes('netlify')
+                ? ''
+                : localStorage.getItem('supabase_key') || ''
+        };
+    </script>
+</head>
+<body>
+    <div id="app">
+        <!-- سيتم تحميل المحتوى ديناميكياً -->
+    </div>
+
+    <!-- Templates -->
+    <template id="login-template">
+        <div class="login-container">
+            <h2><i class="fas fa-lock"></i> Connexion</h2>
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email" class="form-control">
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Mot de passe" class="form-control">
+            </div>
+            <button id="login-btn" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+            <div class="connection-status">
+                <span id="connection-indicator" class="status-offline">
+                    <i class="fas fa-wifi"></i> Hors ligne
+                </span>
+            </div>
+        </div>
+    </template>
+
+    <template id="admin-template">
+        <div class="admin-panel">
+            <div class="header">
+                <h1><i class="fas fa-user-shield"></i> Panneau Administrateur</h1>
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+            <div class="dashboard">
+                <!-- سيتم تحميل محتوى الإدارة -->
+            </div>
+        </div>
+    </template>
+
+    <template id="employee-template">
+        <div class="employee-panel">
+            <div class="header">
+                <h1><i class="fas fa-user"></i> Panneau Employé</h1>
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+            <div class="camera-section">
+                <!-- واجهة الكاميرا والتقارير -->
+            </div>
+        </div>
+    </template>
+
+    <!-- Scripts -->
+    <script src="/js/supabase-client.js"></script>
+    <script src="/js/offline-db.js"></script>
+    <script src="/js/app.js"></script>
+    
+    <script>
+        // تسجيل Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed:', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

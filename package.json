@@ -1,0 +1,23 @@
+{
+  "name": "notecam-system",
+  "version": "1.0.0",
+  "description": "Système NoteCam - Gestion de photos avant/après avec Supabase",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "npx serve public",
+    "build": "echo 'No build step required for static site'",
+    "deploy": "netlify deploy --prod --dir=public",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "notecam",
+    "supabase",
+    "offline",
+    "pwa"
+  ],
+  "author": "Votre Nom",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}
