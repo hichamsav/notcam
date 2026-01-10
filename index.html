@@ -3,95 +3,974 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Système NoteCam</title>
+    <title>Système NoteCam - Complet</title>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // تهيئة متغيرات البيئة
-        window.SUPABASE_CONFIG = {
-            url: window.location.hostname.includes('netlify') 
-                ? '' // ستضاف عبر Netlify Environment Variables
-                : localStorage.getItem('supabase_url') || '',
-            key: window.location.hostname.includes('netlify')
-                ? ''
-                : localStorage.getItem('supabase_key') || ''
-        };
-    </script>
+    
+    <style>
+        /* ========== CSS COMPLET ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a5fb4;
+            --secondary: #2ea043;
+            --danger: #ff6b6b;
+            --warning: #ffa500;
+            --light: #f8f9fa;
+            --dark: #333;
+            --gray: #666;
+            --border: #e1e8ed;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            padding: 20px;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ========== LOGIN ========== */
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.1);
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 95, 180, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(90deg, var(--danger), #ff8e53);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(90deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        /* ========== STATUS ========== */
+        .connection-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background: rgba(46, 160, 67, 0.1);
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+        }
+
+        .status-offline {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        /* ========== NOTIFICATIONS ========== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification-success {
+            background: var(--secondary);
+        }
+
+        .notification-error {
+            background: var(--danger);
+        }
+
+        .notification-warning {
+            background: var(--warning);
+        }
+
+        .notification-info {
+            background: var(--primary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* ========== DASHBOARD ========== */
+        .dashboard {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        /* ========== CAMERA ========== */
+        .camera-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .camera-preview {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            background: #000;
+            border-radius: 8px;
+            margin: 0 auto 20px;
+            overflow: hidden;
+        }
+
+        .camera-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        /* ========== PHOTOS ========== */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .photo-box {
+            aspect-ratio: 4/3;
+            background: var(--light);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-box:hover {
+            border-color: var(--primary);
+            background: rgba(26, 95, 180, 0.05);
+        }
+
+        .photo-box.captured {
+            border: 2px solid var(--secondary);
+            background: rgba(46, 160, 67, 0.05);
+        }
+
+        .photo-box i {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .photo-box.captured i {
+            color: var(--secondary);
+        }
+
+        .photo-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .photo-box.captured .photo-preview {
+            display: block;
+        }
+
+        /* ========== REPORTS ========== */
+        .report-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .photo-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .login-container {
+                margin: 20px;
+                padding: 30px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .login-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .camera-preview {
+                height: 300px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- العرض الأولي لتسجيل الدخول -->
     <div id="app">
-        <!-- سيتم تحميل المحتوى ديناميكياً -->
-    </div>
-
-    <!-- Templates -->
-    <template id="login-template">
         <div class="login-container">
-            <h2><i class="fas fa-lock"></i> Connexion</h2>
+            <h2><i class="fas fa-lock"></i> Connexion NoteCam</h2>
+            
             <div class="form-group">
-                <input type="email" id="email" placeholder="Email" class="form-control">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" class="form-control" placeholder="admin@notecam.com" value="admin@notecam.com">
             </div>
+            
             <div class="form-group">
-                <input type="password" id="password" placeholder="Mot de passe" class="form-control">
+                <label for="password"><i class="fas fa-key"></i> Mot de passe</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" value="admin123">
             </div>
-            <button id="login-btn" class="btn btn-primary">
+            
+            <button id="login-btn" class="btn btn-primary" style="width: 100%; margin: 10px 0;">
                 <i class="fas fa-sign-in-alt"></i> Se connecter
             </button>
-            <div class="connection-status">
-                <span id="connection-indicator" class="status-offline">
-                    <i class="fas fa-wifi"></i> Hors ligne
-                </span>
+            
+            <div class="connection-status status-online" id="connection-status">
+                <i class="fas fa-wifi"></i> En ligne
+            </div>
+            
+            <div style="margin-top: 20px; color: var(--gray); font-size: 14px;">
+                <p><strong>Utilisateurs de test:</strong></p>
+                <p>Admin: admin@notecam.com / admin123</p>
+                <p>Employé: employe@notecam.com / pass123</p>
             </div>
         </div>
-    </template>
+    </div>
 
-    <template id="admin-template">
-        <div class="admin-panel">
-            <div class="header">
-                <h1><i class="fas fa-user-shield"></i> Panneau Administrateur</h1>
-                <button id="logout-btn" class="btn btn-danger">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
-                </button>
-            </div>
-            <div class="dashboard">
-                <!-- سيتم تحميل محتوى الإدارة -->
-            </div>
-        </div>
-    </template>
-
-    <template id="employee-template">
-        <div class="employee-panel">
-            <div class="header">
-                <h1><i class="fas fa-user"></i> Panneau Employé</h1>
-                <button id="logout-btn" class="btn btn-danger">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
-                </button>
-            </div>
-            <div class="camera-section">
-                <!-- واجهة الكاميرا والتقارير -->
-            </div>
-        </div>
-    </template>
-
-    <!-- Scripts -->
-    <script src="/js/supabase-client.js"></script>
-    <script src="/js/offline-db.js"></script>
-    <script src="/js/app.js"></script>
-    
     <script>
-        // تسجيل Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered');
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed:', err);
+        // ============================================
+        // APPLICATION GLOBALE - ملف واحد كامل
+        // ============================================
+        
+        class NoteCamSystem {
+            constructor() {
+                this.currentUser = null;
+                this.currentView = 'login';
+                this.supabase = null;
+                this.offlineMode = !navigator.onLine;
+                this.localData = {
+                    reports: JSON.parse(localStorage.getItem('notecam_reports') || '[]'),
+                    photos: JSON.parse(localStorage.getItem('notecam_photos') || '[]'),
+                    users: JSON.parse(localStorage.getItem('notecam_users') || '[]')
+                };
+                
+                this.initialize();
+            }
+            
+            async initialize() {
+                console.log('Initialisation du système NoteCam...');
+                
+                // إعداد مستمعات الاتصال
+                this.setupConnectionListeners();
+                
+                // التحقق من المستخدم المسجل
+                await this.checkSavedUser();
+                
+                // تحديث حالة الاتصال
+                this.updateConnectionStatus();
+                
+                // إعداد أزرار الواجهة
+                this.setupEventListeners();
+                
+                console.log('Système NoteCam prêt');
+            }
+            
+            setupConnectionListeners() {
+                window.addEventListener('online', () => {
+                    this.offlineMode = false;
+                    this.updateConnectionStatus();
+                    this.showNotification('Connexion internet rétablie', 'success');
+                    this.syncData();
+                });
+                
+                window.addEventListener('offline', () => {
+                    this.offlineMode = true;
+                    this.updateConnectionStatus();
+                    this.showNotification('Mode hors ligne activé', 'warning');
+                });
+            }
+            
+            updateConnectionStatus() {
+                const statusElement = document.getElementById('connection-status');
+                if (statusElement) {
+                    if (navigator.onLine && !this.offlineMode) {
+                        statusElement.innerHTML = '<i class="fas fa-wifi"></i> En ligne';
+                        statusElement.className = 'connection-status status-online';
+                    } else {
+                        statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> Hors ligne';
+                        statusElement.className = 'connection-status status-offline';
+                    }
+                }
+            }
+            
+            async checkSavedUser() {
+                const savedUser = localStorage.getItem('notecam_current_user');
+                if (savedUser) {
+                    this.currentUser = JSON.parse(savedUser);
+                    await this.showDashboard();
+                }
+            }
+            
+            setupEventListeners() {
+                // زر تسجيل الدخول
+                document.getElementById('login-btn')?.addEventListener('click', () => this.login());
+                
+                // يمكن إضافة Enter لتسجيل الدخول
+                document.getElementById('password')?.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.login();
+                });
+            }
+            
+            async login() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                if (!email || !password) {
+                    this.showNotification('Veuillez remplir tous les champs', 'error');
+                    return;
+                }
+                
+                this.showNotification('Connexion en cours...', 'info');
+                
+                // محاكاة تسجيل الدخول (في الإنتاج، استخدم Supabase)
+                await this.mockLogin(email, password);
+            }
+            
+            async mockLogin(email, password) {
+                // بيانات مستخدمين تجريبية
+                const testUsers = {
+                    'admin@notecam.com': {
+                        password: 'admin123',
+                        id: 'user_admin_001',
+                        name: 'Administrateur Principal',
+                        role: 'admin',
+                        email: 'admin@notecam.com'
+                    },
+                    'employe@notecam.com': {
+                        password: 'pass123',
+                        id: 'user_emp_001',
+                        name: 'Jean Dupont',
+                        role: 'employee',
+                        email: 'employe@notecam.com',
+                        zones: ['ZN001', 'ZN002']
+                    }
+                };
+                
+                const user = testUsers[email];
+                
+                if (user && user.password === password) {
+                    this.currentUser = user;
+                    
+                    // حفظ في localStorage
+                    localStorage.setItem('notecam_current_user', JSON.stringify(user));
+                    
+                    // إضافة إلى قاعدة البيانات المحلية
+                    if (!this.localData.users.find(u => u.email === email)) {
+                        this.localData.users.push(user);
+                        localStorage.setItem('notecam_users', JSON.stringify(this.localData.users));
+                    }
+                    
+                    this.showNotification(`Bienvenue ${user.name}`, 'success');
+                    await this.showDashboard();
+                    
+                } else {
+                    this.showNotification('Email ou mot de passe incorrect', 'error');
+                }
+            }
+            
+            async showDashboard() {
+                const appElement = document.getElementById('app');
+                if (!appElement) return;
+                
+                if (!this.currentUser) {
+                    this.showLogin();
+                    return;
+                }
+                
+                if (this.currentUser.role === 'admin') {
+                    appElement.innerHTML = this.getAdminDashboard();
+                } else {
+                    appElement.innerHTML = this.getEmployeeDashboard();
+                }
+                
+                // إعادة إعداد الأحداث بعد تغيير الـ HTML
+                this.setupDashboardEvents();
+            }
+            
+            getAdminDashboard() {
+                return `
+                    <div class="admin-panel">
+                        <div class="header">
+                            <h1><i class="fas fa-user-shield"></i> Panneau Administrateur</h1>
+                            <button id="logout-btn" class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </button>
+                        </div>
+                        
+                        <div class="dashboard">
+                            <h2><i class="fas fa-tachometer-alt"></i> Tableau de Bord</h2>
+                            <p>Bienvenue, <strong>${this.currentUser.name}</strong></p>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
+                                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                                    <h3><i class="fas fa-users"></i> Utilisateurs</h3>
+                                    <p style="font-size: 24px; font-weight: bold; color: var(--primary);">${this.localData.users.length}</p>
+                                </div>
+                                
+                                <div style="background: #f0fff4; padding: 15px; border-radius: 8px;">
+                                    <h3><i class="fas fa-file-alt"></i> Rapports</h3>
+                                    <p style="font-size: 24px; font-weight: bold; color: var(--secondary);">${this.localData.reports.length}</p>
+                                </div>
+                                
+                                <div style="background: #fff3cd; padding: 15px; border-radius: 8px;">
+                                    <h3><i class="fas fa-images"></i> Photos</h3>
+                                    <p style="font-size: 24px; font-weight: bold; color: #856404;">${this.localData.photos.length}</p>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 30px;">
+                                <button id="manage-users-btn" class="btn btn-primary">
+                                    <i class="fas fa-user-cog"></i> Gérer les utilisateurs
+                                </button>
+                                <button id="view-reports-btn" class="btn btn-success">
+                                    <i class="fas fa-file-alt"></i> Voir les rapports
+                                </button>
+                                <button id="sync-btn" class="btn btn-warning">
+                                    <i class="fas fa-sync-alt"></i> Synchroniser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            getEmployeeDashboard() {
+                return `
+                    <div class="employee-panel">
+                        <div class="header">
+                            <h1><i class="fas fa-user"></i> Panneau Employé</h1>
+                            <button id="logout-btn" class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </button>
+                        </div>
+                        
+                        <div class="dashboard">
+                            <h2><i class="fas fa-user-circle"></i> ${this.currentUser.name}</h2>
+                            <p>Rôle: <strong>${this.currentUser.role}</strong></p>
+                            
+                            <div class="camera-section">
+                                <h3><i class="fas fa-camera"></i> Capture de Photos</h3>
+                                
+                                <div class="camera-controls">
+                                    <button id="start-camera-btn" class="btn btn-primary">
+                                        <i class="fas fa-video"></i> Activer la caméra
+                                    </button>
+                                    <button id="capture-btn" class="btn btn-success" disabled>
+                                        <i class="fas fa-camera"></i> Prendre une photo
+                                    </button>
+                                    <button id="view-photos-btn" class="btn btn-warning">
+                                        <i class="fas fa-images"></i> Mes photos
+                                    </button>
+                                </div>
+                                
+                                <div id="camera-container" style="display: none;">
+                                    <div class="camera-preview" id="camera-preview">
+                                        <div style="color: white; display: flex; align-items: center; justify-content: center; height: 100%;">
+                                            <i class="fas fa-video-slash" style="font-size: 48px;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="photo-section" style="display: none;">
+                                    <h4>Sélectionnez le type de photo:</h4>
+                                    <div style="display: flex; gap: 10px; margin: 15px 0;">
+                                        <button class="btn" onclick="app.capturePhoto('before')">
+                                            <i class="fas fa-arrow-left"></i> Photo AVANT
+                                        </button>
+                                        <button class="btn" onclick="app.capturePhoto('after')">
+                                            <i class="fas fa-arrow-right"></i> Photo APRÈS
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="photo-grid" id="photo-grid">
+                                        ${this.generatePhotoGrid()}
+                                    </div>
+                                    
+                                    <div style="margin-top: 20px;">
+                                        <button id="send-report-btn" class="btn btn-primary" disabled>
+                                            <i class="fas fa-paper-plane"></i> Envoyer le rapport
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 30px;">
+                                <button id="my-reports-btn" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Mes rapports (${this.getUserReports().length})
+                                </button>
+                                <button id="sync-btn" class="btn btn-warning">
+                                    <i class="fas fa-sync-alt"></i> Synchroniser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            generatePhotoGrid() {
+                let html = '';
+                const photoTypes = ['before_1', 'before_2', 'before_3', 'before_4', 'before_5'];
+                
+                photoTypes.forEach(type => {
+                    const hasPhoto = this.localData.photos.some(p => 
+                        p.type === type && p.userId === this.currentUser.id
+                    );
+                    
+                    html += `
+                        <div class="photo-box ${hasPhoto ? 'captured' : ''}" onclick="app.openPhotoDialog('${type}')">
+                            ${hasPhoto ? 
+                                `<img src="#" alt="${type}" class="photo-preview">` :
+                                `<i class="fas fa-camera"></i>`
+                            }
+                            <div class="photo-label">${type.toUpperCase()}</div>
+                        </div>
+                    `;
+                });
+                
+                return html;
+            }
+            
+            setupDashboardEvents() {
+                // زر تسجيل الخروج
+                document.getElementById('logout-btn')?.addEventListener('click', () => this.logout());
+                
+                // زر المزامنة
+                document.getElementById('sync-btn')?.addEventListener('click', () => this.syncData());
+                
+                // زر تشغيل الكاميرا (للموظفين)
+                const cameraBtn = document.getElementById('start-camera-btn');
+                if (cameraBtn) {
+                    cameraBtn.addEventListener('click', () => this.toggleCamera());
+                }
+                
+                // أزرار الإدارة (للمشرفين)
+                document.getElementById('manage-users-btn')?.addEventListener('click', () => this.manageUsers());
+                document.getElementById('view-reports-btn')?.addEventListener('click', () => this.viewReports());
+            }
+            
+            async toggleCamera() {
+                const cameraContainer = document.getElementById('camera-container');
+                const photoSection = document.getElementById('photo-section');
+                const cameraBtn = document.getElementById('start-camera-btn');
+                
+                if (cameraContainer.style.display === 'none') {
+                    // تشغيل الكاميرا
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: 'environment' }
+                        });
+                        
+                        const preview = document.getElementById('camera-preview');
+                        preview.innerHTML = '<video autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+                        
+                        const video = preview.querySelector('video');
+                        video.srcObject = stream;
+                        
+                        cameraContainer.style.display = 'block';
+                        photoSection.style.display = 'block';
+                        cameraBtn.innerHTML = '<i class="fas fa-video-slash"></i> Désactiver la caméra';
+                        cameraBtn.classList.remove('btn-primary');
+                        cameraBtn.classList.add('btn-danger');
+                        
+                        document.getElementById('capture-btn').disabled = false;
+                        
+                    } catch (error) {
+                        this.showNotification('Erreur d\'accès à la caméra: ' + error.message, 'error');
+                    }
+                } else {
+                    // إيقاف الكاميرا
+                    const preview = document.getElementById('camera-preview');
+                    const video = preview.querySelector('video');
+                    
+                    if (video && video.srcObject) {
+                        video.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    cameraContainer.style.display = 'none';
+                    cameraBtn.innerHTML = '<i class="fas fa-video"></i> Activer la caméra';
+                    cameraBtn.classList.remove('btn-danger');
+                    cameraBtn.classList.add('btn-primary');
+                    
+                    document.getElementById('capture-btn').disabled = true;
+                }
+            }
+            
+            async capturePhoto(type) {
+                const preview = document.getElementById('camera-preview');
+                const video = preview.querySelector('video');
+                
+                if (!video) {
+                    this.showNotification('Veuillez d\'abord activer la caméra', 'warning');
+                    return;
+                }
+                
+                try {
+                    // إنشاء canvas للتصوير
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const context = canvas.getContext('2d');
+                    
+                    // رسم الفيديو على canvas
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // إضافة معلومات للصورة
+                    context.fillStyle = 'white';
+                    context.font = '16px Arial';
+                    context.fillText(`NoteCam - ${type}`, 10, 30);
+                    context.fillText(new Date().toLocaleString(), 10, 60);
+                    
+                    // تحويل إلى Blob
+                    canvas.toBlob(async (blob) => {
+                        // حفظ الصورة محلياً
+                        const photoId = 'photo_' + Date.now();
+                        const photoData = {
+                            id: photoId,
+                            type: type,
+                            userId: this.currentUser.id,
+                            blob: blob,
+                            timestamp: new Date().toISOString(),
+                            synced: false
+                        };
+                        
+                        this.localData.photos.push(photoData);
+                        localStorage.setItem('notecam_photos', JSON.stringify(this.localData.photos));
+                        
+                        this.showNotification(`Photo ${type} capturée!`, 'success');
+                        
+                        // تحديث العرض
+                        this.updatePhotoGrid();
+                        
+                    }, 'image/jpeg', 0.8);
+                    
+                } catch (error) {
+                    this.showNotification('Erreur de capture: ' + error.message, 'error');
+                }
+            }
+            
+            updatePhotoGrid() {
+                const photoGrid = document.getElementById('photo-grid');
+                if (photoGrid) {
+                    photoGrid.innerHTML = this.generatePhotoGrid();
+                }
+            }
+            
+            getUserReports() {
+                return this.localData.reports.filter(r => r.userId === this.currentUser.id);
+            }
+            
+            async syncData() {
+                this.showNotification('Synchronisation en cours...', 'info');
+                
+                // محاكاة المزامنة
+                setTimeout(() => {
+                    const pendingCount = this.localData.photos.filter(p => !p.synced).length +
+                                       this.localData.reports.filter(r => !r.synced).length;
+                    
+                    if (pendingCount > 0) {
+                        // تحديث حالة المزامنة
+                        this.localData.photos.forEach(p => p.synced = true);
+                        this.localData.reports.forEach(r => r.synced = true);
+                        
+                        localStorage.setItem('notecam_photos', JSON.stringify(this.localData.photos));
+                        localStorage.setItem('notecam_reports', JSON.stringify(this.localData.reports));
+                        
+                        this.showNotification(`${pendingCount} éléments synchronisés`, 'success');
+                    } else {
+                        this.showNotification('Aucune donnée à synchroniser', 'info');
+                    }
+                }, 1500);
+            }
+            
+            manageUsers() {
+                this.showNotification('Gestion des utilisateurs (à implémenter)', 'info');
+            }
+            
+            viewReports() {
+                let reportsHtml = '<h3><i class="fas fa-file-alt"></i> Tous les Rapports</h3>';
+                
+                if (this.localData.reports.length === 0) {
+                    reportsHtml += '<p>Aucun rapport disponible.</p>';
+                } else {
+                    this.localData.reports.forEach(report => {
+                        reportsHtml += `
+                            <div class="report-card">
+                                <h4>Rapport #${report.id}</h4>
+                                <p>Employé: ${report.userName || 'Inconnu'}</p>
+                                <p>Date: ${new Date(report.date).toLocaleDateString()}</p>
+                                <p>Photos: ${report.photosCount || 0}</p>
+                            </div>
+                        `;
                     });
-            });
+                }
+                
+                const dashboard = document.querySelector('.dashboard');
+                if (dashboard) {
+                    dashboard.innerHTML = reportsHtml + 
+                        `<button onclick="app.showDashboard()" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </button>`;
+                }
+            }
+            
+            openPhotoDialog(type) {
+                this.showNotification(`Ouverture de la photo ${type}`, 'info');
+            }
+            
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('notecam_current_user');
+                this.showNotification('Déconnecté avec succès', 'success');
+                this.showLogin();
+            }
+            
+            showLogin() {
+                const appElement = document.getElementById('app');
+                if (appElement) {
+                    appElement.innerHTML = `
+                        <div class="login-container">
+                            <h2><i class="fas fa-lock"></i> Connexion NoteCam</h2>
+                            
+                            <div class="form-group">
+                                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                                <input type="email" id="email" class="form-control" placeholder="admin@notecam.com" value="admin@notecam.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="password"><i class="fas fa-key"></i> Mot de passe</label>
+                                <input type="password" id="password" class="form-control" placeholder="••••••••" value="admin123">
+                            </div>
+                            
+                            <button id="login-btn" class="btn btn-primary" style="width: 100%; margin: 10px 0;">
+                                <i class="fas fa-sign-in-alt"></i> Se connecter
+                            </button>
+                            
+                            <div class="connection-status status-online" id="connection-status">
+                                <i class="fas fa-wifi"></i> En ligne
+                            </div>
+                        </div>
+                    `;
+                    
+                    // إعادة إعداد الأحداث
+                    this.setupEventListeners();
+                }
+            }
+            
+            showNotification(message, type = 'info') {
+                // إزالة أي إشعارات سابقة
+                const oldNotifications = document.querySelectorAll('.notification');
+                oldNotifications.forEach(n => n.remove());
+                
+                // إنشاء إشعار جديد
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 600;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                    background: ${type === 'success' ? 'var(--secondary)' : 
+                                type === 'error' ? 'var(--danger)' : 
+                                type === 'warning' ? 'var(--warning)' : 'var(--primary)'};
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // إزالة الإشعار بعد 3 ثوان
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
         }
+        
+        // بدء التطبيق عند تحميل الصفحة
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new NoteCamSystem();
+            window.app = app; // لجعل التطبيق متاحاً عالمياً
+        });
     </script>
 </body>
 </html>
