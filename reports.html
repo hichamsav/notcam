@@ -359,7 +359,8 @@
             admin: {
                 password: "admin123",
                 role: "admin",
-                name: "Superviseur Principal"
+                name: "Superviseur Principal",
+                assignedAreas: []
             }
         };
 
@@ -464,6 +465,27 @@
             }
         }
 
+        function validateReportsData() {
+            if (!zoneReports) {
+                zoneReports = {};
+            }
+            
+            if (!assignedAreas) {
+                assignedAreas = [];
+            }
+            
+            if (!usersData) {
+                usersData = JSON.parse(JSON.stringify(defaultUsersData));
+            }
+            
+            // تنظيف zoneReports من المناطق الفارغة
+            Object.keys(zoneReports).forEach(zoneCode => {
+                if (!zoneReports[zoneCode] || !zoneReports[zoneCode].reports) {
+                    delete zoneReports[zoneCode];
+                }
+            });
+        }
+
         function loadFromLocalStorage() {
             try {
                 const savedData = localStorage.getItem('noteCamSystemData');
@@ -472,15 +494,34 @@
                     usersData = {...defaultUsersData, ...data.usersData};
                     assignedAreas = data.assignedAreas || assignedAreas;
                     zoneReports = data.zoneReports || {};
+                    
+                    Object.keys(usersData).forEach(username => {
+                        if (!usersData[username].assignedAreas) {
+                            usersData[username].assignedAreas = [];
+                        }
+                    });
+                } else {
+                    usersData = JSON.parse(JSON.stringify(defaultUsersData));
+                    assignedAreas = [];
+                    zoneReports = {};
+                    saveToLocalStorage();
                 }
                 
                 const savedUser = localStorage.getItem('currentUser');
                 if (savedUser) {
-                    currentUser = JSON.parse(savedUser);
+                    try {
+                        currentUser = JSON.parse(savedUser);
+                    } catch (e) {
+                        console.error('Erreur chargement utilisateur:', e);
+                        currentUser = null;
+                    }
                 }
                 
             } catch (error) {
                 console.error('Erreur chargement données:', error);
+                usersData = JSON.parse(JSON.stringify(defaultUsersData));
+                assignedAreas = [];
+                zoneReports = {};
             }
         }
 
@@ -495,6 +536,15 @@
             window.location.href = 'admin.html';
         }
 
+        function saveToLocalStorage() {
+            const data = {
+                usersData,
+                assignedAreas,
+                zoneReports
+            };
+            localStorage.setItem('noteCamSystemData', JSON.stringify(data));
+        }
+
         function initializeApp() {
             loadFromLocalStorage();
             updateStatusBar("Rapports");
@@ -504,6 +554,7 @@
                 return;
             }
             
+            validateReportsData();
             displayFullReports();
             initializeSupabase();
         }
@@ -513,8 +564,15 @@
             reportDetailsContainer.innerHTML = '';
             
             let totalReports = 0;
+            let allReports = [];
+            
             Object.values(zoneReports).forEach(zone => {
-                totalReports += zone.reports.length;
+                if (zone && zone.reports) {
+                    zone.reports.forEach(report => {
+                        allReports.push({...report, zoneData: zone});
+                        totalReports++;
+                    });
+                }
             });
             
             if (totalReports === 0) {
@@ -532,13 +590,6 @@
                 `;
                 return;
             }
-            
-            let allReports = [];
-            Object.values(zoneReports).forEach(zone => {
-                zone.reports.forEach(report => {
-                    allReports.push({...report, zoneData: zone});
-                });
-            });
             
             allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
             
@@ -631,13 +682,14 @@
         }
 
         function viewReportDetails(zoneCode, reportId) {
-            const zoneData = zoneReports[zoneCode];
-            if (!zoneData) {
+            if (!zoneReports[zoneCode]) {
                 showNotification("Zone non trouvée", "error");
                 return;
             }
             
+            const zoneData = zoneReports[zoneCode];
             const report = zoneData.reports.find(r => r.id === reportId);
+            
             if (!report) {
                 showNotification("Rapport non trouvé", "error");
                 return;
@@ -650,7 +702,7 @@
             const afterCount = report.afterPhotos?.length || 0;
             const totalPhotos = beforeCount + afterCount;
             
-            const reportPhotos = zoneData.photos.filter(photo => photo.reportId === reportId);
+            const reportPhotos = zoneData.photos ? zoneData.photos.filter(photo => photo.reportId === reportId) : [];
             const beforePhotosList = reportPhotos.filter(p => p.type === 'before');
             const afterPhotosList = reportPhotos.filter(p => p.type === 'after');
             
@@ -904,7 +956,10 @@
             if (reportIndex === -1) return;
             
             zoneData.reports.splice(reportIndex, 1);
-            zoneData.photos = zoneData.photos.filter(photo => photo.reportId !== reportId);
+            
+            if (zoneData.photos) {
+                zoneData.photos = zoneData.photos.filter(photo => photo.reportId !== reportId);
+            }
             
             saveToLocalStorage();
             displayFullReports();
@@ -945,15 +1000,6 @@
             };
             
             document.body.appendChild(modal);
-        }
-
-        function saveToLocalStorage() {
-            const data = {
-                usersData,
-                assignedAreas,
-                zoneReports
-            };
-            localStorage.setItem('noteCamSystemData', JSON.stringify(data));
         }
 
         document.addEventListener('DOMContentLoaded', initializeApp);
