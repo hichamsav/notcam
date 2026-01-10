@@ -3,1319 +3,1026 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Système NoteCam - Panneau Admin</title>
-    
-    <!-- Supabase JS -->
+    <title>NoteCam - Panneau Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ========== جميع الأنماط الأصلية بالكامل ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
-            color: #333333;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f7fafc;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px;
-            overflow-x: hidden;
         }
-
-        .app-container {
-            width: 100%;
-            max-width: 1200px;
-            background: #ffffff;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 100, 200, 0.15);
-            border: 1px solid #e1e8ed;
-        }
-
-        .status-bar {
-            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
-            padding: 12px 20px;
-            font-size: 13px;
-            color: #ffffff;
-            text-align: center;
-            border-bottom: 3px solid #ff6b6b;
-            width: 100%;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+        
+        .navbar {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
-        .sync-status {
-            font-size: 11px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 2px 8px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .sync-icon {
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .admin-panel {
-            display: block;
-        }
-
-        .panel-header {
-            background: linear-gradient(90deg, #ffffff 0%, #f8f9fa 100%);
-            padding: 18px 25px;
-            border-bottom: 2px solid #e1e8ed;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .panel-title {
-            font-size: 22px;
-            color: #1a5fb4;
+        
+        .logo {
+            font-size: 24px;
             font-weight: 700;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
-        .logout-btn, .back-btn {
-            padding: 10px 20px;
-            background: #ff6b6b;
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logout-btn {
+            background: #f56565;
             color: white;
             border: none;
+            padding: 8px 20px;
             border-radius: 8px;
             cursor: pointer;
-            font-family: 'Segoe UI', sans-serif;
-            margin-left: 10px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
-
-        .logout-btn:hover, .back-btn:hover {
+        
+        .logout-btn:hover {
+            background: #e53e3e;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
         }
-
-        .back-btn {
-            background: #2ea043;
+        
+        .container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-
-        .dashboard-section {
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
             padding: 25px;
-            margin: 15px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border: 2px solid #e1e8ed;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
         }
-
-        .dashboard-section h3 {
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            color: #1a5fb4;
-            border-bottom: 2px solid #e1e8ed;
-            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+        
+        .card-title {
             font-size: 20px;
             font-weight: 700;
+            color: #2d3748;
         }
-
-        .employee-form {
+        
+        .card-icon {
+            font-size: 30px;
+            color: #667eea;
+        }
+        
+        .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 25px;
         }
-
-        .form-input {
-            padding: 12px;
-            background: #ffffff;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            color: #333;
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            border-color: #1a5fb4;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.1);
-        }
-
-        .action-btn {
-            padding: 12px 20px;
-            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Segoe UI', sans-serif;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(26, 95, 180, 0.3);
-        }
-
-        .employee-list {
-            margin-top: 25px;
-        }
-
-        .employee-card {
-            background: #ffffff;
-            padding: 18px;
-            margin: 12px 0;
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
             border-radius: 10px;
-            border-left: 5px solid #1a5fb4;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
         }
-
-        .employee-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
         }
-
-        .control-btn {
-            padding: 12px 24px;
-            background: #ffffff;
-            border: 2px solid #e1e8ed;
-            color: #333;
-            font-family: 'Segoe UI', sans-serif;
+        
+        .stat-label {
             font-size: 14px;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
             font-weight: 600;
-            cursor: pointer;
+            color: #4a5568;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
-            min-width: 140px;
-            transition: all 0.3s ease;
+            font-size: 16px;
+            transition: all 0.3s;
         }
-
-        .control-btn:hover {
+        
+        .form-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-
-        .control-btn.primary {
-            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
-            color: white;
-            border: none;
+        
+        .btn-danger {
+            background: #f56565;
         }
-
-        .control-btn.danger {
-            background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 100%);
-            color: white;
-            border: none;
+        
+        .btn-danger:hover {
+            background: #e53e3e;
         }
-
-        .areas-list {
-            margin-top: 25px;
+        
+        .btn-success {
+            background: #48bb78;
         }
-
-        .reports-container {
-            margin-top: 25px;
+        
+        .btn-success:hover {
+            background: #38a169;
         }
-
-        .report-card {
-            background: #ffffff;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 10px;
-            border-left: 5px solid #1a5fb4;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
         }
-
-        .report-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
         .badge {
-            display: inline-block;
-            padding: 4px 10px;
+            padding: 5px 10px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 700;
-            margin-left: 8px;
+            font-weight: 600;
         }
-
-        .badge-blue {
-            background: #1a5fb4;
-            color: white;
+        
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
         }
-
-        .badge-green {
-            background: #2ea043;
-            color: white;
+        
+        .badge-warning {
+            background: #feebc8;
+            color: #744210;
         }
-
-        .badge-red {
-            background: #ff6b6b;
-            color: white;
+        
+        .badge-danger {
+            background: #fed7d7;
+            color: #742a2a;
         }
-
-        .sync-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 15px;
-            background: #e3f2fd;
-            border-radius: 8px;
-            border: 1px solid #1a5fb4;
-        }
-
-        .sync-btn {
-            padding: 8px 15px;
-            background: #1a5fb4;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .sync-btn:hover {
-            background: #154a8a;
-        }
-
-        .sync-info {
-            font-size: 12px;
-            color: #666;
-            flex-grow: 1;
-        }
-
-        .sync-success {
-            color: #2ea043;
-        }
-
-        .sync-error {
-            color: #ff6b6b;
-        }
-
-        @media (max-width: 768px) {
-            .employee-form {
-                grid-template-columns: 1fr;
-            }
-            
-            .control-btn {
-                min-width: 120px;
-                padding: 10px 15px;
-            }
-            
-            .sync-controls {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .panel-title {
-                font-size: 18px;
-            }
-            
-            .dashboard-section {
-                padding: 20px;
-                margin: 10px;
-            }
-            
-            .control-btn {
-                width: 100%;
-                max-width: 250px;
-            }
-        }
-
+        
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #2ea043;
+            background: #48bb78;
             color: white;
             padding: 15px 25px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            z-index: 10000;
             display: none;
-            animation: slideIn 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
         }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        
+        .notification.error {
+            background: #f56565;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
     </style>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="notification" id="notification"></div>
-
-    <div class="app-container">
-        <div class="status-bar" id="statusBar">
-            <div>Système NoteCam ● Admin ●</div>
-            <div class="sync-status" id="syncStatus">
-                <i class="fas fa-sync sync-icon" id="syncIcon"></i>
-                <span id="syncText">Synchronisation</span>
+    
+    <!-- Modal pour les détails -->
+    <div class="modal" id="photoModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Détails des photos</h3>
+                <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
             </div>
+            <div id="photoDetails"></div>
         </div>
-
-        <div class="admin-panel" id="adminPanel">
-            <div class="panel-header">
-                <div class="panel-title">Panneau de Contrôle du Superviseur</div>
-                <div>
-                    <button class="logout-btn" onclick="logout()">Déconnexion</button>
-                </div>
-            </div>
-
-            <div class="dashboard-section">
-                <h3><i class="fas fa-sync"></i> Système de Synchronisation</h3>
-                <div class="sync-controls">
-                    <button class="sync-btn" onclick="manualSync()">
-                        <i class="fas fa-sync-alt"></i> Synchroniser Maintenant
-                    </button>
-                    <button class="sync-btn" onclick="forceSyncFromSupabase()">
-                        <i class="fas fa-download"></i> Charger depuis Supabase
-                    </button>
-                    <button class="sync-btn" onclick="forceSyncToSupabase()">
-                        <i class="fas fa-upload"></i> Envoyer vers Supabase
-                    </button>
-                    <div class="sync-info">
-                        Dernière sync: <span id="lastSyncTime">Jamais</span>
-                        <div id="syncStatusDetail" class="sync-success">Prêt</div>
+    </div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-camera"></i>
+            NoteCam Admin
+        </div>
+        <div class="user-info">
+            <span id="adminName">Chargement...</span>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Statistiques -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Utilisateurs</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
                     </div>
                 </div>
-            </div>
-
-            <div class="dashboard-section">
-                <h3>Gestion des Employés <span class="badge badge-blue" id="employeesCount">0</span></h3>
-                <div class="employee-form">
-                    <input type="text" id="empUsername" class="form-input" placeholder="Nom d'utilisateur">
-                    <input type="password" id="empPassword" class="form-input" placeholder="Mot de passe">
-                    <input type="text" id="empName" class="form-input" placeholder="Nom de l'employé">
-                    <button class="action-btn" onclick="addEmployee()">Ajouter un employé</button>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="adminCount">0</div>
+                        <div class="stat-label">Administrateurs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="employeeCount">0</div>
+                        <div class="stat-label">Employés</div>
+                    </div>
                 </div>
-                <div class="employee-list" id="employeesList"></div>
+                <button class="btn" onclick="showUserManagement()">
+                    <i class="fas fa-user-plus"></i> Gérer les utilisateurs
+                </button>
             </div>
-
-            <div class="dashboard-section">
-                <h3>Attribution des Zones Géographiques <span class="badge badge-green" id="areasCount">0</span></h3>
-                <div class="employee-form">
-                    <select id="employeeSelect" class="form-input">
-                        <option value="">Sélectionner un employé</option>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Rapports</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalReports">0</div>
+                        <div class="stat-label">Total rapports</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="completeReports">0</div>
+                        <div class="stat-label">Complets</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="pendingReports">0</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                </div>
+                <button class="btn" onclick="showReports()">
+                    <i class="fas fa-eye"></i> Voir tous les rapports
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Photos</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalPhotos">0</div>
+                        <div class="stat-label">Total photos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="beforePhotos">0</div>
+                        <div class="stat-label">Photos AVANT</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="afterPhotos">0</div>
+                        <div class="stat-label">Photos APRÈS</div>
+                    </div>
+                </div>
+                <button class="btn" onclick="showPhotos()">
+                    <i class="fas fa-image"></i> Gérer les photos
+                </button>
+            </div>
+        </div>
+        
+        <!-- Gestion des utilisateurs (caché par défaut) -->
+        <div class="card" id="userManagement" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des utilisateurs</h3>
+                <button class="btn-success" onclick="showAddUserForm()">
+                    <i class="fas fa-plus"></i> Ajouter utilisateur
+                </button>
+            </div>
+            
+            <div id="addUserForm" style="display: none; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Nom d'utilisateur</label>
+                    <input type="text" id="newUsername" class="form-input" placeholder="username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" id="newPassword" class="form-input" placeholder="********">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nom complet</label>
+                    <input type="text" id="newFullName" class="form-input" placeholder="Nom Prénom">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rôle</label>
+                    <select id="newRole" class="form-input">
+                        <option value="employee">Employé</option>
+                        <option value="admin">Administrateur</option>
                     </select>
-                    <input type="text" id="areaName" class="form-input" placeholder="Nom de la zone">
-                    <input type="text" id="areaCode" class="form-input" placeholder="Code de la zone (ex: ZN001)">
-                    <button class="action-btn" onclick="assignArea()">Attribuer la zone</button>
                 </div>
-                <div class="areas-list" id="assignedAreasList"></div>
-            </div>
-
-            <div class="dashboard-section">
-                <h3>Rapports Reçus <span class="badge badge-red" id="reportsCount">0</span></h3>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <a href="reports.html" class="control-btn primary">
-                        <i class="fas fa-file-alt"></i> Voir tous les rapports
-                    </a>
-                    <button class="control-btn" onclick="exportAllData()">
-                        <i class="fas fa-download"></i> Exporter toutes les données
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-success" onclick="addUser()">
+                        <i class="fas fa-save"></i> Ajouter
+                    </button>
+                    <button class="btn-danger" onclick="cancelAddUser()">
+                        <i class="fas fa-times"></i> Annuler
                     </button>
                 </div>
-                <div class="reports-container" id="reportsListMini"></div>
+            </div>
+            
+            <div class="table-container">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Nom d'utilisateur</th>
+                            <th>Nom complet</th>
+                            <th>Rôle</th>
+                            <th>Date création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList">
+                        <!-- Les utilisateurs seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Gestion des rapports (caché par défaut) -->
+        <div class="card" id="reportsManagement" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des rapports</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="searchReport" class="form-input" placeholder="Rechercher..." style="width: 300px;">
+                    <button class="btn" onclick="searchReports()">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="reportsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Employé</th>
+                            <th>Zone</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsList">
+                        <!-- Les rapports seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Gestion des photos (caché par défaut) -->
+        <div class="card" id="photosManagement" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des photos</h3>
+                <select id="photoTypeFilter" class="form-input" style="width: 200px;" onchange="loadPhotos()">
+                    <option value="all">Toutes les photos</option>
+                    <option value="before">Photos AVANT</option>
+                    <option value="after">Photos APRÈS</option>
+                </select>
+            </div>
+            
+            <div id="photosGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                <!-- Les photos seront chargées ici -->
             </div>
         </div>
     </div>
-
+    
     <script>
+        // Configuration
         const SUPABASE_URL = 'https://jxvnmcgfwlbswtkiglmh.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw';
         
-        let supabaseClient;
-        let isSupabaseInitialized = false;
+        let supabase;
+        let currentUser;
+        let allUsers = [];
+        let allReports = [];
+        let allPhotos = [];
         
-        const defaultUsersData = {
-            admin: {
-                password: "admin123",
-                role: "admin",
-                name: "Superviseur Principal"
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Vérifier si l'utilisateur est connecté
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
             }
-        };
-
-        for (let i = 1; i <= 11; i++) {
-            defaultUsersData[`user${i}`] = {
-                password: "pass123",
-                role: "employee",
-                name: `Employé ${i}`,
-                assignedAreas: []
-            };
-        }
-
-        let usersData = JSON.parse(JSON.stringify(defaultUsersData));
-        let assignedAreas = [];
-        let zoneReports = {};
-
-        let currentUser = null;
-
-        let syncInterval;
-        let lastSyncTime = null;
-        let isSyncing = false;
-        const SYNC_INTERVAL = 30000;
-
-        const statusBar = document.getElementById('statusBar');
-        const notification = document.getElementById('notification');
-        const syncStatus = document.getElementById('syncStatus');
-        const syncText = document.getElementById('syncText');
-        const syncIcon = document.getElementById('syncIcon');
-        const lastSyncTimeEl = document.getElementById('lastSyncTime');
-        const syncStatusDetail = document.getElementById('syncStatusDetail');
-
+            
+            currentUser = JSON.parse(userData);
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Afficher le nom de l'admin
+            document.getElementById('adminName').textContent = currentUser.name || currentUser.username;
+            
+            // Initialiser Supabase
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialisé');
+            } catch (error) {
+                showNotification('Erreur de connexion à la base de données', 'error');
+                console.error('Erreur Supabase:', error);
+                return;
+            }
+            
+            // Charger les données
+            await loadDashboardData();
+            await loadAllData();
+        });
+        
+        // Fonctions d'affichage
         function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
             notification.textContent = message;
-            notification.style.background = type === 'success' ? '#2ea043' : 
-                                           type === 'warning' ? '#ffa500' : '#ff6b6b';
+            notification.className = 'notification ' + (type !== 'success' ? type : '');
             notification.style.display = 'block';
             
             setTimeout(() => {
                 notification.style.display = 'none';
             }, 3000);
         }
-
-        function formatDate(dateString) {
-            if (!dateString) return 'Jamais';
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${day}/${month}/${year} ${hours}:${minutes}`;
-        }
-
-        function formatTimeShort(date) {
-            if (!date) return '';
-            const now = new Date();
-            const diffMs = now - new Date(date);
-            const diffMins = Math.floor(diffMs / 60000);
-            
-            if (diffMins < 1) return 'à l\'instant';
-            if (diffMins < 60) return `il y a ${diffMins} min`;
-            if (diffMins < 1440) return `il y a ${Math.floor(diffMins/60)} h`;
-            return formatDate(date);
-        }
-
-        function updateStatusBar(message) {
-            const statusText = statusBar.querySelector('div:first-child');
-            if (statusText) {
-                statusText.textContent = `Système NoteCam ● ${message} ●`;
-            }
-        }
-
-        function updateSyncStatus(status, message = '') {
-            syncText.textContent = status;
-            if (syncStatusDetail) {
-                syncStatusDetail.textContent = message;
-                syncStatusDetail.className = status === 'Synchro OK' ? 'sync-success' : 
-                                            status === 'Erreur' ? 'sync-error' : '';
-            }
-            
-            if (lastSyncTimeEl && lastSyncTime) {
-                lastSyncTimeEl.textContent = formatTimeShort(lastSyncTime);
-            }
-            
-            if (status === 'Synchronisation...') {
-                syncIcon.style.animation = 'spin 1s linear infinite';
-                syncStatus.style.background = 'rgba(255, 165, 0, 0.3)';
-            } else if (status === 'Synchro OK') {
-                syncIcon.style.animation = 'none';
-                syncIcon.className = 'fas fa-check-circle';
-                syncStatus.style.background = 'rgba(46, 160, 67, 0.3)';
-            } else if (status === 'Erreur') {
-                syncIcon.style.animation = 'none';
-                syncIcon.className = 'fas fa-exclamation-circle';
-                syncStatus.style.background = 'rgba(255, 107, 107, 0.3)';
-            } else {
-                syncIcon.style.animation = 'spin 2s linear infinite';
-                syncStatus.style.background = 'rgba(26, 95, 180, 0.3)';
-            }
-        }
-
-        async function initializeSupabase() {
-            try {
-                console.log('Initialisation de Supabase...');
-                
-                if (typeof supabase === 'undefined') {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-                
-                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                    auth: { persistSession: false }
-                });
-                
-                isSupabaseInitialized = true;
-                console.log('Supabase initialisé avec succès');
-                updateSyncStatus('Connecté', 'Prêt à synchroniser');
-                
-                initSyncSystem();
-                
-                showNotification("Supabase connecté avec succès", "success");
-                
-            } catch (error) {
-                console.error('Erreur initialisation Supabase:', error);
-                updateSyncStatus('Erreur', 'Connexion échouée');
-                showNotification("Mode hors ligne - Données locales", "warning");
-                
-                setTimeout(() => {
-                    if (!isSupabaseInitialized) {
-                        initializeSupabase();
-                    }
-                }, 5000);
-            }
-        }
-async function createTablesIfNotExist() {
-    try {
-        // التحقق من وجود الجداول
-        const tables = ['users', 'assigned_areas', 'reports'];
         
-        for (const table of tables) {
-            try {
-                const { error } = await supabaseClient
-                    .from(table)
-                    .select('count', { count: 'exact', head: true });
-                
-                if (error && error.message.includes('does not exist')) {
-                    console.log(`Table ${table} n'existe pas, création...`);
-                    await createTable(table);
-                }
-            } catch (err) {
-                console.warn(`Erreur vérification table ${table}:`, err.message);
-            }
+        function showModal() {
+            document.getElementById('photoModal').style.display = 'flex';
         }
-    } catch (error) {
-        console.error('Erreur création tables:', error);
-    }
-}
-
-async function createTable(tableName) {
-    // إرسال طلب لإنشاء الجدول (يتطلب صلاحيات)
-    try {
-        // يمكنك استخدام REST API لإنشاء الجداول
-        console.log(`Veuillez créer manuellement la table "${tableName}" dans Supabase`);
-        showNotification(`Veuillez créer la table ${tableName} dans Supabase`, "warning");
-    } catch (error) {
-        console.error(`Erreur création table ${tableName}:`, error);
-    }
-}
-        function initSyncSystem() {
-            updateSyncStatus('Initialisation...');
-            
-            setTimeout(() => {
-                syncAllData();
-            }, 2000);
-            
-            syncInterval = setInterval(() => {
-                if (document.visibilityState === 'visible' && !isSyncing) {
-                    syncAllData();
-                }
-            }, SYNC_INTERVAL);
-            
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible' && !isSyncing) {
-                    syncAllData();
-                }
-            });
-            
-            window.addEventListener('online', () => {
-                showNotification("Connexion Internet rétablie - Synchronisation en cours", "success");
-                syncAllData();
-            });
-            
-            window.addEventListener('offline', () => {
-                showNotification("Mode hors ligne - Synchronisation suspendue", "warning");
-                updateSyncStatus('Hors ligne', 'Connexion perdue');
-            });
+        
+        function closeModal() {
+            document.getElementById('photoModal').style.display = 'none';
         }
-
-        async function syncAllData() {
-            if (isSyncing || !isSupabaseInitialized) return;
-            if (!navigator.onLine) {
-                updateSyncStatus('Hors ligne', 'Attente de connexion');
-                return;
-            }
-            
-            isSyncing = true;
-            updateSyncStatus('Synchronisation...', 'Mise à jour des données');
-            
+        
+        // Chargement des données
+        async function loadDashboardData() {
             try {
-                await syncFromSupabase();
-                await syncToSupabase();
-                
-                lastSyncTime = new Date();
-                updateSyncStatus('Synchro OK', `Dernière sync: ${formatTimeShort(lastSyncTime)}`);
-                
-                if (currentUser) {
-                    updateAdminDashboard();
-                }
-                
-            } catch (error) {
-                console.error('Erreur synchronisation:', error);
-                updateSyncStatus('Erreur', 'Échec de synchronisation');
-                showNotification("Erreur de synchronisation", "error");
-            } finally {
-                isSyncing = false;
-            }
-        }
-
-        async function syncFromSupabase() {
-            try {
-                const { data: users, error: usersError } = await supabaseClient
+                // Compter les utilisateurs
+                const { data: users, error: usersError } = await supabase
                     .from('users')
                     .select('*');
                 
-                if (!usersError && users && users.length > 0) {
-                    const remoteUserCount = users.length;
-                    usersData = { ...defaultUsersData };
+                if (!usersError) {
+                    const totalUsers = users.length;
+                    const adminCount = users.filter(u => u.role === 'admin').length;
+                    const employeeCount = users.filter(u => u.role === 'employee').length;
                     
-                    users.forEach(user => {
-                        usersData[user.username] = {
-                            password: user.password,
-                            role: user.role,
-                            name: user.name,
-                            assignedAreas: user.assigned_areas || []
-                        };
-                    });
-                    
-                    console.log(`${remoteUserCount} utilisateurs chargés depuis Supabase`);
+                    document.getElementById('totalUsers').textContent = totalUsers;
+                    document.getElementById('adminCount').textContent = adminCount;
+                    document.getElementById('employeeCount').textContent = employeeCount;
                 }
                 
-                const { data: areas, error: areasError } = await supabaseClient
-                    .from('assigned_areas')
-                    .select('*')
-                    .order('date', { ascending: false });
-                
-                if (!areasError && areas && areas.length > 0) {
-                    assignedAreas = areas.map(area => ({
-                        id: area.id,
-                        employee: area.employee,
-                        name: area.name,
-                        code: area.code,
-                        date: area.date,
-                        isActive: area.is_active
-                    }));
-                    
-                    console.log(`${areas.length} zones chargées depuis Supabase`);
-                }
-                
-                const { data: reports, error: reportsError } = await supabaseClient
+                // Compter les rapports
+                const { data: reports, error: reportsError } = await supabase
                     .from('reports')
+                    .select('*');
+                
+                if (!reportsError) {
+                    const totalReports = reports.length;
+                    const completeReports = reports.filter(r => r.status === 'complete').length;
+                    const pendingReports = reports.filter(r => r.status === 'before_only').length;
+                    
+                    document.getElementById('totalReports').textContent = totalReports;
+                    document.getElementById('completeReports').textContent = completeReports;
+                    document.getElementById('pendingReports').textContent = pendingReports;
+                }
+                
+                // Compter les photos
+                const { data: photos, error: photosError } = await supabase
+                    .from('photos')
+                    .select('*');
+                
+                if (!photosError) {
+                    const totalPhotos = photos.length;
+                    const beforePhotos = photos.filter(p => p.type === 'before').length;
+                    const afterPhotos = photos.filter(p => p.type === 'after').length;
+                    
+                    document.getElementById('totalPhotos').textContent = totalPhotos;
+                    document.getElementById('beforePhotos').textContent = beforePhotos;
+                    document.getElementById('afterPhotos').textContent = afterPhotos;
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement dashboard:', error);
+                showNotification('Erreur de chargement des données', 'error');
+            }
+        }
+        
+        async function loadAllData() {
+            try {
+                // Charger tous les utilisateurs
+                const { data: users, error: usersError } = await supabase
+                    .from('users')
                     .select('*')
-                    .order('date', { ascending: false });
+                    .order('created_at', { ascending: false });
                 
-                if (!reportsError && reports && reports.length > 0) {
-                    zoneReports = {};
-                    reports.forEach(report => {
-                        const zoneCode = report.area_code;
-                        if (!zoneReports[zoneCode]) {
-                            zoneReports[zoneCode] = {
-                                name: report.area,
-                                reports: [],
-                                photos: []
-                            };
-                        }
-                        
-                        zoneReports[zoneCode].reports.push({
-                            id: report.id,
-                            employee: report.employee,
-                            employeeName: report.employee_name,
-                            numberBefore: report.number_before,
-                            numberAfter: report.number_after,
-                            date: report.date,
-                            location: report.location,
-                            area: report.area,
-                            areaCode: report.area_code,
-                            noteCode: report.note_code,
-                            status: report.status,
-                            step: report.step,
-                            completionDate: report.completion_date,
-                            photos: report.photos || []
-                        });
-                    });
-                    
-                    console.log(`${reports.length} rapports chargés depuis Supabase`);
+                if (!usersError) {
+                    allUsers = users;
                 }
                 
-                saveToLocalStorage();
+                // Charger tous les rapports
+                const { data: reports, error: reportsError } = await supabase
+                    .from('reports')
+                    .select('*, employees(name)')
+                    .order('created_at', { ascending: false });
                 
-            } catch (error) {
-                console.error('Erreur syncFromSupabase:', error);
-                throw error;
-            }
-        }
-
-        async function syncToSupabase() {
-            try {
-                for (const [username, userData] of Object.entries(usersData)) {
-                    if (username.startsWith('user') && username.match(/^user\d+$/)) continue;
-                    
-                    const userToSend = {
-                        username: username,
-                        password: userData.password,
-                        role: userData.role,
-                        name: userData.name,
-                        assigned_areas: userData.assignedAreas || []
-                    };
-                    
-                    const { error } = await supabaseClient
-                        .from('users')
-                        .upsert(userToSend, { onConflict: 'username' });
-                    
-                    if (error) console.error(`Erreur sync user ${username}:`, error.message);
+                if (!reportsError) {
+                    allReports = reports;
                 }
                 
-                for (const area of assignedAreas) {
-                    const areaToSend = {
-                        id: area.id,
-                        employee: area.employee,
-                        name: area.name,
-                        code: area.code,
-                        date: area.date,
-                        is_active: area.isActive
-                    };
-                    
-                    const { error } = await supabaseClient
-                        .from('assigned_areas')
-                        .upsert(areaToSend, { onConflict: 'id' });
-                    
-                    if (error) console.error(`Erreur sync area ${area.code}:`, error.message);
-                }
+                // Charger toutes les photos
+                const { data: photos, error: photosError } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
                 
-                for (const [zoneCode, zoneData] of Object.entries(zoneReports)) {
-                    for (const report of zoneData.reports) {
-                        const reportToSend = {
-                            id: report.id,
-                            employee: report.employee,
-                            employee_name: report.employeeName,
-                            number_before: report.numberBefore,
-                            number_after: report.numberAfter,
-                            date: report.date,
-                            location: report.location,
-                            area: report.area,
-                            area_code: report.areaCode,
-                            note_code: report.noteCode,
-                            status: report.status,
-                            step: report.step,
-                            completion_date: report.completionDate,
-                            photos: report.photos || []
-                        };
-                        
-                        const { error } = await supabaseClient
-                            .from('reports')
-                            .upsert(reportToSend, { onConflict: 'id' });
-                        
-                        if (error) console.error(`Erreur sync report ${report.id}:`, error.message);
-                    }
-                }
-                
-                console.log('Données envoyées à Supabase avec succès');
-                
-            } catch (error) {
-                console.error('Erreur syncToSupabase:', error);
-                throw error;
-            }
-        }
-
-        async function manualSync() {
-            if (isSyncing) {
-                showNotification("Synchronisation déjà en cours", "warning");
-                return;
-            }
-            
-            showNotification("Synchronisation manuelle démarrée", "success");
-            await syncAllData();
-        }
-
-        async function forceSyncFromSupabase() {
-            showNotification("Chargement depuis Supabase...", "success");
-            updateSyncStatus('Chargement...', 'Récupération des données');
-            
-            try {
-                await syncFromSupabase();
-                showNotification("Données chargées depuis Supabase", "success");
-                updateSyncStatus('Chargé OK', 'Données mises à jour');
-                
-                if (currentUser && currentUser.role === 'admin') {
-                    updateAdminDashboard();
-                }
-                
-            } catch (error) {
-                showNotification("Erreur chargement Supabase", "error");
-                updateSyncStatus('Erreur', 'Échec chargement');
-            }
-        }
-
-        async function forceSyncToSupabase() {
-            showNotification("Envoi vers Supabase...", "success");
-            updateSyncStatus('Envoi...', 'Transfert des données');
-            
-            try {
-                await syncToSupabase();
-                showNotification("Données envoyées à Supabase", "success");
-                updateSyncStatus('Envoyé OK', 'Données transférées');
-                
-            } catch (error) {
-                showNotification("Erreur envoi Supabase", "error");
-                updateSyncStatus('Erreur', 'Échec envoi');
-            }
-        }
-
-        function loadFromLocalStorage() {
-            try {
-                const savedData = localStorage.getItem('noteCamSystemData');
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    usersData = {...defaultUsersData, ...data.usersData};
-                    assignedAreas = data.assignedAreas || assignedAreas;
-                    zoneReports = data.zoneReports || {};
-                }
-                
-                const savedUser = localStorage.getItem('currentUser');
-                if (savedUser) {
-                    currentUser = JSON.parse(savedUser);
-                }
-                
-                const savedSync = localStorage.getItem('lastSyncTime');
-                if (savedSync) {
-                    lastSyncTime = new Date(savedSync);
+                if (!photosError) {
+                    allPhotos = photos;
                 }
                 
             } catch (error) {
                 console.error('Erreur chargement données:', error);
             }
         }
-
-        function saveToLocalStorage() {
-            const data = {
-                usersData,
-                assignedAreas,
-                zoneReports
-            };
-            localStorage.setItem('noteCamSystemData', JSON.stringify(data));
+        
+        // Gestion des sections
+        function showUserManagement() {
+            document.getElementById('userManagement').style.display = 'block';
+            document.getElementById('reportsManagement').style.display = 'none';
+            document.getElementById('photosManagement').style.display = 'none';
+            loadUsersTable();
+        }
+        
+        function showReports() {
+            document.getElementById('userManagement').style.display = 'none';
+            document.getElementById('reportsManagement').style.display = 'block';
+            document.getElementById('photosManagement').style.display = 'none';
+            loadReportsTable();
+        }
+        
+        function showPhotos() {
+            document.getElementById('userManagement').style.display = 'none';
+            document.getElementById('reportsManagement').style.display = 'none';
+            document.getElementById('photosManagement').style.display = 'block';
+            loadPhotos();
+        }
+        
+        // Gestion des utilisateurs
+        function showAddUserForm() {
+            document.getElementById('addUserForm').style.display = 'block';
+        }
+        
+        function cancelAddUser() {
+            document.getElementById('addUserForm').style.display = 'none';
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newFullName').value = '';
+            document.getElementById('newRole').value = 'employee';
+        }
+        
+        async function addUser() {
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value.trim();
+            const fullName = document.getElementById('newFullName').value.trim();
+            const role = document.getElementById('newRole').value;
             
-            if (lastSyncTime) {
-                localStorage.setItem('lastSyncTime', lastSyncTime.toISOString());
+            if (!username || !password || !fullName) {
+                showNotification('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .insert([
+                        {
+                            username: username,
+                            password: password,
+                            name: fullName,
+                            role: role,
+                            created_at: new Date().toISOString()
+                        }
+                    ]);
+                
+                if (error) {
+                    showNotification('Erreur lors de l\'ajout: ' + error.message, 'error');
+                    return;
+                }
+                
+                showNotification('Utilisateur ajouté avec succès');
+                cancelAddUser();
+                await loadAllData();
+                await loadDashboardData();
+                loadUsersTable();
+                
+            } catch (error) {
+                console.error('Erreur ajout utilisateur:', error);
+                showNotification('Erreur lors de l\'ajout', 'error');
             }
         }
-
-        function logout() {
-            currentUser = null;
+        
+        function loadUsersTable() {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
             
+            allUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.name || '-'}</td>
+                    <td>
+                        <span class="badge ${user.role === 'admin' ? 'badge-success' : 'badge-warning'}">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td>${new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <button class="btn" onclick="editUser('${user.id}')" style="padding: 5px 10px; font-size: 12px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-danger" onclick="deleteUser('${user.id}', '${user.username}')" style="padding: 5px 10px; font-size: 12px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                usersList.appendChild(row);
+            });
+        }
+        
+        async function deleteUser(userId, username) {
+            if (!confirm(`Voulez-vous vraiment supprimer l'utilisateur ${username} ?`)) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .delete()
+                    .eq('id', userId);
+                
+                if (error) {
+                    showNotification('Erreur lors de la suppression', 'error');
+                    return;
+                }
+                
+                showNotification('Utilisateur supprimé avec succès');
+                await loadAllData();
+                await loadDashboardData();
+                loadUsersTable();
+                
+            } catch (error) {
+                console.error('Erreur suppression utilisateur:', error);
+                showNotification('Erreur lors de la suppression', 'error');
+            }
+        }
+        
+        // Gestion des rapports
+        function loadReportsTable() {
+            const reportsList = document.getElementById('reportsList');
+            reportsList.innerHTML = '';
+            
+            allReports.forEach(report => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${report.id.substring(0, 8)}...</td>
+                    <td>${report.employees?.name || report.employee}</td>
+                    <td>${report.area || '-'}</td>
+                    <td>${new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <span class="badge ${report.status === 'complete' ? 'badge-success' : 'badge-warning'}">
+                            ${report.status === 'complete' ? 'Complet' : 'En attente'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn" onclick="viewReport('${report.id}')" style="padding: 5px 10px; font-size: 12px;">
+                            <i class="fas fa-eye"></i> Voir
+                        </button>
+                    </td>
+                `;
+                reportsList.appendChild(row);
+            });
+        }
+        
+        async function viewReport(reportId) {
+            try {
+                // Récupérer le rapport avec ses photos
+                const { data: report, error: reportError } = await supabase
+                    .from('reports')
+                    .select('*, employees(name)')
+                    .eq('id', reportId)
+                    .single();
+                
+                if (reportError) {
+                    showNotification('Erreur chargement rapport', 'error');
+                    return;
+                }
+                
+                const { data: photos, error: photosError } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .eq('report_id', reportId)
+                    .order('type', { ascending: true });
+                
+                if (photosError) {
+                    showNotification('Erreur chargement photos', 'error');
+                    return;
+                }
+                
+                // Afficher les détails dans le modal
+                const photoDetails = document.getElementById('photoDetails');
+                photoDetails.innerHTML = `
+                    <h4>Rapport #${report.id.substring(0, 8)}</h4>
+                    <p><strong>Employé:</strong> ${report.employees?.name || report.employee}</p>
+                    <p><strong>Zone:</strong> ${report.area || '-'}</p>
+                    <p><strong>Date:</strong> ${new Date(report.created_at).toLocaleString('fr-FR')}</p>
+                    <p><strong>Statut:</strong> ${report.status}</p>
+                    <p><strong>Nombre AVANT:</strong> ${report.number_before || '-'}</p>
+                    <p><strong>Nombre APRÈS:</strong> ${report.number_after || '-'}</p>
+                    
+                    <div style="margin-top: 20px;">
+                        <h5>Photos (${photos.length})</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px;">
+                            ${photos.map(photo => `
+                                <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                    <img src="${photo.image_url || '#'}" alt="Photo" style="width: 100%; height: 120px; object-fit: cover;">
+                                    <div style="padding: 5px; font-size: 12px; text-align: center;">
+                                        <span class="badge ${photo.type === 'before' ? 'badge-success' : 'badge-warning'}">
+                                            ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}
+                                        </span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                showModal();
+                
+            } catch (error) {
+                console.error('Erreur visualisation rapport:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        function searchReports() {
+            const searchTerm = document.getElementById('searchReport').value.toLowerCase();
+            const reportsList = document.getElementById('reportsList');
+            reportsList.innerHTML = '';
+            
+            const filteredReports = allReports.filter(report => 
+                (report.employees?.name?.toLowerCase() || report.employee?.toLowerCase() || '').includes(searchTerm) ||
+                (report.area?.toLowerCase() || '').includes(searchTerm) ||
+                (report.id?.toLowerCase() || '').includes(searchTerm)
+            );
+            
+            filteredReports.forEach(report => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${report.id.substring(0, 8)}...</td>
+                    <td>${report.employees?.name || report.employee}</td>
+                    <td>${report.area || '-'}</td>
+                    <td>${new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <span class="badge ${report.status === 'complete' ? 'badge-success' : 'badge-warning'}">
+                            ${report.status === 'complete' ? 'Complet' : 'En attente'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn" onclick="viewReport('${report.id}')" style="padding: 5px 10px; font-size: 12px;">
+                            <i class="fas fa-eye"></i> Voir
+                        </button>
+                    </td>
+                `;
+                reportsList.appendChild(row);
+            });
+        }
+        
+        // Gestion des photos
+        async function loadPhotos() {
+            const typeFilter = document.getElementById('photoTypeFilter').value;
+            const photosGrid = document.getElementById('photosGrid');
+            photosGrid.innerHTML = '';
+            
+            try {
+                let query = supabase
+                    .from('photos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (typeFilter !== 'all') {
+                    query = query.eq('type', typeFilter);
+                }
+                
+                const { data: photos, error } = await query;
+                
+                if (error) {
+                    showNotification('Erreur chargement photos', 'error');
+                    return;
+                }
+                
+                photos.forEach(photo => {
+                    const photoCard = document.createElement('div');
+                    photoCard.className = 'photo-card';
+                    photoCard.style.cssText = `
+                        border: 1px solid #e2e8f0;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        background: white;
+                    `;
+                    
+                    photoCard.innerHTML = `
+                        <img src="${photo.image_url || '#'}" 
+                             alt="Photo" 
+                             style="width: 100%; height: 150px; object-fit: cover; cursor: pointer;"
+                             onclick="viewPhoto('${photo.id}')"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9IiNlMWU4ZWQiPjx0ZXh0IHg9IjEwMCIgeT0iNzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2NjYiPkltYWdlIE5vbiBEaXNwb25pYmxlPC90ZXh0Pjwvc3ZnPg=='">
+                        <div style="padding: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span class="badge ${photo.type === 'before' ? 'badge-success' : 'badge-warning'}" style="font-size: 10px;">
+                                    ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}
+                                </span>
+                                <span style="font-size: 10px; color: #718096;">
+                                    ${new Date(photo.created_at).toLocaleDateString('fr-FR')}
+                                </span>
+                            </div>
+                            <div style="font-size: 11px; color: #4a5568; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                Rapport: ${photo.report_id?.substring(0, 8) || '-'}
+                            </div>
+                        </div>
+                    `;
+                    
+                    photosGrid.appendChild(photoCard);
+                });
+                
+            } catch (error) {
+                console.error('Erreur chargement photos:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        async function viewPhoto(photoId) {
+            try {
+                const { data: photo, error } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .eq('id', photoId)
+                    .single();
+                
+                if (error || !photo) {
+                    showNotification('Photo non trouvée', 'error');
+                    return;
+                }
+                
+                const photoDetails = document.getElementById('photoDetails');
+                photoDetails.innerHTML = `
+                    <h4>Photo ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}</h4>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="${photo.image_url}" 
+                             alt="Photo" 
+                             style="max-width: 100%; max-height: 400px; border-radius: 10px; border: 1px solid #e2e8f0;"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9IiNlMWU4ZWQiPjx0ZXh0IHg9IjIwMCIgeT0iMTUwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2Ij5JbWFnZSBub24gZGlzcG9uaWJsZTwvdGV4dD48L3N2Zz4='">
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <p><strong>Type:</strong> ${photo.type === 'before' ? 'AVANT' : 'APRÈS'}</p>
+                        <p><strong>Date:</strong> ${new Date(photo.created_at).toLocaleString('fr-FR')}</p>
+                        <p><strong>Rapport ID:</strong> ${photo.report_id || '-'}</p>
+                        ${photo.zone_code ? `<p><strong>Zone:</strong> ${photo.zone_code}</p>` : ''}
+                        ${photo.employee ? `<p><strong>Employé:</strong> ${photo.employee}</p>` : ''}
+                        ${photo.location ? `<p><strong>Localisation:</strong> ${photo.location}</p>` : ''}
+                    </div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <a href="${photo.image_url}" target="_blank" class="btn" style="text-decoration: none;">
+                            <i class="fas fa-external-link-alt"></i> Ouvrir en grand
+                        </a>
+                    </div>
+                `;
+                
+                showModal();
+                
+            } catch (error) {
+                console.error('Erreur visualisation photo:', error);
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+        
+        // Déconnexion
+        function logout() {
             localStorage.removeItem('currentUser');
             window.location.href = 'index.html';
         }
-
-        function initializeApp() {
-            loadFromLocalStorage();
-            updateStatusBar("Panneau Admin");
-            updateAdminDashboard();
-            updateCounters();
-            updateEmployeeSelect();
-            
-            initializeSupabase();
-        }
-
-        function addEmployee() {
-            const username = document.getElementById('empUsername').value;
-            const password = document.getElementById('empPassword').value;
-            const name = document.getElementById('empName').value;
-            
-            if (!username || !password || !name) {
-                alert("Veuillez remplir tous les champs");
-                return;
+        
+        // Rafraîchir les données toutes les 30 secondes
+        setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                await loadDashboardData();
+                await loadAllData();
             }
-            
-            if (usersData[username]) {
-                alert("Le nom d'utilisateur existe déjà");
-                return;
-            }
-            
-            usersData[username] = {
-                password: password,
-                role: "employee",
-                name: name,
-                assignedAreas: []
-            };
-            
-            updateEmployeeSelect();
-            displayEmployees();
-            updateCounters();
-            saveToLocalStorage();
-            
-            document.getElementById('empUsername').value = '';
-            document.getElementById('empPassword').value = '';
-            document.getElementById('empName').value = '';
-            
-            showNotification("Employé ajouté avec succès", "success");
-        }
-
-        function displayEmployees() {
-            const employeesList = document.getElementById('employeesList');
-            employeesList.innerHTML = '';
-            
-            let employeeCount = 0;
-            
-            Object.entries(usersData).forEach(([username, data]) => {
-                if (data.role === "employee") {
-                    employeeCount++;
-                    const employeeCard = document.createElement('div');
-                    employeeCard.className = 'employee-card';
-                    
-                    const areasCount = (data.assignedAreas || []).length;
-                    
-                    employeeCard.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div>
-                                <div style="font-weight: 700; color: #1a5fb4; font-size: 16px; margin-bottom: 5px;">
-                                    ${data.name}
-                                </div>
-                                <div style="color: #666; font-size: 14px; margin-bottom: 8px;">
-                                    Nom d'utilisateur : ${username}
-                                </div>
-                                <div style="display: flex; gap: 15px;">
-                                    <span style="background: #e3f2fd; padding: 3px 10px; border-radius: 15px; font-size: 12px; color: #1a5fb4;">
-                                        <i class="fas fa-map-marker-alt"></i> ${areasCount} zones
-                                    </span>
-                                </div>
-                            </div>
-                            <button class="control-btn danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteEmployee('${username}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                    
-                    employeesList.appendChild(employeeCard);
-                }
-            });
-            
-            if (employeeCount === 0) {
-                employeesList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucun employé enregistré</p>';
-            }
-        }
-
-        function deleteEmployee(username) {
-            if (!confirm(`Voulez-vous vraiment supprimer l'employé ${username} ?`)) {
-                return;
-            }
-            
-            if (usersData[username]) {
-                delete usersData[username];
-            }
-            
-            assignedAreas = assignedAreas.filter(area => area.employee !== username);
-            
-            localStorage.removeItem(`userProgress_${username}`);
-            localStorage.removeItem(`tempReport_${username}`);
-            
-            updateEmployeeSelect();
-            displayEmployees();
-            updateCounters();
-            saveToLocalStorage();
-            
-            showNotification("Employé supprimé avec succès", "success");
-        }
-
-        function assignArea() {
-            const employeeUsername = document.getElementById('employeeSelect').value;
-            const areaName = document.getElementById('areaName').value;
-            const areaCode = document.getElementById('areaCode').value;
-            
-            if (!employeeUsername || !areaName || !areaCode) {
-                alert("Veuillez remplir tous les champs");
-                return;
-            }
-            
-            if (assignedAreas.some(area => area.code === areaCode)) {
-                alert("Ce code de zone existe déjà");
-                return;
-            }
-            
-            const area = {
-                id: Date.now(),
-                employee: employeeUsername,
-                name: areaName,
-                code: areaCode,
-                date: new Date().toISOString(),
-                isActive: true
-            };
-            
-            assignedAreas.push(area);
-            
-            if (usersData[employeeUsername]) {
-                if (!usersData[employeeUsername].assignedAreas) {
-                    usersData[employeeUsername].assignedAreas = [];
-                }
-                usersData[employeeUsername].assignedAreas.push(area);
-            }
-            
-            if (!zoneReports[areaCode]) {
-                zoneReports[areaCode] = {
-                    name: areaName,
-                    reports: [],
-                    photos: []
-                };
-            }
-            
-            saveToLocalStorage();
-            
-            displayAssignedAreasList();
-            updateCounters();
-            
-            document.getElementById('areaName').value = '';
-            document.getElementById('areaCode').value = '';
-            
-            showNotification("Zone attribuée avec succès", "success");
-        }
-
-        function displayAssignedAreasList() {
-            const assignedAreasList = document.getElementById('assignedAreasList');
-            if (assignedAreas.length === 0) {
-                assignedAreasList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune zone attribuée</p>';
-                return;
-            }
-            
-            const areasByEmployee = {};
-            assignedAreas.forEach(area => {
-                if (!areasByEmployee[area.employee]) {
-                    areasByEmployee[area.employee] = [];
-                }
-                areasByEmployee[area.employee].push(area);
-            });
-            
-            assignedAreasList.innerHTML = '';
-            
-            Object.keys(areasByEmployee).forEach(employeeUsername => {
-                const employee = usersData[employeeUsername];
-                if (!employee) return;
-                
-                const employeeSection = document.createElement('div');
-                employeeSection.className = 'employee-card';
-                
-                let areasHTML = '';
-                areasByEmployee[employeeUsername].forEach(area => {
-                    const reportCount = zoneReports[area.code]?.reports?.length || 0;
-                    
-                    areasHTML += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #ffffff; border-radius: 8px; margin: 5px 0; border: 1px solid #e1e8ed;">
-                            <div>
-                                <div style="font-weight: 700; color: #333;">${area.name}</div>
-                                <div style="font-size: 12px; color: #666;">Code: ${area.code} • ${formatDate(area.date)}</div>
-                            </div>
-                            <div style="display: flex; gap: 5px; align-items: center;">
-                                <span style="background: #f0fff4; padding: 2px 8px; border-radius: 12px; font-size: 11px; color: #2ea043;">
-                                    ${reportCount} rapports
-                                </span>
-                                <button class="control-btn danger" style="padding: 3px 8px; font-size: 11px;" onclick="deleteArea(${area.id})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                employeeSection.innerHTML = `
-                    <div style="color: #1a5fb4; font-weight: 700; margin-bottom: 10px; font-size: 16px;">
-                        ${employee.name} <span style="font-size: 12px; color: #666;">(${employeeUsername})</span>
-                    </div>
-                    ${areasHTML}
-                `;
-                
-                assignedAreasList.appendChild(employeeSection);
-            });
-        }
-
-        function deleteArea(areaId) {
-            if (!confirm("Voulez-vous vraiment supprimer cette zone ?")) {
-                return;
-            }
-            
-            const areaIndex = assignedAreas.findIndex(a => a.id === areaId);
-            if (areaIndex === -1) return;
-            
-            const area = assignedAreas[areaIndex];
-            const areaCode = area.code;
-            
-            assignedAreas.splice(areaIndex, 1);
-            
-            if (usersData[area.employee] && usersData[area.employee].assignedAreas) {
-                const userAreaIndex = usersData[area.employee].assignedAreas.findIndex(a => a.id === areaId);
-                if (userAreaIndex !== -1) {
-                    usersData[area.employee].assignedAreas.splice(userAreaIndex, 1);
-                }
-            }
-            
-            if (zoneReports[areaCode]) {
-                delete zoneReports[areaCode];
-            }
-            
-            saveToLocalStorage();
-            displayAssignedAreasList();
-            updateCounters();
-            
-            showNotification("Zone supprimée avec succès", "success");
-        }
-
-        function updateEmployeeSelect() {
-            const employeeSelect = document.getElementById('employeeSelect');
-            employeeSelect.innerHTML = '<option value="">Sélectionner un employé</option>';
-            
-            Object.entries(usersData).forEach(([username, data]) => {
-                if (data.role === "employee") {
-                    const option = document.createElement('option');
-                    option.value = username;
-                    option.textContent = `${data.name} (${username})`;
-                    employeeSelect.appendChild(option);
-                }
-            });
-        }
-
-        function updateAdminDashboard() {
-            displayEmployees();
-            displayAssignedAreasList();
-            displayMiniReports();
-            updateCounters();
-            updateEmployeeSelect();
-        }
-
-        function updateCounters() {
-            let employeeCount = 0;
-            Object.entries(usersData).forEach(([username, data]) => {
-                if (data.role === "employee") {
-                    employeeCount++;
-                }
-            });
-            document.getElementById('employeesCount').textContent = employeeCount;
-            document.getElementById('areasCount').textContent = assignedAreas.length;
-            
-            let totalReports = 0;
-            Object.values(zoneReports).forEach(zone => {
-                totalReports += zone.reports.length;
-            });
-            document.getElementById('reportsCount').textContent = totalReports;
-        }
-
-        function displayMiniReports() {
-            const reportsListMini = document.getElementById('reportsListMini');
-            reportsListMini.innerHTML = '';
-            
-            let totalReports = 0;
-            Object.values(zoneReports).forEach(zone => {
-                totalReports += zone.reports.length;
-            });
-            
-            if (totalReports === 0) {
-                reportsListMini.innerHTML = `
-                    <div style="text-align: center; padding: 30px; background: #f8f9fa; border-radius: 8px;">
-                        <i class="fas fa-inbox" style="font-size: 48px; color: #e1e8ed; margin-bottom: 15px;"></i>
-                        <h4 style="color: #666; margin-bottom: 10px;">Aucun rapport reçu</h4>
-                        <p style="color: #999; font-size: 14px;">Les rapports apparaîtront ici lorsque les employés les enverront</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let allReports = [];
-            Object.values(zoneReports).forEach(zone => {
-                zone.reports.forEach(report => {
-                    allReports.push({...report, zoneData: zone});
-                });
-            });
-            
-            allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            const recentReports = allReports.slice(0, 5);
-            
-            recentReports.forEach(report => {
-                const beforeCount = report.beforePhotos?.length || 0;
-                const afterCount = report.afterPhotos?.length || 0;
-                const statusColor = report.status === 'complete' ? '#2ea043' : '#1a5fb4';
-                const statusText = report.status === 'complete' ? 'Complet' : 'AVANT seulement';
-                
-                const reportCard = document.createElement('div');
-                reportCard.className = 'report-card';
-                
-                reportCard.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div>
-                            <div style="font-weight: 700; color: #1a5fb4; font-size: 16px;">${report.employeeName}</div>
-                            <div style="font-size: 12px; color: #666;">${formatDate(report.date)}</div>
-                        </div>
-                        <span style="background: ${statusColor}; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 700;">
-                            ${statusText}
-                        </span>
-                    </div>
-                    <div style="display: flex; gap: 10px; font-size: 12px; color: #666; margin-bottom: 8px;">
-                        ${report.numberBefore !== undefined ? 
-                            `<span><i class="fas fa-hashtag" style="color: #1a5fb4;"></i> AVANT: ${report.numberBefore}</span>` : ''}
-                        ${report.numberAfter !== undefined ? 
-                            `<span><i class="fas fa-hashtag" style="color: #ff6b6b;"></i> APRÈS: ${report.numberAfter}</span>` : ''}
-                    </div>
-                    <div style="display: flex; gap: 15px; font-size: 12px; color: #666; margin-bottom: 10px;">
-                        <span><i class="fas fa-map-marker-alt"></i> ${report.area}</span>
-                        <span><i class="fas fa-images"></i> ${beforeCount + afterCount} photos</span>
-                    </div>
-                    <a href="reports.html" class="control-btn primary" style="width: 100%; padding: 8px; text-align: center; display: inline-block; text-decoration: none;">
-                        <i class="fas fa-eye"></i> Voir le rapport complet
-                    </a>
-                `;
-                
-                reportsListMini.appendChild(reportCard);
-            });
-        }
-
-        function exportAllData() {
-            const exportData = {
-                exportedAt: new Date().toISOString(),
-                users: Object.keys(usersData).length,
-                zones: assignedAreas.length,
-                zoneReports: zoneReports
-            };
-            
-            const jsonData = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([jsonData], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `NoteCam_Export_Complet_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            URL.revokeObjectURL(url);
-            
-            showNotification("Toutes les données exportées", "success");
-            updateStatusBar("Toutes les données exportées");
-        }
-
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        }, 30000);
     </script>
 </body>
 </html>
