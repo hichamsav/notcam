@@ -4,18 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Système NoteCam - Supabase</title>
-    
+   
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+   
     <style>
-        /* ========== جميع الأنماط الأصلية بالكامل ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
             color: #333333;
@@ -27,7 +25,6 @@
             padding: 15px;
             overflow-x: hidden;
         }
-
         .app-container {
             width: 100%;
             max-width: 1200px;
@@ -37,7 +34,6 @@
             box-shadow: 0 10px 30px rgba(0, 100, 200, 0.15);
             border: 1px solid #e1e8ed;
         }
-
         .status-bar {
             background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
             padding: 12px 20px;
@@ -52,7 +48,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .sync-status {
             font-size: 11px;
             background: rgba(255, 255, 255, 0.2);
@@ -62,16 +57,13 @@
             align-items: center;
             gap: 5px;
         }
-
         .sync-icon {
             animation: spin 2s linear infinite;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         .login-container {
             background: #ffffff;
             padding: 40px;
@@ -81,14 +73,12 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             border: 2px solid #e1e8ed;
         }
-
         .login-container h2 {
             margin-bottom: 25px;
             color: #1a5fb4;
             font-size: 28px;
             font-weight: 700;
         }
-
         .login-input {
             width: 100%;
             padding: 14px;
@@ -101,13 +91,11 @@
             font-size: 15px;
             transition: all 0.3s ease;
         }
-
         .login-input:focus {
             border-color: #1a5fb4;
             outline: none;
             box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.1);
         }
-
         .login-btn {
             width: 100%;
             padding: 14px;
@@ -122,16 +110,13 @@
             margin-top: 15px;
             transition: all 0.3s ease;
         }
-
         .login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(26, 95, 180, 0.3);
         }
-
         .admin-panel, .employee-panel, .reports-panel {
             display: none;
         }
-
         .panel-header {
             background: linear-gradient(90deg, #ffffff 0%, #f8f9fa 100%);
             padding: 18px 25px;
@@ -141,13 +126,11 @@
             align-items: center;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
-
         .panel-title {
             font-size: 22px;
             color: #1a5fb4;
             font-weight: 700;
         }
-
         .logout-btn, .back-btn {
             padding: 10px 20px;
             background: #ff6b6b;
@@ -160,16 +143,13 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-
         .logout-btn:hover, .back-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
         }
-
         .back-btn {
             background: #2ea043;
         }
-
         .dashboard-section {
             padding: 25px;
             margin: 15px;
@@ -178,7 +158,6 @@
             border: 2px solid #e1e8ed;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
-
         .dashboard-section h3 {
             margin-bottom: 20px;
             color: #1a5fb4;
@@ -187,14 +166,12 @@
             font-size: 20px;
             font-weight: 700;
         }
-
         .employee-form {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
-
         .form-input {
             padding: 12px;
             background: #ffffff;
@@ -205,13 +182,11 @@
             font-size: 15px;
             transition: all 0.3s ease;
         }
-
         .form-input:focus {
             border-color: #1a5fb4;
             outline: none;
             box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.1);
         }
-
         .action-btn {
             padding: 12px 20px;
             background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
@@ -223,16 +198,13 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-
         .action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(26, 95, 180, 0.3);
         }
-
         .employee-list {
             margin-top: 25px;
         }
-
         .employee-card {
             background: #ffffff;
             padding: 18px;
@@ -242,16 +214,13 @@
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
-
         .employee-card:hover {
             transform: translateX(5px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-
         .employee-area {
             padding: 20px;
         }
-
         .area-selection {
             margin: 20px 0;
             padding: 20px;
@@ -260,7 +229,6 @@
             border: 2px solid #e1e8ed;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
-
         .area-selection label {
             display: block;
             margin-bottom: 12px;
@@ -268,7 +236,6 @@
             font-weight: 700;
             font-size: 16px;
         }
-
         .area-select {
             width: 100%;
             padding: 14px;
@@ -280,13 +247,11 @@
             font-size: 15px;
             transition: all 0.3s ease;
         }
-
         .area-select:focus {
             border-color: #1a5fb4;
             outline: none;
             box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.1);
         }
-
         .selected-area-display {
             background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
             padding: 15px;
@@ -295,7 +260,6 @@
             border: 2px solid #1a5fb4;
             box-shadow: 0 3px 10px rgba(26, 95, 180, 0.1);
         }
-
         .controls-under-area {
             display: flex;
             justify-content: center;
@@ -307,7 +271,6 @@
             border-radius: 10px;
             border: 2px solid #e1e8ed;
         }
-
         .control-btn {
             padding: 12px 24px;
             background: #ffffff;
@@ -321,24 +284,20 @@
             min-width: 140px;
             transition: all 0.3s ease;
         }
-
         .control-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-
         .control-btn.primary {
             background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
             color: white;
             border: none;
         }
-
         .control-btn.danger {
             background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 100%);
             color: white;
             border: none;
         }
-
         .camera-status {
             display: flex;
             align-items: center;
@@ -350,41 +309,33 @@
             border: 2px solid #2ea043;
             margin: 15px 0;
         }
-
         .camera-status.active {
             background: #e3f2fd;
             border-color: #1a5fb4;
         }
-
         .camera-icon {
             font-size: 24px;
             color: #2ea043;
         }
-
         .camera-status.active .camera-icon {
             color: #1a5fb4;
             animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
-
         .camera-text {
             font-weight: 600;
             color: #2ea043;
         }
-
         .camera-status.active .camera-text {
             color: #1a5fb4;
         }
-
         .photos-container {
             margin: 25px 0;
         }
-
         .photos-title {
             font-size: 18px;
             color: #1a5fb4;
@@ -396,7 +347,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .photo-boxes-container {
             display: flex;
             justify-content: space-between;
@@ -404,7 +354,6 @@
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
-
         .photo-box {
             flex: 1;
             min-width: 150px;
@@ -421,36 +370,30 @@
             position: relative;
             overflow: hidden;
         }
-
         .photo-box:hover {
             border-color: #1a5fb4;
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(26, 95, 180, 0.15);
         }
-
         .photo-box.captured {
             border-color: #2ea043;
             background: #f0fff4;
         }
-
         .photo-box-label {
             font-size: 14px;
             font-weight: 600;
             color: #1a5fb4;
             margin-bottom: 8px;
         }
-
         .photo-preview {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: none;
         }
-
         .photo-box.captured .photo-preview {
             display: block;
         }
-
         .photo-box.captured .photo-box-label {
             position: absolute;
             bottom: 5px;
@@ -463,23 +406,19 @@
             color: #2ea043;
             font-weight: 600;
         }
-
         .photo-icon {
             font-size: 32px;
             color: #1a5fb4;
             margin-bottom: 8px;
         }
-
         .photo-box.captured .photo-icon {
             display: none;
         }
-
         .section-divider {
             text-align: center;
             margin: 30px 0;
             position: relative;
         }
-
         .apres-button {
             display: inline-block;
             background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 100%);
@@ -495,18 +434,15 @@
             width: 100%;
             max-width: 400px;
         }
-
         .apres-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
         }
-
         .apres-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
-
         .send-report-container {
             text-align: center;
             margin: 30px 0;
@@ -516,7 +452,6 @@
             border: 3px solid #2ea043;
             box-shadow: 0 5px 20px rgba(46, 160, 67, 0.15);
         }
-
         .send-report-btn {
             padding: 16px 40px;
             background: linear-gradient(90deg, #2ea043 0%, #1a5fb4 100%);
@@ -530,29 +465,23 @@
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(26, 95, 180, 0.3);
         }
-
         .send-report-btn:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(26, 95, 180, 0.4);
         }
-
         .send-report-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-
         .send-before-btn {
             background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
         }
-
         .send-after-btn {
             background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 100%);
         }
-
         .reports-container {
             margin-top: 25px;
         }
-
         .report-card {
             background: #ffffff;
             padding: 20px;
@@ -562,12 +491,10 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
         }
-
         .report-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
         }
-
         .number-selection {
             background: #ffffff;
             padding: 20px;
@@ -576,14 +503,12 @@
             border: 2px solid #e1e8ed;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
-
         .number-buttons {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             gap: 10px;
             margin-top: 15px;
         }
-
         .number-btn {
             padding: 15px;
             background: #f8f9fa;
@@ -596,25 +521,21 @@
             transition: all 0.3s ease;
             text-align: center;
         }
-
         .number-btn:hover:not(:disabled) {
             background: #e3f2fd;
             border-color: #1a5fb4;
             transform: translateY(-2px);
         }
-
         .number-btn.selected {
             background: linear-gradient(135deg, #1a5fb4 0%, #2ea043 100%);
             color: white;
             border-color: #1a5fb4;
             box-shadow: 0 4px 12px rgba(26, 95, 180, 0.3);
         }
-
         .number-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-
         .photos-status {
             display: flex;
             justify-content: space-between;
@@ -625,36 +546,30 @@
             border-radius: 8px;
             border: 1px solid #e1e8ed;
         }
-
         .status-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
         }
-
         .status-label {
             font-size: 12px;
             color: #666;
             margin-bottom: 3px;
         }
-
         .status-value {
             font-size: 16px;
             font-weight: 700;
             color: #1a5fb4;
         }
-
         .status-value.completed {
             color: #2ea043;
         }
-
         @keyframes captureFlash {
             0% { opacity: 0; }
             50% { opacity: 1; }
             100% { opacity: 0; }
         }
-
         .capture-flash {
             position: fixed;
             top: 0;
@@ -666,32 +581,27 @@
             z-index: 9999;
             opacity: 0;
         }
-
         .photos-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
-
         .photo-item {
             border: 2px solid #e1e8ed;
             border-radius: 8px;
             overflow: hidden;
             background: #f8f9fa;
         }
-
         .photo-item img {
             width: 100%;
             height: 150px;
             object-fit: cover;
         }
-
         .photo-info {
             padding: 10px;
             background: white;
         }
-
         .photo-type {
             display: inline-block;
             padding: 3px 8px;
@@ -700,89 +610,84 @@
             font-weight: 700;
             margin-bottom: 5px;
         }
-
         .photo-type.before {
             background: #1a5fb4;
             color: white;
         }
-
         .photo-type.after {
             background: #ff6b6b;
             color: white;
         }
-
         @media (max-width: 768px) {
             .photo-boxes-container {
                 flex-direction: column;
             }
-            
+           
             .photo-box {
                 min-width: 100%;
                 margin-bottom: 10px;
             }
-            
+           
             .number-buttons {
                 grid-template-columns: repeat(3, 1fr);
             }
-            
+           
             .employee-form {
                 grid-template-columns: 1fr;
             }
-            
+           
             .control-btn {
                 min-width: 120px;
                 padding: 10px 15px;
             }
-            
+           
             .apres-button {
                 padding: 12px 30px;
                 font-size: 18px;
             }
-            
+           
             .controls-under-area {
                 flex-direction: column;
                 align-items: center;
             }
-            
+           
             .photos-gallery {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
         }
-
         @media (max-width: 480px) {
             .login-container {
                 padding: 25px;
                 margin: 15px;
             }
-            
+           
             .panel-title {
                 font-size: 18px;
             }
-            
+           
             .dashboard-section {
                 padding: 20px;
                 margin: 10px;
             }
-            
+           
             .photo-box {
                 aspect-ratio: 3/2;
             }
-            
+           
             .number-buttons {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+           
             .apres-button {
                 padding: 10px 20px;
                 font-size: 16px;
             }
-            
+           
             .control-btn {
                 width: 100%;
                 max-width: 250px;
             }
         }
-
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -791,29 +696,24 @@
             font-weight: 700;
             margin-left: 8px;
         }
-
         .badge-blue {
             background: #1a5fb4;
             color: white;
         }
-
         .badge-green {
             background: #2ea043;
             color: white;
         }
-
         .badge-red {
             background: #ff6b6b;
             color: white;
         }
-
         .progress-indicator {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin: 15px 0;
         }
-
         .progress-step {
             width: 30px;
             height: 30px;
@@ -825,24 +725,20 @@
             font-weight: 700;
             color: #666;
         }
-
         .progress-step.active {
             background: #1a5fb4;
             color: white;
         }
-
         .progress-step.completed {
             background: #2ea043;
             color: white;
         }
-
         .progress-label {
             text-align: center;
             font-size: 12px;
             color: #666;
             margin-top: 5px;
         }
-
         .notification {
             position: fixed;
             top: 20px;
@@ -856,7 +752,6 @@
             display: none;
             animation: slideIn 0.3s ease;
         }
-
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -867,7 +762,6 @@
                 opacity: 1;
             }
         }
-
         .sync-controls {
             display: flex;
             gap: 10px;
@@ -877,7 +771,6 @@
             border-radius: 8px;
             border: 1px solid #1a5fb4;
         }
-
         .sync-btn {
             padding: 8px 15px;
             background: #1a5fb4;
@@ -890,89 +783,30 @@
             align-items: center;
             gap: 5px;
         }
-
         .sync-btn:hover {
             background: #154a8a;
         }
-
         .sync-info {
             font-size: 12px;
             color: #666;
             flex-grow: 1;
         }
-
         .sync-success {
             color: #2ea043;
         }
-
         .sync-error {
             color: #ff6b6b;
         }
-        
-        /* نماذج الصور */
-        .photo-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-        
-        .photo-modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            position: relative;
-        }
-        
-        .photo-modal-content img {
-            max-width: 100%;
-            max-height: 80vh;
-            border: 3px solid white;
-            border-radius: 5px;
-        }
-        
-        .photo-modal-close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .photo-modal-title {
-            color: white;
-            text-align: center;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        
-        .storage-warning {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-size: 12px;
-            text-align: center;
-        }
     </style>
-    
+   
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Notification -->
     <div class="notification" id="notification"></div>
-
     <div class="app-container">
+        <!-- Barre d'état -->
         <div class="status-bar" id="statusBar">
             <div>Système NoteCam ● Prêt ●</div>
             <div class="sync-status" id="syncStatus">
@@ -980,14 +814,14 @@
                 <span id="syncText">Synchronisation</span>
             </div>
         </div>
-
+        <!-- Page de connexion -->
         <div class="login-container" id="loginPage">
             <h2>Connexion</h2>
             <input type="text" id="username" class="login-input" placeholder="Nom d'utilisateur">
             <input type="password" id="password" class="login-input" placeholder="Mot de passe">
             <button class="login-btn" onclick="login()">Se connecter</button>
         </div>
-
+        <!-- Panneau du superviseur -->
         <div class="admin-panel" id="adminPanel">
             <div class="panel-header">
                 <div class="panel-title">Panneau de Contrôle du Superviseur</div>
@@ -995,7 +829,7 @@
                     <button class="back-btn" onclick="logout()">Déconnexion</button>
                 </div>
             </div>
-
+            <!-- Contrôles المزامنة -->
             <div class="dashboard-section">
                 <h3><i class="fas fa-sync"></i> Système de Synchronisation</h3>
                 <div class="sync-controls">
@@ -1013,9 +847,8 @@
                         <div id="syncStatusDetail" class="sync-success">Prêt</div>
                     </div>
                 </div>
-                <div id="storageInfo" class="storage-warning" style="display: none;"></div>
             </div>
-
+            <!-- Gestion des employés -->
             <div class="dashboard-section">
                 <h3>Gestion des Employés <span class="badge badge-blue" id="employeesCount">0</span></h3>
                 <div class="employee-form">
@@ -1026,7 +859,7 @@
                 </div>
                 <div class="employee-list" id="employeesList"></div>
             </div>
-
+            <!-- Attribution des zones -->
             <div class="dashboard-section">
                 <h3>Attribution des Zones Géographiques <span class="badge badge-green" id="areasCount">0</span></h3>
                 <div class="employee-form">
@@ -1039,7 +872,7 @@
                 </div>
                 <div class="areas-list" id="assignedAreasList"></div>
             </div>
-
+            <!-- Rapports reçus -->
             <div class="dashboard-section">
                 <h3>Rapports Reçus <span class="badge badge-red" id="reportsCount">0</span></h3>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -1049,14 +882,11 @@
                     <button class="control-btn" onclick="exportAllData()">
                         <i class="fas fa-download"></i> Exporter toutes les données
                     </button>
-                    <button class="control-btn danger" onclick="clearLocalStorage()">
-                        <i class="fas fa-trash"></i> Nettoyer cache
-                    </button>
                 </div>
                 <div class="reports-container" id="reportsListMini"></div>
             </div>
         </div>
-
+        <!-- Panneau de l'employé -->
         <div class="employee-panel" id="employeePanel">
             <div class="panel-header">
                 <div class="panel-title" id="employeeName">
@@ -1064,7 +894,7 @@
                 </div>
                 <button class="logout-btn" onclick="logout()">Déconnexion</button>
             </div>
-
+            <!-- Contrôles المزامنة للعامل -->
             <div class="dashboard-section">
                 <h3><i class="fas fa-sync"></i> Synchronisation</h3>
                 <div class="sync-controls">
@@ -1076,16 +906,14 @@
                         <div id="employeeSyncStatus" class="sync-success">Connecté</div>
                     </div>
                 </div>
-                <div id="employeeStorageInfo" class="storage-warning" style="display: none;"></div>
             </div>
-
             <div class="employee-area">
                 <div class="area-selection">
                     <label>Sélectionnez la zone de travail :</label>
                     <select class="area-select" id="areaSelect">
                         <option value="">Choisissez une zone</option>
                     </select>
-                    
+                   
                     <div class="selected-area-display" id="selectedAreaInfo" style="display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -1093,7 +921,7 @@
                                     <i class="fas fa-map-marker-alt"></i> Zone sélectionnée : <span id="selectedAreaName">Aucune zone</span>
                                 </h4>
                                 <p style="color: #666; font-size: 14px;">
-                                    <strong>Code :</strong> <span id="selectedAreaCode">  </span> | 
+                                    <strong>Code :</strong> <span id="selectedAreaCode"> </span> |
                                     <strong>Assignée le :</strong> <span id="areaAssignedDate">-</span>
                                 </p>
                             </div>
@@ -1101,14 +929,14 @@
                         </div>
                     </div>
                 </div>
-
+                <!-- Indicateur de caméra -->
                 <div class="camera-status" id="cameraStatus">
                     <div class="camera-icon">
                         <i class="fas fa-video"></i>
                     </div>
                     <div class="camera-text">Caméra en cours d'activation...</div>
                 </div>
-
+                <!-- Contrôles -->
                 <div class="controls-under-area">
                     <button class="control-btn primary" id="toggleCamera" style="display: none;">
                         <i class="fas fa-video"></i> Activer la caméra
@@ -1119,13 +947,13 @@
                     <button class="control-btn" id="refreshLocation">
                         <i class="fas fa-sync-alt"></i> Actualiser la localisation
                     </button>
+                    <!-- زر الرجوع الجديد -->
                     <button class="control-btn" id="backToStep1Btn" onclick="goBackToStep1()" style="display: none;">
                         <i class="fas fa-arrow-left"></i> Retour aux photos AVANT
                     </button>
                 </div>
-
                 <div class="areas-list" id="employeeAreasList"></div>
-
+                <!-- Indicateur de progression -->
                 <div class="progress-indicator">
                     <div class="progress-step" id="step1">1</div>
                     <div class="progress-step" id="step2">2</div>
@@ -1133,7 +961,7 @@
                 <div class="progress-label">
                     <span id="step1Label">Photos AVANT</span> → <span id="step2Label">Photos APRÈS</span>
                 </div>
-
+                <!-- Photos AVANT -->
                 <div class="photos-container" id="beforePhotosContainer">
                     <div class="photos-title">
                         <span><i class="fas fa-camera"></i> PHOTOS AVANT</span>
@@ -1155,7 +983,7 @@
                     </div>
                     <div class="photo-boxes-container" id="photoBoxesContainer"></div>
                 </div>
-
+                <!-- Saisie du nombre -->
                 <div class="number-selection" id="numberSelection">
                     <label style="display: block; margin-bottom: 12px; color: #1a5fb4; font-weight: 700; font-size: 16px;">
                         <i class="fas fa-keyboard"></i> Sélectionnez un nombre de 0 à 8 :
@@ -1175,7 +1003,7 @@
                         Nombre sélectionné : <span id="selectedNumberDisplay" style="font-weight: 700; color: #1a5fb4;">Aucun</span>
                     </div>
                 </div>
-
+                <!-- Bouton d'envoi AVANT -->
                 <div class="send-report-container" id="sendBeforeContainer">
                     <div style="margin-bottom: 15px;">
                         <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 10px;">
@@ -1194,13 +1022,13 @@
                         <i class="fas fa-paper-plane"></i> Envoyer les photos AVANT
                     </button>
                 </div>
-
+                <!-- Bouton APRÈS -->
                 <div class="section-divider" id="apresButtonContainer" style="display: none;">
                     <button class="apres-button" id="apresButton" onclick="showAfterPhotos()">
                         <i class="fas fa-arrow-right"></i> PASSER AUX PHOTOS APRÈS
                     </button>
                 </div>
-
+                <!-- Photos APRÈS -->
                 <div class="photos-container" id="afterPhotosContainer" style="display: none;">
                     <div class="photos-title">
                         <span><i class="fas fa-camera-retro"></i> PHOTOS APRÈS</span>
@@ -1222,7 +1050,7 @@
                     </div>
                     <div class="photo-boxes-container" id="afterPhotoBoxesContainer"></div>
                 </div>
-
+                <!-- Saisie du nombre APRÈS -->
                 <div class="number-selection" id="numberSelectionAfter" style="display: none;">
                     <label style="display: block; margin-bottom: 12px; color: #1a5fb4; font-weight: 700; font-size: 16px;">
                         <i class="fas fa-keyboard"></i> Sélectionnez un nombre de 0 à 8 pour APRÈS :
@@ -1242,7 +1070,7 @@
                         Nombre sélectionné : <span id="selectedNumberDisplayAfter" style="font-weight: 700; color: #1a5fb4;">Aucun</span>
                     </div>
                 </div>
-
+                <!-- Bouton d'envoi APRÈS -->
                 <div class="send-report-container" id="sendAfterContainer" style="display: none;">
                     <div style="margin-bottom: 15px;">
                         <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 10px;">
@@ -1271,7 +1099,7 @@
                 </div>
             </div>
         </div>
-
+        <!-- Page des rapports -->
         <div class="reports-panel" id="reportsPanel">
             <div class="panel-header">
                 <div class="panel-title">
@@ -1287,16 +1115,19 @@
             <div class="report-details-container" id="reportDetailsContainer"></div>
         </div>
     </div>
-
+    <!-- Flash effect -->
     <div class="capture-flash" id="captureFlash"></div>
 
     <script>
+	 // ========== CONFIGURATION SUPABASE ==========
         const SUPABASE_URL = 'https://jxvnmcgfwlbswtkiglmh.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_2NInsIOwZjO8LurZUdI2wA_ljsWkESw';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dm5tY2dmd2xic3d0a2lnbG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM2MzY0NzAsImV4cCI6MjA0OTIxMjQ3MH0.2NInsIOwZjO8LurZUdI2wA_ljsWkESw';
         
+        // ========== VARIABLES GLOBALES ==========
         let supabaseClient;
         let isSupabaseInitialized = false;
         
+        // Données système
         const defaultUsersData = {
             admin: {
                 password: "admin123",
@@ -1318,6 +1149,7 @@
         let assignedAreas = [];
         let zoneReports = {};
 
+        // Variables système
         let currentUser = null;
         let videoStream = null;
         let isCameraActive = false;
@@ -1329,12 +1161,15 @@
         let afterPhotos = [null, null, null, null, null];
         let tempReport = null;
 
+        // ========== نظام المزامنة الجديد ==========
         let syncInterval;
         let lastSyncTime = null;
         let isSyncing = false;
-        const SYNC_INTERVAL = 30000;
-        const MAX_LOCAL_STORAGE_SIZE = 4 * 1024 * 1024; // 4MB الحد الأقصى
+        let pendingSyncs = [];
+        const SYNC_INTERVAL = 15000; // 15 ثانية
+        const SYNC_RETRY_DELAY = 5000; // 5 ثواني
 
+        // Éléments DOM
         const statusBar = document.getElementById('statusBar');
         const loginPage = document.getElementById('loginPage');
         const adminPanel = document.getElementById('adminPanel');
@@ -1347,189 +1182,8 @@
         const syncIcon = document.getElementById('syncIcon');
         const lastSyncTimeEl = document.getElementById('lastSyncTime');
         const syncStatusDetail = document.getElementById('syncStatusDetail');
-        const storageInfo = document.getElementById('storageInfo');
-        const employeeStorageInfo = document.getElementById('employeeStorageInfo');
 
-        // ========== الدوال الجديدة لحل مشكلة الذاكرة ==========
-
-        // دالة لضغط الصور وتقليل حجمها
-        function compressImage(base64String, quality = 0.5, maxWidth = 800) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    // تقليل الحجم إذا كان أكبر من الحد الأقصى
-                    if (width > maxWidth) {
-                        height = (height * maxWidth) / width;
-                        width = maxWidth;
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // تحويل إلى jpeg بجودة مخفضة
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-                    resolve(compressedBase64);
-                };
-                
-                img.onerror = reject;
-                img.src = base64String;
-            });
-        }
-
-        // دالة لحساب حجم LocalStorage المستخدم
-        function getLocalStorageUsage() {
-            let total = 0;
-            for (let key in localStorage) {
-                if (localStorage.hasOwnProperty(key)) {
-                    total += ((localStorage[key].length * 2) / 1024 / 1024); // بالميجابايت
-                }
-            }
-            return total.toFixed(2);
-        }
-
-        // دالة لعرض معلومات الذاكرة
-        function updateStorageInfo() {
-            const usage = getLocalStorageUsage();
-            const maxSize = (MAX_LOCAL_STORAGE_SIZE / 1024 / 1024).toFixed(2);
-            const warning = `Utilisation du stockage local: ${usage}MB / ${maxSize}MB`;
-            
-            if (storageInfo) {
-                storageInfo.textContent = warning;
-                storageInfo.style.display = 'block';
-                
-                if (parseFloat(usage) > parseFloat(maxSize) * 0.8) {
-                    storageInfo.style.background = '#f8d7da';
-                    storageInfo.style.color = '#721c24';
-                    storageInfo.style.borderColor = '#f5c6cb';
-                }
-            }
-            
-            if (employeeStorageInfo && currentUser && currentUser.role === 'employee') {
-                employeeStorageInfo.textContent = warning;
-                employeeStorageInfo.style.display = 'block';
-                
-                if (parseFloat(usage) > parseFloat(maxSize) * 0.8) {
-                    employeeStorageInfo.style.background = '#f8d7da';
-                    employeeStorageInfo.style.color = '#721c24';
-                    employeeStorageInfo.style.borderColor = '#f5c6cb';
-                }
-            }
-        }
-
-        // دالة لتنظيف LocalStorage من البيانات القديمة
-        function cleanupLocalStorage() {
-            const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 أيام
-            const now = Date.now();
-            let cleaned = 0;
-            
-            for (let key in localStorage) {
-                if (localStorage.hasOwnProperty(key)) {
-                    // حذف الصور المؤقتة القديمة
-                    if (key.startsWith('photo_') || key.startsWith('tempReport_')) {
-                        try {
-                            localStorage.removeItem(key);
-                            cleaned++;
-                        } catch (e) {
-                            console.warn(`Impossible de supprimer ${key}:`, e);
-                        }
-                    }
-                }
-            }
-            
-            console.log(`Nettoyage: ${cleaned} éléments supprimés du LocalStorage`);
-            return cleaned;
-        }
-
-        // دالة لتنظيف الذاكرة المحلية يدوياً
-        function clearLocalStorage() {
-            if (!confirm("Voulez-vous vraiment nettoyer le cache local ? Les photos non synchronisées seront perdues.")) {
-                return;
-            }
-            
-            // حفظ المستخدم الحالي
-            const currentUserBackup = localStorage.getItem('currentUser');
-            const noteCamDataBackup = localStorage.getItem('noteCamSystemData');
-            
-            // مسح كل شيء
-            localStorage.clear();
-            
-            // استعادة البيانات الأساسية
-            if (currentUserBackup) {
-                localStorage.setItem('currentUser', currentUserBackup);
-            }
-            if (noteCamDataBackup) {
-                localStorage.setItem('noteCamSystemData', noteCamDataBackup);
-            }
-            
-            showNotification("Cache local nettoyé avec succès", "success");
-            updateStorageInfo();
-            
-            // إعادة تحميل الصفحة إذا كان المستخدم موظفاً
-            if (currentUser && currentUser.role === 'employee') {
-                location.reload();
-            }
-        }
-
-        // دالة للتحقق من سعة التخزين قبل الحفظ
-        function canSaveToLocalStorage(dataSize) {
-            const currentUsage = getLocalStorageUsage() * 1024 * 1024; // تحويل إلى بايت
-            const projectedUsage = currentUsage + dataSize;
-            return projectedUsage < MAX_LOCAL_STORAGE_SIZE;
-        }
-
-        // دالة لحفظ البيانات بحجم محدد
-        function saveToLocalStorageSafely(key, data, maxSize = 100 * 1024) { // 100KB كحد أقصى
-            try {
-                const dataStr = typeof data === 'string' ? data : JSON.stringify(data);
-                if (dataStr.length * 2 > maxSize) {
-                    console.warn(`Données trop volumineuses pour ${key}: ${dataStr.length * 2} bytes`);
-                    return false;
-                }
-                
-                if (!canSaveToLocalStorage(dataStr.length * 2)) {
-                    console.warn(`Stockage local plein, impossible de sauvegarder ${key}`);
-                    cleanupLocalStorage();
-                    
-                    // المحاولة مرة أخرى بعد التنظيف
-                    if (!canSaveToLocalStorage(dataStr.length * 2)) {
-                        return false;
-                    }
-                }
-                
-                localStorage.setItem(key, dataStr);
-                return true;
-            } catch (error) {
-                console.error(`Erreur de sauvegarde pour ${key}:`, error);
-                return false;
-            }
-        }
-
-        // دالة لتحويل الصورة إلى Base64 مع الضغط
-        function blobToBase64(blob) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = async () => {
-                    try {
-                        // ضغط الصورة
-                        const compressedImage = await compressImage(reader.result);
-                        resolve(compressedImage);
-                    } catch (error) {
-                        // في حالة فشل الضغط، استخدم الصورة الأصلية
-                        resolve(reader.result);
-                    }
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-
+        // ========== FONCTIONS UTILITAIRES ==========
         function showNotification(message, type = 'success') {
             notification.textContent = message;
             notification.style.background = type === 'success' ? '#2ea043' : 
@@ -1593,6 +1247,7 @@
                 lastSyncTimeEl.textContent = formatTimeShort(lastSyncTime);
             }
             
+            // تحديث الأيقونة
             if (status === 'Synchronisation...') {
                 syncIcon.style.animation = 'spin 1s linear infinite';
                 syncStatus.style.background = 'rgba(255, 165, 0, 0.3)';
@@ -1610,22 +1265,43 @@
             }
         }
 
+        // ========== INITIALISATION SUPABASE CORRIGÉE ==========
         async function initializeSupabase() {
             try {
                 console.log('Initialisation de Supabase...');
                 
+                // انتظر تحميل مكتبة Supabase
                 if (typeof supabase === 'undefined') {
+                    console.log('Supabase non chargé, attente...');
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
                 
+                if (typeof supabase === 'undefined') {
+                    throw new Error('Supabase library not loaded');
+                }
+                
+                // إنشاء العميل
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                    auth: { persistSession: false }
+                    auth: {
+                        persistSession: false
+                    }
                 });
+                
+                // اختبار الاتصال البسيط
+                const { data, error } = await supabaseClient
+                    .from('system_status')
+                    .select('*')
+                    .limit(1);
+                
+                if (error && error.code !== '42P01') { // تجاهل خطأ الجدول غير موجود
+                    console.log('Supabase connecté mais erreur de requête:', error.message);
+                }
                 
                 isSupabaseInitialized = true;
                 console.log('Supabase initialisé avec succès');
                 updateSyncStatus('Connecté', 'Prêt à synchroniser');
                 
+                // تشغيل نظام المزامنة
                 initSyncSystem();
                 
                 showNotification("Supabase connecté avec succès", "success");
@@ -1635,6 +1311,7 @@
                 updateSyncStatus('Erreur', 'Connexion échouée');
                 showNotification("Mode hors ligne - Données locales", "warning");
                 
+                // المحاولة مرة أخرى بعد تأخير
                 setTimeout(() => {
                     if (!isSupabaseInitialized) {
                         initializeSupabase();
@@ -1643,34 +1320,37 @@
             }
         }
 
+        // ========== SYSTEME DE SYNCHRONISATION ==========
         function initSyncSystem() {
+            // تحديث الحالة
             updateSyncStatus('Initialisation...');
             
-            // تنظيف الذاكرة المحلية عند بدء التشغيل
-            cleanupLocalStorage();
-            updateStorageInfo();
-            
+            // مزامنة أولية
             setTimeout(() => {
                 syncAllData();
             }, 2000);
             
+            // مزامنة دورية
             syncInterval = setInterval(() => {
                 if (document.visibilityState === 'visible' && !isSyncing) {
                     syncAllData();
                 }
             }, SYNC_INTERVAL);
             
+            // مزامنة عند ظهور الصفحة
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible' && !isSyncing) {
                     syncAllData();
                 }
             });
             
+            // مزامنة عند الاتصال بالإنترنت
             window.addEventListener('online', () => {
                 showNotification("Connexion Internet rétablie - Synchronisation en cours", "success");
                 syncAllData();
             });
             
+            // مزامنة عند الانفصال
             window.addEventListener('offline', () => {
                 showNotification("Mode hors ligne - Synchronisation suspendue", "warning");
                 updateSyncStatus('Hors ligne', 'Connexion perdue');
@@ -1678,7 +1358,11 @@
         }
 
         async function syncAllData() {
-            if (isSyncing || !isSupabaseInitialized) return;
+            if (isSyncing || !isSupabaseInitialized) {
+                console.log('Sync déjà en cours ou Supabase non initialisé');
+                return;
+            }
+            
             if (!navigator.onLine) {
                 updateSyncStatus('Hors ligne', 'Attente de connexion');
                 return;
@@ -1688,12 +1372,23 @@
             updateSyncStatus('Synchronisation...', 'Mise à jour des données');
             
             try {
+                console.log('Début synchronisation complète...');
+                
+                // 1. جلب البيانات من Supabase
                 await syncFromSupabase();
+                
+                // 2. إرسال البيانات إلى Supabase
                 await syncToSupabase();
                 
+                // تحديث الوقت
                 lastSyncTime = new Date();
+                
+                // تحديث الواجهة
                 updateSyncStatus('Synchro OK', `Dernière sync: ${formatTimeShort(lastSyncTime)}`);
                 
+                console.log('Synchronisation terminée avec succès');
+                
+                // تحديث واجهة المستخدم
                 if (currentUser) {
                     if (currentUser.role === 'admin') {
                         updateAdminDashboard();
@@ -1707,14 +1402,16 @@
                 console.error('Erreur synchronisation:', error);
                 updateSyncStatus('Erreur', 'Échec de synchronisation');
                 showNotification("Erreur de synchronisation", "error");
+                
             } finally {
                 isSyncing = false;
-                updateStorageInfo();
+                pendingSyncs = [];
             }
         }
 
         async function syncFromSupabase() {
             try {
+                // المستخدمين
                 const { data: users, error: usersError } = await supabaseClient
                     .from('users')
                     .select('*');
@@ -1735,6 +1432,7 @@
                     console.log(`${remoteUserCount} utilisateurs chargés depuis Supabase`);
                 }
                 
+                // المناطق
                 const { data: areas, error: areasError } = await supabaseClient
                     .from('assigned_areas')
                     .select('*')
@@ -1753,6 +1451,7 @@
                     console.log(`${areas.length} zones chargées depuis Supabase`);
                 }
                 
+                // التقارير
                 const { data: reports, error: reportsError } = await supabaseClient
                     .from('reports')
                     .select('*')
@@ -1770,16 +1469,6 @@
                             };
                         }
                         
-                        // تحميل الصور من التقرير
-                        const photos = report.photos || [];
-                        const loadedPhotos = photos.map(photo => ({
-                            type: photo.type,
-                            index: photo.index,
-                            url: photo.url,
-                            timestamp: photo.timestamp,
-                            reportId: report.id
-                        }));
-                        
                         zoneReports[zoneCode].reports.push({
                             id: report.id,
                             employee: report.employee,
@@ -1794,23 +1483,14 @@
                             status: report.status,
                             step: report.step,
                             completionDate: report.completion_date,
-                            photos: loadedPhotos,
-                            beforePhotos: photos.filter(p => p.type === 'before'),
-                            afterPhotos: photos.filter(p => p.type === 'after')
-                        });
-                        
-                        // إضافة الصور إلى قائمة الصور العامة
-                        loadedPhotos.forEach(photo => {
-                            if (!zoneReports[zoneCode].photos) {
-                                zoneReports[zoneCode].photos = [];
-                            }
-                            zoneReports[zoneCode].photos.push(photo);
+                            photos: report.photos || []
                         });
                     });
                     
                     console.log(`${reports.length} rapports chargés depuis Supabase`);
                 }
                 
+                // حفظ محلي
                 saveToLocalStorage();
                 
             } catch (error) {
@@ -1821,75 +1501,73 @@
 
         async function syncToSupabase() {
             try {
+                // 1. المزامنة المستخدمين
                 for (const [username, userData] of Object.entries(usersData)) {
+                    // تجاهل المستخدمين الافتراضيين إذا كانوا موجودين بالفعل
                     if (username.startsWith('user') && username.match(/^user\d+$/)) continue;
-                    
-                    const userToSend = {
-                        username: username,
-                        password: userData.password,
-                        role: userData.role,
-                        name: userData.name,
-                        assigned_areas: userData.assignedAreas || []
-                    };
                     
                     const { error } = await supabaseClient
                         .from('users')
-                        .upsert(userToSend, { onConflict: 'username' });
+                        .upsert({
+                            username: username,
+                            password: userData.password,
+                            role: userData.role,
+                            name: userData.name,
+                            assigned_areas: userData.assignedAreas || [],
+                            last_updated: new Date().toISOString()
+                        }, {
+                            onConflict: 'username'
+                        });
                     
-                    if (error) console.error(`Erreur sync user ${username}:`, error.message);
+                    if (error) console.error(`Erreur sync user ${username}:`, error);
                 }
                 
+                // 2. المزامنة المناطق
                 for (const area of assignedAreas) {
-                    const areaToSend = {
-                        id: area.id,
-                        employee: area.employee,
-                        name: area.name,
-                        code: area.code,
-                        date: area.date,
-                        is_active: area.isActive
-                    };
-                    
                     const { error } = await supabaseClient
                         .from('assigned_areas')
-                        .upsert(areaToSend, { onConflict: 'id' });
+                        .upsert({
+                            id: area.id,
+                            employee: area.employee,
+                            name: area.name,
+                            code: area.code,
+                            date: area.date,
+                            is_active: area.isActive,
+                            last_updated: new Date().toISOString()
+                        }, {
+                            onConflict: 'id'
+                        });
                     
-                    if (error) console.error(`Erreur sync area ${area.code}:`, error.message);
+                    if (error) console.error(`Erreur sync area ${area.code}:`, error);
                 }
                 
+                // 3. المزامنة التقارير
                 for (const [zoneCode, zoneData] of Object.entries(zoneReports)) {
                     for (const report of zoneData.reports) {
-                        // تحضير الصور للإرسال
-                        const photosToSend = zoneData.photos
-                            .filter(photo => photo.reportId === report.id)
-                            .map(photo => ({
-                                type: photo.type,
-                                index: photo.index,
-                                url: photo.url,
-                                timestamp: photo.timestamp
-                            }));
-                        
-                        const reportToSend = {
-                            id: report.id,
-                            employee: report.employee,
-                            employee_name: report.employeeName,
-                            number_before: report.numberBefore,
-                            number_after: report.numberAfter,
-                            date: report.date,
-                            location: report.location,
-                            area: report.area,
-                            area_code: report.areaCode,
-                            note_code: report.noteCode,
-                            status: report.status,
-                            step: report.step,
-                            completion_date: report.completionDate,
-                            photos: photosToSend
-                        };
-                        
                         const { error } = await supabaseClient
                             .from('reports')
-                            .upsert(reportToSend, { onConflict: 'id' });
+                            .upsert({
+                                id: report.id,
+                                employee: report.employee,
+                                employee_name: report.employeeName,
+                                number_before: report.numberBefore,
+                                number_after: report.numberAfter,
+                                date: report.date,
+                                location: report.location,
+                                area: report.area,
+                                area_code: report.areaCode,
+                                note_code: report.noteCode,
+                                status: report.status,
+                                step: report.step,
+                                completion_date: report.completionDate,
+                                photos: report.photos || [],
+                                supabase_sync: true,
+                                last_updated: new Date().toISOString()
+                            }, {
+                                onConflict: 'id'
+                            });
                         
-                        if (error) console.error(`Erreur sync report ${report.id}:`, error.message);
+                        if (error) console.error(`Erreur sync report ${report.id}:`, error);
                     }
                 }
                 
@@ -1901,6 +1579,7 @@
             }
         }
 
+        // ========== FONCTIONS DE CONTROLE ==========
         async function manualSync() {
             if (isSyncing) {
                 showNotification("Synchronisation déjà en cours", "warning");
@@ -1920,8 +1599,11 @@
                 showNotification("Données chargées depuis Supabase", "success");
                 updateSyncStatus('Chargé OK', 'Données mises à jour');
                 
-                if (currentUser && currentUser.role === 'admin') {
-                    updateAdminDashboard();
+                // تحديث الواجهة
+                if (currentUser) {
+                    if (currentUser.role === 'admin') {
+                        updateAdminDashboard();
+                    }
                 }
                 
             } catch (error) {
@@ -1945,6 +1627,7 @@
             }
         }
 
+        // ========== إدارة حالة المستخدم ==========
         function saveUserProgress() {
             if (!currentUser || currentUser.role !== 'employee') return;
             
@@ -1959,7 +1642,7 @@
                 lastUpdated: new Date().toISOString()
             };
             
-            saveToLocalStorageSafely(`userProgress_${currentUser.username}`, progressData);
+            localStorage.setItem(`userProgress_${currentUser.username}`, JSON.stringify(progressData));
         }
 
         function loadUserProgress() {
@@ -2083,21 +1766,14 @@
                 assignedAreas,
                 zoneReports
             };
-            
-            // استخدام الدالة الآمنة للحفظ
-            if (!saveToLocalStorageSafely('noteCamSystemData', data, 2 * 1024 * 1024)) { // 2MB كحد أقصى
-                console.warn('Impossible de sauvegarder toutes les données, nettoyage en cours...');
-                cleanupLocalStorage();
-                
-                // محاولة الحفظ بعد التنظيف
-                saveToLocalStorageSafely('noteCamSystemData', data, 2 * 1024 * 1024);
-            }
+            localStorage.setItem('noteCamSystemData', JSON.stringify(data));
             
             if (lastSyncTime) {
-                saveToLocalStorageSafely('lastSyncTime', lastSyncTime.toISOString(), 1024); // 1KB
+                localStorage.setItem('lastSyncTime', lastSyncTime.toISOString());
             }
         }
 
+        // ========== GESTION CAMÉRA ==========
         async function activateCameraAutomatically() {
             try {
                 cameraStatus.innerHTML = `
@@ -2188,6 +1864,7 @@
             }
         }
 
+        // ========== AUTHENTIFICATION ==========
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -2203,7 +1880,7 @@
                 currentUser = {username, ...user};
                 updateStatusBar(`Bienvenue ${user.name}`);
                 
-                saveToLocalStorageSafely('currentUser', currentUser, 1024); // 1KB
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
                 loginPage.style.display = 'none';
                 
@@ -2283,6 +1960,7 @@
             updateStatusBar("Déconnexion réussie");
         }
 
+        // ========== INITIALISATION ==========
         function initializeApp() {
             loadFromLocalStorage();
             updateStatusBar("Prêt à l'utilisation");
@@ -2299,11 +1977,9 @@
             updateStepDisplay();
             
             initializeSupabase();
-            
-            // تحديث معلومات التخزين كل 30 ثانية
-            setInterval(updateStorageInfo, 30000);
         }
 
+        // ========== GESTION DES EMPLOYÉS ==========
         function addEmployee() {
             const username = document.getElementById('empUsername').value;
             const password = document.getElementById('empPassword').value;
@@ -2404,6 +2080,7 @@
             showNotification("Employé supprimé avec succès", "success");
         }
 
+        // ========== GESTION DES ZONES ==========
         function assignArea() {
             const employeeUsername = document.getElementById('employeeSelect').value;
             const areaName = document.getElementById('areaName').value;
@@ -2638,7 +2315,6 @@
             displayMiniReports();
             updateCounters();
             updateEmployeeSelect();
-            updateStorageInfo();
         }
 
         function updateCounters() {
@@ -2658,6 +2334,7 @@
             document.getElementById('reportsCount').textContent = totalReports;
         }
 
+        // ========== GESTION DES ÉTAPES ==========
         function updateStepDisplay() {
             const step1 = document.getElementById('step1');
             const step2 = document.getElementById('step2');
@@ -2743,6 +2420,7 @@
             updateStatusBar(`Nombre APRÈS sélectionné : ${number}`);
         }
 
+        // ========== GESTION DES PHOTOS ==========
         function setupPhotoBoxes() {
             const photoBoxesContainer = document.getElementById('photoBoxesContainer');
             const afterPhotoBoxesContainer = document.getElementById('afterPhotoBoxesContainer');
@@ -2818,38 +2496,31 @@
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 addInfoToImage(context, canvas.width, canvas.height);
                 
-                canvas.toBlob(async (blob) => {
+                canvas.toBlob((blob) => {
                     const imageUrl = URL.createObjectURL(blob);
-                    
-                    // تحويل الصورة إلى Base64 مع الضغط
-                    const base64Image = await blobToBase64(blob);
                     
                     if (type === 'before') {
                         beforePhotos[index] = {
-                            url: base64Image,
+                            url: imageUrl,
                             blob: blob,
                             timestamp: new Date().toISOString(),
                             location: {...currentLocation},
-                            noteCode: selectedArea ? selectedArea.code : "ZN000",
-                            index: index,
-                            type: 'before'
+                            noteCode: selectedArea ? selectedArea.code : "ZN000"
                         };
                     } else {
                         afterPhotos[index] = {
-                            url: base64Image,
+                            url: imageUrl,
                             blob: blob,
                             timestamp: new Date().toISOString(),
                             location: {...currentLocation},
-                            noteCode: selectedArea ? selectedArea.code : "ZN000",
-                            index: index,
-                            type: 'after'
+                            noteCode: selectedArea ? selectedArea.code : "ZN000"
                         };
                     }
                     
                     const photoBox = document.querySelector(`.photo-box[data-index="${index}"][data-type="${type}"]`);
                     photoBox.classList.add('captured');
                     const preview = photoBox.querySelector('.photo-preview');
-                    preview.src = base64Image;
+                    preview.src = imageUrl;
                     
                     updatePhotoCount(type);
                     saveUserProgress();
@@ -2988,6 +2659,7 @@
             return canSend;
         }
 
+        // ========== GESTION DES RAPPORTS ==========
         function sendBeforePhotos() {
             if (!checkSendBeforeStatus()) {
                 alert("Veuillez compléter toutes les informations avant d'envoyer les photos AVANT");
@@ -3001,14 +2673,7 @@
                 numberBefore: selectedNumber,
                 date: new Date().toISOString(),
                 location: {...currentLocation},
-                beforePhotos: beforePhotos.filter(p => p !== null).map((photo, index) => ({
-                    url: photo.url,
-                    timestamp: photo.timestamp,
-                    location: photo.location,
-                    noteCode: photo.noteCode,
-                    index: index,
-                    type: 'before'
-                })),
+                beforePhotos: beforePhotos.filter(p => p !== null),
                 area: selectedArea.name,
                 areaCode: selectedArea.code,
                 noteCode: selectedArea.code,
@@ -3027,7 +2692,6 @@
             
             zoneReports[zoneCode].reports.push(beforeReport);
             
-            // حفظ الصور في قاعدة البيانات مباشرة دون LocalStorage
             beforeReport.beforePhotos.forEach((photo, index) => {
                 zoneReports[zoneCode].photos.push({
                     type: 'before',
@@ -3047,15 +2711,14 @@
                 numberBefore: selectedNumber,
                 date: new Date().toISOString(),
                 location: {...currentLocation},
-                beforePhotos: beforeReport.beforePhotos,
+                beforePhotos: beforePhotos.filter(p => p !== null),
                 area: selectedArea.name,
                 areaCode: selectedArea.code,
                 noteCode: selectedArea.code,
                 status: 'awaiting_after'
             };
             
-            // حفظ التقرير المؤقت بحجم محدود
-            saveToLocalStorageSafely(`tempReport_${currentUser.username}`, tempReport, 100 * 1024);
+            localStorage.setItem(`tempReport_${currentUser.username}`, JSON.stringify(tempReport));
             
             currentStep = 2;
             updateUIForCurrentStep();
@@ -3063,9 +2726,6 @@
             
             showNotification("Photos AVANT envoyées avec succès !", "success");
             updateStatusBar("Photos AVANT envoyées avec succès");
-            
-            // تحديث معلومات التخزين
-            updateStorageInfo();
         }
 
         function showAfterPhotos() {
@@ -3082,7 +2742,7 @@
 
         function sendAfterPhotos() {
             if (!checkSendAfterStatus()) {
-                alert("Voulez-vous compléter toutes les informations avant d'envoyer les photos APRÈS");
+                alert("Veuillez compléter toutes les informations avant d'envoyer les photos APRÈS");
                 return;
             }
             
@@ -3104,19 +2764,10 @@
                 return;
             }
             
-            const afterPhotosData = afterPhotos.filter(p => p !== null).map((photo, index) => ({
-                url: photo.url,
-                timestamp: photo.timestamp,
-                location: photo.location,
-                noteCode: photo.noteCode,
-                index: index,
-                type: 'after'
-            }));
-            
             const updatedReport = {
                 ...zoneData.reports[existingReportIndex],
                 numberAfter: selectedNumberAfter,
-                afterPhotos: afterPhotosData,
+                afterPhotos: afterPhotos.filter(p => p !== null),
                 status: 'complete',
                 completionDate: new Date().toISOString(),
                 step: 'complete'
@@ -3124,29 +2775,31 @@
             
             zoneData.reports[existingReportIndex] = updatedReport;
             
-            afterPhotosData.forEach((photo, index) => {
-                zoneData.photos.push({
-                    type: 'after',
-                    index: index,
-                    url: photo.url,
-                    timestamp: photo.timestamp,
-                    reportId: tempReport.id
-                });
+            afterPhotos.forEach((photo, index) => {
+                if (photo) {
+                    zoneData.photos.push({
+                        type: 'after',
+                        index: index,
+                        url: photo.url,
+                        timestamp: photo.timestamp,
+                        reportId: tempReport.id
+                    });
+                }
             });
             
             saveToLocalStorage();
             
-            // حذف التقرير المؤقت
-            localStorage.removeItem(`tempReport_${currentUser.username}`);
+            generateZoneFile(zoneCode);
+            
             tempReport = null;
+            localStorage.removeItem(`tempReport_${currentUser.username}`);
             
             resetForm();
             
             showNotification("Rapport complet envoyé avec succès !", "success");
-            updateStatusBar("Rapport complet envoyé");
+            updateStatusBar("Rapport complet envoyé et fichier généré");
             
             updateCounters();
-            updateStorageInfo();
         }
 
         function resetForm() {
@@ -3196,6 +2849,7 @@
             updateStatusBar("Formulaire réinitialisé - Prêt pour un nouveau rapport");
         }
 
+        // ========== FONCTIONS SUPPLÉMENTAIRES ==========
         function viewAllReports() {
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('reportsPanel').style.display = 'block';
@@ -3241,7 +2895,6 @@
             recentReports.forEach(report => {
                 const beforeCount = report.beforePhotos?.length || 0;
                 const afterCount = report.afterPhotos?.length || 0;
-                const totalPhotos = beforeCount + afterCount;
                 const statusColor = report.status === 'complete' ? '#2ea043' : '#1a5fb4';
                 const statusText = report.status === 'complete' ? 'Complet' : 'AVANT seulement';
                 
@@ -3266,7 +2919,7 @@
                     </div>
                     <div style="display: flex; gap: 15px; font-size: 12px; color: #666; margin-bottom: 10px;">
                         <span><i class="fas fa-map-marker-alt"></i> ${report.area}</span>
-                        <span><i class="fas fa-images"></i> ${totalPhotos} photos</span>
+                        <span><i class="fas fa-images"></i> ${beforeCount + afterCount} photos</span>
                     </div>
                     <button class="control-btn primary" style="width: 100%; padding: 8px;" onclick="viewReportDetails('${report.areaCode}', ${report.id})">
                         <i class="fas fa-eye"></i> Voir le rapport complet
@@ -3525,6 +3178,7 @@
                                 ${beforePhotosList.map(photo => `
                                     <div class="photo-item">
                                         <img src="${photo.url || '#'}" alt="Photo AVANT ${photo.index + 1}" 
+                                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9IiNlMWU4ZWQiPjx0ZXh0IHg9IjEwMCIgeT0iNzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2NjYiPlBob3RvIEFWQU5UICR7cGhvdG8uaW5kZXggKyAxfTwvdGV4dD48L3N2Zz4='"
                                              style="cursor: pointer;" onclick="openPhotoModal('${photo.url || ''}', 'Photo AVANT ${photo.index + 1}')">
                                         <div class="photo-info">
                                             <span class="photo-type before">AVANT ${photo.index + 1}</span>
@@ -3547,6 +3201,7 @@
                                 ${afterPhotosList.map(photo => `
                                     <div class="photo-item">
                                         <img src="${photo.url || '#'}" alt="Photo APRÈS ${photo.index + 1}"
+                                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9IiNlMWU4ZWQiPjx0ZXh0IHg9IjEwMCIgeT0iNzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2NjYiPlBob3RvIEFQUkVTICR7cGhvdG8uaW5kZXggKyAxfTwvdGV4dD48L3N2Zz4='"
                                              style="cursor: pointer;" onclick="openPhotoModal('${photo.url || ''}', 'Photo APRÈS ${photo.index + 1}')">
                                         <div class="photo-info">
                                             <span class="photo-type after">APRÈS ${photo.index + 1}</span>
@@ -3575,31 +3230,6 @@
             `;
             
             reportDetailsContainer.innerHTML = reportDetailsHTML;
-        }
-
-        function openPhotoModal(imageUrl, title) {
-            if (!imageUrl || imageUrl === '#') return;
-            
-            const modal = document.createElement('div');
-            modal.className = 'photo-modal';
-            
-            modal.innerHTML = `
-                <div class="photo-modal-content">
-                    <button class="photo-modal-close" onclick="this.parentElement.parentElement.remove()">
-                        <i class="fas fa-times"></i> Fermer
-                    </button>
-                    <img src="${imageUrl}" alt="${title}">
-                    <div class="photo-modal-title">${title}</div>
-                </div>
-            `;
-            
-            modal.onclick = function(e) {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            };
-            
-            document.body.appendChild(modal);
         }
 
         function downloadReport(zoneCode, reportId) {
@@ -3706,7 +3336,6 @@
             
             showNotification("Rapport supprimé avec succès", "success");
             updateCounters();
-            updateStorageInfo();
         }
 
         function generateZoneFile(zoneCode) {
@@ -3775,6 +3404,42 @@
             updateStatusBar("Toutes les données exportées");
         }
 
+        function openPhotoModal(imageUrl, title) {
+            if (!imageUrl || imageUrl === '#') return;
+            
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            modal.style.zIndex = '10000';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            
+            modal.innerHTML = `
+                <div style="position: relative; max-width: 90%; max-height: 90%;">
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="position: absolute; top: -40px; right: 0; background: #ff6b6b; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-times"></i> Fermer
+                    </button>
+                    <img src="${imageUrl}" alt="${title}" style="max-width: 100%; max-height: 80vh; border: 3px solid white; border-radius: 5px;">
+                    <div style="color: white; text-align: center; margin-top: 10px; font-size: 14px;">${title}</div>
+                </div>
+            `;
+            
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+
+        // ========== دعم الجوال والكاميرا ==========
         const sampleLocations = [
             {lat: 33.603016, lng: -7.636873, elev: "9.34±11.02", prec: 13.28},
             {lat: 33.603058, lng: -7.63656, elev: "10.44±7.73", prec: 56.10},
@@ -3805,8 +3470,9 @@
             updateStatusBar("Localisation actualisée");
         }
 
+        // ========== LANCEMENT DE L'APPLICATION ==========
         document.addEventListener('DOMContentLoaded', initializeApp);
-
+	
     </script>
 </body>
 </html>
