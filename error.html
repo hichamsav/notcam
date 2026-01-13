@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erreur - Système NoteCam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+            color: #333333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .error-container {
+            text-align: center;
+            background: #ffffff;
+            padding: 50px 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 100, 200, 0.15);
+            max-width: 500px;
+            width: 100%;
+            border: 2px solid #ff6b6b;
+        }
+        .error-icon {
+            font-size: 90px;
+            color: #ff6b6b;
+            margin-bottom: 25px;
+        }
+        h1 {
+            color: #1a5fb4;
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        h2 {
+            color: #ff6b6b;
+            font-size: 24px;
+            margin-bottom: 25px;
+        }
+        p {
+            color: #555;
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(26, 95, 180, 0.35);
+        }
+        .small-text {
+            margin-top: 35px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="error-container">
+        <i class="fas fa-exclamation-triangle error-icon"></i>
+        <h1>Erreur</h1>
+        <h2>Quelque chose s'est mal passé</h2>
+        <p>
+            Nous sommes désolés, une erreur inattendue s'est produite.<br>
+            Veuillez réessayer plus tard ou contacter l'administrateur du système.
+        </p>
+        
+        <a href="index.html" class="btn">
+            <i class="fas fa-home"></i> Retour à la page d'accueil
+        </a>
+
+        <div class="small-text">
+            Système NoteCam © 2025–2026
+        </div>
+    </div>
+
+</body>
+</html>
