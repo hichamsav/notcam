@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité - Système NoteCam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+            color: #333333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 50px 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 100, 200, 0.12);
+            border: 1px solid #e1e8ed;
+        }
+        h1 {
+            color: #1a5fb4;
+            font-size: 38px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 45px;
+        }
+        h2 {
+            color: #1a5fb4;
+            font-size: 26px;
+            margin: 45px 0 20px;
+            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 12px;
+        }
+        p, li {
+            font-size: 16px;
+            color: #444;
+            margin-bottom: 18px;
+        }
+        ul {
+            padding-left: 30px;
+            margin-bottom: 25px;
+        }
+        .highlight {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #1a5fb4;
+            margin: 25px 0;
+        }
+        .date {
+            text-align: center;
+            color: #777;
+            font-size: 15px;
+            margin: 50px 0 30px;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 14px 30px;
+            background: linear-gradient(90deg, #1a5fb4 0%, #2ea043 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(26, 95, 180, 0.3);
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 35px 25px;
+            }
+            h1 { font-size: 32px; }
+            h2 { font-size: 23px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Politique de Confidentialité</h1>
+        <div class="subtitle">Système NoteCam</div>
+
+        <div class="highlight">
+            <strong>Dernière mise à jour :</strong> 13 Janvier 2026
+        </div>
+
+        <h2>1. Introduction</h2>
+        <p>
+            Nous accordons une importance capitale à la protection de vos données personnelles. 
+            Cette politique de confidentialité explique comment le système NoteCam collecte, 
+            utilise, stocke et protège vos informations lorsque vous utilisez notre application.
+        </p>
+
+        <h2>2. Données que nous collectons</h2>
+        <ul>
+            <li>Nom d'utilisateur et mot de passe (hachés et sécurisés)</li>
+            <li>Photos prises avant et après intervention</li>
+            <li>Coordonnées de géolocalisation (latitude, longitude, précision)</li>
+            <li>Informations sur les zones assignées et les rapports</li>
+            <li>Horodatage de chaque action et photo</li>
+        </ul>
+
+        <h2>3. Comment nous utilisons vos données</h2>
+        <p>Nous utilisons vos données uniquement pour :</p>
+        <ul>
+            <li>Permettre la connexion et l'authentification</li>
+            <li>Gérer les rapports avant/après</li>
+            <li>Permettre au superviseur de visualiser les rapports de son équipe</li>
+            <li>Assurer le suivi et la traçabilité des interventions</li>
+        </ul>
+
+        <h2>4. Stockage et sécurité</h2>
+        <p>
+            Toutes les données sont stockées de manière sécurisée sur <strong>Supabase</strong> 
+            (plateforme certifiée et conforme aux normes de sécurité modernes). 
+            Les mots de passe sont hachés, les photos sont stockées dans des buckets privés, 
+            et l'accès est strictement contrôlé par des politiques de sécurité (RLS).
+        </p>
+
+        <h2>5. Partage des données</h2>
+        <p>
+            Nous ne vendons, ne louons, ni ne partageons vos données personnelles avec des tiers 
+            à des fins commerciales. Les données ne sont accessibles qu'aux personnes autorisées 
+            dans le cadre de leurs fonctions (superviseur / employé concerné).
+        </p>
+
+        <h2>6. Vos droits</h2>
+        <p>
+            Vous pouvez à tout moment demander :
+        </p>
+        <ul>
+            <li>L'accès à vos données personnelles</li>
+            <li>La rectification des données inexactes</li>
+            <li>La suppression de vos données (sous réserve des obligations légales)</li>
+        </ul>
+
+        <h2>7. Contact</h2>
+        <p>
+            Pour toute question concernant cette politique ou vos données personnelles, 
+            veuillez contacter l'administrateur du système via l'interface de l'application.
+        </p>
+
+        <div class="date">
+            Casablanca, 13 Janvier 2026
+        </div>
+
+        <a href="index.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Retour à l'application
+        </a>
+    </div>
+
+</body>
+</html>
